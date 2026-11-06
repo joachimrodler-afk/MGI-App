@@ -120,6 +120,9 @@ var AKTIONEN = {
   anwesende: { recht: 'offen', fn: anwesende_ },
   // Arbeitsdienst
   arbeitsdienst_meine: { recht: 'mitglied', fn: arbeitsdienstMeine_ },
+  arbeitsdienst_liste: { recht: 'mitglied', fn: function (d, s) { return arbeitsdienstListe_(d, s); } },
+  arbeitsdienst_eintragen: { recht: 'mitglied', fn: arbeitsdienstEintragen_ },
+  arbeitsdienst_austragen: { recht: 'admin', fn: arbeitsdienstAustragen_ },
   // Zugangsanfrage
   zugang_anfragen: { recht: 'offen', fn: zugangAnfragen_ },
   anfragen_liste: { recht: 'admin', fn: anfragenListe_ },
@@ -1192,31 +1195,42 @@ function nachweisErinnerungen_() {
 
 // =====================================================================
 // Arbeitsdienst (Liste in eigener Google-Tabelle)
+// Mitglieder tragen sich in der App ein; austragen dürfen nur Admins.
 // =====================================================================
 
 /**
  * Tabellenwerte -> Liste der Wochen.
  * Spalten: Kalenderwoche | Zeitraum "30.03.–05.04.2026" | Einsatz | Person 1 | Person 2 …
- * Zeilen ohne Kalenderwoche gehören zur Woche darüber (weitere Einsätze/Personen).
+ * Zeilen ohne Kalenderwoche gehören zur Woche darüber (weitere Einsätze).
+ * Jede Zeile einer Woche ist ein Einsatz mit eigenen Plätzen (Spalten „Person …“).
  */
 function arbeitslisteParsen(werte, jahrStandard) {
   var liste = [];
   var akt = null;
+  var spalten = [3, 4];
   (werte || []).forEach(function (zeile, i) {
     var z = zeile.map(function (v) { return String(v == null ? '' : v).trim(); });
-    if (i === 0 && /woche|kw/i.test(z[0]) && !/\d/.test(z[0])) return; // Kopfzeile
+    if (i === 0 && !/^KW\s*\d/i.test(z[0])) { // Kopfzeile
+      var ps = [];
+      z.forEach(function (k, j) { if (/^person/i.test(k)) ps.push(j); });
+      if (ps.length) spalten = ps;
+      return;
+    }
     if (/^KW\s*\d+/i.test(z[0])) {
       var zr = zeitraumParsen_(z[1], jahrStandard);
       if (!zr) { akt = null; return; }
-      akt = { kw: z[0].replace(/\s+/g, '').toUpperCase(), von: zr.von, bis: zr.bis, einsaetze: [], personen: [] };
+      akt = { kw: z[0].replace(/\s+/g, '').toUpperCase(), von: zr.von, bis: zr.bis, einsaetze: [], personen: [], zeilen: [] };
       liste.push(akt);
     } else if (z[0]) {
       akt = null; // anderer Inhalt (z. B. Erläuterungen) beendet die Woche
       return;
     }
     if (!akt) return;
+    if (!z[2] && spalten.every(function (j) { return !z[j]; })) return; // Leerzeile
+    var plaetze = spalten.map(function (j) { return z[j] || ''; });
+    akt.zeilen.push({ zeile: i + 1, einsatz: z[2] || 'Arbeitsdienst', plaetze: plaetze, spalten: spalten.map(function (j) { return j + 1; }) });
     if (z[2]) z[2].split(';').forEach(function (e) { e = e.trim(); if (e && akt.einsaetze.indexOf(e) < 0) akt.einsaetze.push(e); });
-    z.slice(3).forEach(function (p) { if (p && akt.personen.indexOf(p) < 0) akt.personen.push(p); });
+    plaetze.forEach(function (p) { if (p && akt.personen.indexOf(p) < 0) akt.personen.push(p); });
   });
   return liste;
 }
@@ -1258,24 +1272,111 @@ function personZuMitglied(name, mitglieder) {
   return null;
 }
 
-function arbeitsliste_() {
-  var cache = CacheService.getScriptCache();
-  var c = cache.get('arbeitsliste');
-  if (c) return JSON.parse(c);
+function arbeitslisteTabelle_() {
   var ss = SpreadsheetApp.openById(prop_('ARBEITSLISTE_ID') || ARBEITSLISTE_STANDARD_ID);
-  var jahr = (String(ss.getName()).match(/20\d\d/) || [Utilities.formatDate(new Date(), TZ, 'yyyy')])[0];
-  var liste = arbeitslisteParsen(ss.getSheets()[0].getDataRange().getDisplayValues(), Number(jahr));
-  try { cache.put('arbeitsliste', JSON.stringify(liste), 600); } catch (e) { /* zu groß */ }
+  var jahr = Number((String(ss.getName()).match(/20\d\d/) || [Utilities.formatDate(new Date(), TZ, 'yyyy')])[0]);
+  return { ss: ss, sh: ss.getSheets()[0], jahr: jahr };
+}
+
+function arbeitslisteFrisch_() {
+  var t = arbeitslisteTabelle_();
+  var liste = arbeitslisteParsen(t.sh.getDataRange().getDisplayValues(), t.jahr);
+  try { CacheService.getScriptCache().put('arbeitsliste', JSON.stringify(liste), 600); } catch (e) { /* zu groß */ }
   return liste;
+}
+
+function arbeitsliste_() {
+  var c = CacheService.getScriptCache().get('arbeitsliste');
+  return c ? JSON.parse(c) : arbeitslisteFrisch_();
+}
+
+/** Einsätze einer Woche, in denen das Mitglied eingetragen ist */
+function meineEinsaetze_(w, mitgliedId, mitglieder) {
+  return w.zeilen.filter(function (z) {
+    return z.plaetze.some(function (p) { return p && personZuMitglied(p, mitglieder) === mitgliedId; });
+  }).map(function (z) { return z.einsatz; });
 }
 
 /** Die nächsten Arbeitsdienst-Wochen des angemeldeten Mitglieds (laufende Woche eingeschlossen). */
 function arbeitsdienstMeine_(d, s) {
   var heute = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   var mitglieder = zeilen_('Mitglieder');
-  return arbeitsliste_().filter(function (w) {
-    return w.bis >= heute && w.personen.some(function (p) { return personZuMitglied(p, mitglieder) === s.mitgliedId; });
-  }).slice(0, 3).map(function (w) { return { kw: w.kw, von: w.von, bis: w.bis, einsaetze: w.einsaetze }; });
+  var erg = [];
+  arbeitsliste_().forEach(function (w) {
+    if (w.bis < heute || erg.length >= 3) return;
+    var e = meineEinsaetze_(w, s.mitgliedId, mitglieder);
+    if (e.length) erg.push({ kw: w.kw, von: w.von, bis: w.bis, einsaetze: e });
+  });
+  return erg;
+}
+
+/** Ganze Liste für die App-Seite: Einsätze mit Plätzen (Name, ob ich, ob frei) */
+function arbeitsdienstListe_(d, s, frisch) {
+  var heute = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  var mitglieder = zeilen_('Mitglieder');
+  var liste = frisch || arbeitsliste_();
+  var erg = {
+    wochen: liste.map(function (w) {
+      return {
+        kw: w.kw, von: w.von, bis: w.bis, vorbei: w.bis < heute,
+        einsaetze: w.zeilen.map(function (z) {
+          return {
+            zeile: z.zeile, einsatz: z.einsatz,
+            plaetze: z.plaetze.map(function (p) { return p ? { name: p, ich: personZuMitglied(p, mitglieder) === s.mitgliedId } : null; }),
+          };
+        }),
+      };
+    }),
+  };
+  if (s.rolle === 'admin') {
+    try { erg.tabelle = arbeitslisteTabelle_().ss.getUrl(); } catch (e) { /* egal */ }
+  }
+  return erg;
+}
+
+/** Mitglied trägt sich selbst in einen freien Platz ein – verbindlich (austragen nur Admins) */
+function arbeitsdienstEintragen_(d, s) {
+  var m = mitgliedNachId_(s.mitgliedId);
+  var name = m ? (m.vorname + ' ' + m.nachname).trim() : s.name;
+  var heute = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  var frisch;
+  mitSperre_(function () {
+    var t = arbeitslisteTabelle_();
+    var liste = arbeitslisteParsen(t.sh.getDataRange().getDisplayValues(), t.jahr);
+    var woche = null, zeile = null;
+    liste.forEach(function (w) { w.zeilen.forEach(function (z) { if (z.zeile === Number(d.zeile)) { woche = w; zeile = z; } }); });
+    if (!zeile || (d.kw && woche.kw !== d.kw)) throw fehler_('Die Liste wurde inzwischen geändert – bitte neu laden', 409);
+    if (woche.bis < heute) throw fehler_('Diese Woche ist schon vorbei', 400);
+    var mitglieder = zeilen_('Mitglieder');
+    if (zeile.plaetze.some(function (p) { return p && personZuMitglied(p, mitglieder) === s.mitgliedId; })) throw fehler_('Du bist hier schon eingetragen', 400);
+    var frei = zeile.plaetze.indexOf('');
+    if (frei < 0) throw fehler_('Leider schon voll – such dir einen anderen Termin aus', 409);
+    t.sh.getRange(zeile.zeile, zeile.spalten[frei]).setValue(name);
+    SpreadsheetApp.flush();
+    zeile.plaetze[frei] = name;
+    frisch = liste;
+    try { CacheService.getScriptCache().put('arbeitsliste', JSON.stringify(liste), 600); } catch (e) { /* zu groß */ }
+  });
+  return arbeitsdienstListe_(d, s, frisch);
+}
+
+/** Nur Admins: einen Eintrag wieder entfernen */
+function arbeitsdienstAustragen_(d, s) {
+  var frisch;
+  mitSperre_(function () {
+    var t = arbeitslisteTabelle_();
+    var liste = arbeitslisteParsen(t.sh.getDataRange().getDisplayValues(), t.jahr);
+    var zeile = null;
+    liste.forEach(function (w) { w.zeilen.forEach(function (z) { if (z.zeile === Number(d.zeile)) zeile = z; }); });
+    var platz = Number(d.platz);
+    if (!zeile || !zeile.plaetze[platz] || (d.name && zeile.plaetze[platz] !== d.name)) throw fehler_('Die Liste wurde inzwischen geändert – bitte neu laden', 409);
+    t.sh.getRange(zeile.zeile, zeile.spalten[platz]).setValue('');
+    SpreadsheetApp.flush();
+    zeile.plaetze[platz] = '';
+    frisch = liste;
+    try { CacheService.getScriptCache().put('arbeitsliste', JSON.stringify(liste), 600); } catch (e) { /* zu groß */ }
+  });
+  return arbeitsdienstListe_(d, s, frisch);
 }
 
 /** Täglich: 7 Tage vorher und am Montag der Woche erinnern (jeweils einmal). */
@@ -1288,21 +1389,25 @@ function arbeitsdienstErinnerungen_() {
   var heuteMs = lokalMs_(heute + 'T00:00:00');
   var mitglieder = zeilen_('Mitglieder');
   var neu = gemeldet.slice();
-  arbeitsliste_().forEach(function (w) {
+  arbeitslisteFrisch_().forEach(function (w) {
     var tage = Math.round((lokalMs_(w.von + 'T00:00:00') - heuteMs) / 86400000);
-    var was = w.einsaetze.length ? w.einsaetze.join(', ') : 'Arbeitsdienst';
     var zeit = w.von.split('-').reverse().join('.').slice(0, 6) + '–' + w.bis.split('-').reverse().join('.');
     [7, 0].forEach(function (grenze) {
       if (tage > grenze || tage < grenze - 6) return;
+      var ids = {};
       w.personen.forEach(function (p) {
         var id = personZuMitglied(p, mitglieder);
-        if (!id) { console.warn('Arbeitsdienst: „' + p + '“ keinem Mitglied zugeordnet'); return; }
+        if (!id) console.warn('Arbeitsdienst: „' + p + '“ keinem Mitglied zugeordnet');
+        else ids[id] = true;
+      });
+      Object.keys(ids).forEach(function (id) {
         var marke = w.kw + ':' + w.von + ':' + grenze + ':' + id;
         if (neu.indexOf(marke) >= 0) return;
+        var was = meineEinsaetze_(w, id, mitglieder).join(', ') || 'Arbeitsdienst';
         var text = grenze === 7
           ? 'Nächste Woche (' + w.kw + ', ' + zeit + ') bist du für den Arbeitsdienst eingetragen: ' + was + '.'
           : 'Diese Woche (' + w.kw + ', ' + zeit + ') hast du Arbeitsdienst: ' + was + '. Danke!';
-        pushSenden_('arbeitsdienst', 'Arbeitsdienst', text, '#/', null, id);
+        pushSenden_('arbeitsdienst', 'Arbeitsdienst', text, '#/arbeitsdienst', null, id);
         neu.push(marke);
       });
     });

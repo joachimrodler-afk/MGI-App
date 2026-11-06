@@ -39,13 +39,27 @@ function neueTabelle() {
 }
 
 const tabelle = neueTabelle();
+// Arbeitsliste (eigene Google-Tabelle, Werte wie angezeigt)
+const alRows = [
+  ['Kalenderwoche', 'Zeitraum', 'Einsatz', 'Person 1', 'Person 2'],
+  ['KW13', '29.03.–04.04.2099', 'Platzpflege', '', ''],
+  ['', '', 'Walzen', 'Ada Admin', ''],
+  ['KW15', '12.04.–18.04.2099', 'Platzpflege', 'Max Voll', 'Moritz Voll'],
+  ['', '', '', '', ''],
+  ['Platzpflege', 'Mäharbeiten …', '', '', ''],
+];
+const alSheet = {
+  getDataRange: () => ({ getDisplayValues: () => alRows.map((r) => r.slice()) }),
+  getRange: (r, c) => ({ setValue: (v) => { alRows[r - 1][c - 1] = v; } }),
+};
+const arbeitstabelle = { getName: () => 'Arbeitsliste 2099', getUrl: () => 'https://docs.google.com/spreadsheets/d/AL', getSheets: () => [alSheet] };
 const props = { SHEET_ID: 'x', OEFFENTLICH: 'true', ERSTER_ADMIN: 'Ada;Admin;654321' };
 const cache = {};
 const pad = (n) => String(n).padStart(2, '0');
 
 const ctx = {
   console,
-  SpreadsheetApp: { openById: () => tabelle },
+  SpreadsheetApp: { openById: (id) => (id === 'x' ? tabelle : arbeitstabelle), flush: () => {} },
   PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => props[k] ?? null, setProperty: (k, v) => (props[k] = v) }) },
   CacheService: { getScriptCache: () => ({ get: (k) => cache[k] ?? null, put: (k, v) => (cache[k] = v), remove: (k) => delete cache[k] }) },
   LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
@@ -195,7 +209,7 @@ const al = JSON.parse(JSON.stringify(ctx.arbeitslisteParsen([
   ['KW53', '28.12.–03.01.2027', 'Arbeitsdienst', 'J. Rodler', ''],
   ['Hinweis', 'Text', '', '', ''],
   ['', '', 'gehört nicht dazu', 'X', ''],
-], 2026)));
+], 2026))).map(({ zeilen, ...w }) => w);
 assert.deepEqual(al, [
   { kw: 'KW14', von: '2026-03-30', bis: '2026-04-05', einsaetze: ['Arbeitsdienst', 'Walzen'], personen: ['Ada Admin', 'Huber'] },
   { kw: 'KW22', von: '2026-05-25', bis: '2026-05-31', einsaetze: ['Arbeitsdienst', 'Walzen'], personen: [] },
@@ -228,4 +242,27 @@ console.log('Arbeitsdienst-Parser OK');
   assert.equal(alt.rows[0].at(-1), 'vorkommnisse');
   assert.equal(alt.rows[0].length, ctx.BLAETTER.Flugbuch.length);
   console.log('Spalten-Update OK');
+}
+
+// Arbeitsdienst in der App: eintragen (verbindlich), austragen nur Admin
+{
+  let l = ok(rufe('arbeitsdienst_liste', {}, klaus.token));
+  assert.equal(l.wochen.length, 2);
+  assert.equal(l.tabelle, undefined, 'Tabellenlink nur für Admins');
+  const kw13 = l.wochen[0];
+  assert.deepEqual(kw13.einsaetze.map((e) => e.einsatz), ['Platzpflege', 'Walzen']);
+  assert.deepEqual(kw13.einsaetze[1].plaetze, [{ name: 'Ada Admin', ich: false }, null]);
+  l = ok(rufe('arbeitsdienst_eintragen', { zeile: 2, kw: 'KW13' }, klaus.token));
+  assert.equal(alRows[1][3], 'Klaus Butz');
+  assert.deepEqual(l.wochen[0].einsaetze[0].plaetze[0], { name: 'Klaus Butz', ich: true });
+  assert.equal(rufe('arbeitsdienst_eintragen', { zeile: 2, kw: 'KW13' }, klaus.token).ok, false, 'nicht doppelt');
+  assert.equal(rufe('arbeitsdienst_eintragen', { zeile: 4, kw: 'KW15' }, klaus.token).status, 409, 'voll');
+  assert.equal(rufe('arbeitsdienst_eintragen', { zeile: 3, kw: 'KW15' }, klaus.token).status, 409, 'falsche KW');
+  assert.equal(rufe('arbeitsdienst_austragen', { zeile: 2, platz: 0 }, klaus.token).ok, false, 'Mitglied darf nicht austragen');
+  const meine = ok(rufe('start', {}, klaus.token)).arbeitsdienst;
+  assert.deepEqual(meine, [{ kw: 'KW13', von: '2099-03-29', bis: '2099-04-04', einsaetze: ['Platzpflege'] }]);
+  l = ok(rufe('arbeitsdienst_austragen', { zeile: 2, platz: 0, name: 'Klaus Butz' }, admin.token));
+  assert.equal(alRows[1][3], '');
+  assert.ok(l.tabelle);
+  console.log('Arbeitsdienst-Eintragen OK');
 }

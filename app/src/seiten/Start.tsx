@@ -41,9 +41,7 @@ function ArbeitsdienstHinweis({ w }: { w: ArbeitsdienstWoche }) {
     </>
   );
   const kl = 'mb-4 flex items-center gap-3 rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950';
-  return istGesetzt(config.arbeitsdienstUrl)
-    ? <a href={config.arbeitsdienstUrl} target="_blank" rel="noopener noreferrer" className={kl}>{inhalt}</a>
-    : <div className={kl}>{inhalt}</div>;
+  return <Link to="/arbeitsdienst" className={kl}>{inhalt}</Link>;
 }
 
 function Kachel({ zu, href, icon, titel, children, farbe = 'blau' }: { zu?: string; href?: string; icon: string; titel: string; children?: ReactNode; farbe?: 'blau' | 'rot' | 'gelb' }) {
@@ -174,11 +172,7 @@ export default function Start() {
         <Kachel zu="/foto" icon="kamera" titel="Foto aufnehmen" farbe="rot">Direkt auf die Homepage</Kachel>
         <Kachel zu="/wettbewerbe" icon="pokal" titel="Wettbewerbe" farbe="gelb">Ergebnisse & Wertung</Kachel>
         <Kachel zu="/brett" icon="pinnwand" titel="Schwarzes Brett">Biete · Suche · Info</Kachel>
-        {istGesetzt(config.arbeitsdienstUrl) ? (
-          <Kachel href={config.arbeitsdienstUrl} icon="schaufel" titel="Arbeitsdienst">Termine & Eintragen</Kachel>
-        ) : (
-          <Kachel zu="/mehr" icon="schaufel" titel="Arbeitsdienst">Link folgt</Kachel>
-        )}
+        <Kachel zu="/arbeitsdienst" icon="schaufel" titel="Arbeitsdienst">Termine & Eintragen</Kachel>
         <Kachel zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" farbe="rot">Notruf 112, Regeln</Kachel>
       </div>
     </div>

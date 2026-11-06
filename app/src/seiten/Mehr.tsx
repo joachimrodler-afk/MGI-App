@@ -21,9 +21,7 @@ export default function Mehr() {
           <Zeile zu="/strom" icon="akku" titel="Strom am Platz" text="Bluetti-Akku und Solar" />
           <Zeile zu="/flugbuch" icon="flieger" titel="Flugbuch" text="An- und abmelden, wer ist am Platz" />
           <Zeile zu="/brett" icon="pinnwand" titel="Schwarzes Brett" />
-          {istGesetzt(config.arbeitsdienstUrl)
-            ? extern(config.arbeitsdienstUrl, 'schaufel', 'Arbeitsdienst', 'Termine und Eintragen')
-            : <div className="flex min-h-14 items-center gap-3 px-4 py-3 text-slate-400"><Icon name="schaufel" className="h-6 w-6" /><span>Arbeitsdienst – Link wird noch eingetragen</span></div>}
+          <Zeile zu="/arbeitsdienst" icon="schaufel" titel="Arbeitsdienst" text="Termine und Eintragen" />
           <Zeile zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" />
         </div>
         <div className="karte divide-y divide-himmel-100 overflow-hidden dark:divide-slate-700">

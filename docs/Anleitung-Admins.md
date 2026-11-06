@@ -79,7 +79,8 @@ Unter **Verwaltung → Mitteilung senden** geht eine Push-Nachricht an alle, die
 
 - Die Liste ist die Google-Tabelle „Arbeitsliste 2027“ im Vereins-Drive. Das erste Blatt wird gelesen: Kalenderwoche | Zeitraum (z. B. `30.03.–05.04.2026`) | Einsatz | Person 1 | Person 2. Zeilen ohne Kalenderwoche gehören zur Woche darüber.
 - Die Namen werden den Mitgliedern in der App zugeordnet (voller Name, „J. Rodler“ oder eindeutiger Nachname). Nicht zuordenbare Namen stehen im Ausführungsprotokoll des Scripts (`taeglich`).
-- Damit sich Mitglieder eintragen können, muss die Tabelle für sie bearbeitbar freigegeben sein.
+- Mitglieder tragen sich in der App ein (Seite Arbeitsdienst); die Tabelle muss dafür **nicht** für sie freigegeben werden. Austragen können nur Admins: in der App über das ✕ am Namen oder direkt in der Tabelle.
+- Neue Einsätze: einfach eine Zeile unter der Woche einfügen (Spalte A und B leer, Einsatz in Spalte C).
 - Neues Jahr: neue Tabelle anlegen, in den Script Properties `ARBEITSLISTE_ID` auf die neue ID setzen und `arbeitsdienstUrl` in `app/src/config.ts` anpassen.
 
 ## Besondere Vorkommnisse

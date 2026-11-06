@@ -5,6 +5,8 @@
  * Demo-Zugänge:   „Demo Admin“ / PIN 123456      „Max Muster“ / PIN 111111
  */
 import { ApiFehler } from './api';
+
+interface DemoAWoche { kw: string; von: string; bis: string; einsaetze: { zeile: number; einsatz: string; plaetze: string[] }[] }
 import { VORLAGEN } from './vorlagen';
 import type {
   Anfrage, BrettBeitrag, CheckIn, Einstellungen, FlugbuchEintrag, FlugleiterEintrag, Mitglied, Nachweise, PilotEingabe, Sitzung, Termin, Wertung, Wertungsart, Wettbewerb,
@@ -24,6 +26,7 @@ interface DemoDaten {
   anfragen?: Anfrage[];
   flugbuch?: FlugbuchEintrag[];
   flugleiter?: FlugleiterEintrag[];
+  arbeitsliste?: DemoAWoche[];
 }
 
 const KEY = 'mgi.demo.v2';
@@ -192,6 +195,19 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
     offenFl.forEach((f) => { if (!liste.some((x) => x.mitgliedId === f.mitgliedId)) liste.push({ mitgliedId: f.mitgliedId, name: `${f.vorname} ${f.name}`, seit: f.beginnTs, flugleiter: true }); });
     return { anzahl: liste.length, flugleiter: offenFl.length > 0, liste: s ? liste : [] };
   };
+  const al = () => (db.arbeitsliste ??= demoArbeitsliste());
+  const heuteIso = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+  const ichName = () => { const x = mitglied(); return x.name; };
+  const meineArbeitsdienste = () => al().filter((w) => w.bis >= heuteIso)
+    .map((w) => ({ kw: w.kw, von: w.von, bis: w.bis, einsaetze: w.einsaetze.filter((e) => e.plaetze.includes(s?.name ?? '-')).map((e) => e.einsatz) }))
+    .filter((w) => w.einsaetze.length).slice(0, 3);
+  const arbeitsListe = () => ({
+    wochen: al().map((w) => ({
+      kw: w.kw, von: w.von, bis: w.bis, vorbei: w.bis < heuteIso,
+      einsaetze: w.einsaetze.map((e) => ({ zeile: e.zeile, einsatz: e.einsatz, plaetze: e.plaetze.map((p) => (p ? { name: p, ich: p === s?.name } : null)) })),
+    })),
+    tabelle: s?.rolle === 'admin' ? 'https://docs.google.com/spreadsheets/' : undefined,
+  });
   const flugbuchStatus = () => ({
     heute: demoHeute(),
     piloten: fb().filter((p) => p.datum === demoHeute() || !p.ende),
@@ -256,7 +272,7 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       return fertig({ pin: m.pin });
     }
     case 'start':
-      return fertig({ oeffentlich: true, anwesend: anwesend(), termine: demoTermine().slice(0, 3), bluetti: demoBluetti(), wetterstation: demoStation(), arbeitsdienst: s ? demoArbeitsdienst() : undefined });
+      return fertig({ oeffentlich: true, anwesend: anwesend(), termine: demoTermine().slice(0, 3), bluetti: demoBluetti(), wetterstation: demoStation(), arbeitsdienst: s ? meineArbeitsdienste() : undefined });
     case 'wetterstation': return fertig(demoStation());
     case 'termine': return fertig(demoTermine());
     case 'bluetti': return fertig(demoBluetti());
@@ -337,6 +353,26 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       p.ende = demoUhr(); p.endeTs = new Date().toISOString();
       if (typeof d.vorkommnisse === 'string') p.vorkommnisse = d.vorkommnisse.trim().slice(0, 1000);
       return fertig(flugbuchStatus());
+    }
+    case 'arbeitsdienst_liste': mitglied(); return fertig(arbeitsListe());
+    case 'arbeitsdienst_eintragen': {
+      const name = ichName();
+      const w = al().find((x) => x.einsaetze.some((e) => e.zeile === d.zeile));
+      const e = w?.einsaetze.find((x) => x.zeile === d.zeile);
+      if (!w || !e || w.kw !== d.kw) throw new ApiFehler('Die Liste wurde inzwischen geändert – bitte neu laden', 409);
+      if (w.bis < heuteIso) throw new ApiFehler('Diese Woche ist schon vorbei', 400);
+      if (e.plaetze.includes(name)) throw new ApiFehler('Du bist hier schon eingetragen', 400);
+      const frei = e.plaetze.indexOf('');
+      if (frei < 0) throw new ApiFehler('Leider schon voll – such dir einen anderen Termin aus', 409);
+      e.plaetze[frei] = name;
+      return fertig(arbeitsListe());
+    }
+    case 'arbeitsdienst_austragen': {
+      admin();
+      const e = al().flatMap((w) => w.einsaetze).find((x) => x.zeile === d.zeile);
+      if (!e || !e.plaetze[Number(d.platz)]) throw new ApiFehler('Die Liste wurde inzwischen geändert – bitte neu laden', 409);
+      e.plaetze[Number(d.platz)] = '';
+      return fertig(arbeitsListe());
     }
     case 'flugbuch_kommentar': {
       const ich = mitglied();
@@ -461,14 +497,26 @@ function demoBluetti() {
   };
 }
 
-/** Demo: der angemeldete Nutzer hat nächste Woche Arbeitsdienst */
-function demoArbeitsdienst() {
+/** Demo-Arbeitsliste: letzte Woche (vorbei), dann alle zwei Wochen ab nächster Woche; Max Muster ist nächste Woche dabei */
+function demoArbeitsliste(): DemoAWoche[] {
   const mo = new Date(); mo.setHours(0, 0, 0, 0);
-  mo.setDate(mo.getDate() - ((mo.getDay() + 6) % 7) + 7);
-  const so = new Date(mo); so.setDate(mo.getDate() + 6);
+  mo.setDate(mo.getDate() - ((mo.getDay() + 6) % 7) - 7);
   const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const kw = (d: Date) => { const t = new Date(d); t.setDate(t.getDate() + 3); const j = new Date(t.getFullYear(), 0, 4); return 1 + Math.round(((t.getTime() - j.getTime()) / 86400000 - 3 + ((j.getDay() + 6) % 7)) / 7); };
-  return [{ kw: 'KW' + kw(mo), von: iso(mo), bis: iso(so), einsaetze: ['Arbeitsdienst', 'Walzen'] }];
+  const extra: Record<number, string[]> = { 1: ['Walzen'], 3: ['Nematoden'], 5: ['Düngen (Herbst)', 'Walzen'] };
+  let zeile = 2;
+  return Array.from({ length: 8 }, (_, i) => {
+    const d = new Date(mo); d.setDate(mo.getDate() + i * 14);
+    const so = new Date(d); so.setDate(d.getDate() + 6);
+    const einsaetze = ['Platzpflege', ...(extra[i] ?? [])].map((e) => ({ zeile: zeile++, einsatz: e, plaetze: ['', ''] }));
+    return { kw: 'KW' + kw(d), von: iso(d), bis: iso(so), einsaetze };
+  }).map((w, i) => {
+    if (i === 0) w.einsaetze[0].plaetze = ['Erika Beispiel', 'Demo Admin'];
+    if (i === 1) w.einsaetze[0].plaetze = ['Max Muster', ''];
+    if (i === 3) w.einsaetze[1].plaetze = ['Erika Beispiel', ''];
+    if (i === 4) w.einsaetze[0].plaetze = ['Demo Admin', 'Erika Beispiel'];
+    return w;
+  });
 }
 
 function demoStation() {

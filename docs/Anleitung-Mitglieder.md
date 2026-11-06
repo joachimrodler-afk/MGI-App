@@ -21,7 +21,9 @@
 
 ## Arbeitsdienst
 
-Die Kachel **Arbeitsdienst** auf der Startseite öffnet die Arbeitsliste (Google-Tabelle). Trag dich dort in eine Woche ein, unter „Person 1“ oder „Person 2“, und zwar **mit Vor- und Nachnamen so wie in der App** (z. B. „Max Muster“). Ein Nachname allein genügt nur, wenn er im Verein eindeutig ist.
+Die Kachel **Arbeitsdienst** auf der Startseite zeigt alle Wochen der Arbeitsliste mit ihren Einsätzen (Platzpflege, Walzen, Düngen …) und den freien Plätzen. Tippe bei einem freien Einsatz auf **Mich eintragen** und bestätige mit **Ja, eintragen**. Dein Name wird automatisch richtig in die Liste geschrieben.
+
+Das Eintragen ist **verbindlich**: Austragen kannst du dich nicht selbst, nur der Vorstand (Admins) kann einen Eintrag wieder entfernen.
 
 Die App erinnert dich dann automatisch:
 - auf der Startseite ab zwei Wochen vorher mit einem gelben Hinweis,

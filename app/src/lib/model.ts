@@ -100,6 +100,20 @@ export interface PushEinstellungen {
   arbeitsdienst?: boolean;
 }
 
+/** Arbeitsliste für die App-Seite */
+export interface ArbeitsdienstWocheVoll {
+  kw: string;
+  von: string;
+  bis: string;
+  vorbei: boolean;
+  einsaetze: { zeile: number; einsatz: string; plaetze: ({ name: string; ich: boolean } | null)[] }[];
+}
+export interface ArbeitsdienstListe {
+  wochen: ArbeitsdienstWocheVoll[];
+  /** nur für Admins */
+  tabelle?: string;
+}
+
 /** Eine Arbeitsdienst-Woche, in der das Mitglied eingetragen ist */
 export interface ArbeitsdienstWoche {
   kw: string;
