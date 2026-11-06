@@ -122,7 +122,7 @@ export default function Start() {
       <div className="grid grid-cols-2 gap-3">
         <Kachel zu="/kalender" icon="kalender" titel="Termine">Alle kommenden Termine</Kachel>
         <Kachel zu="/wetter" icon="wind" titel="Wetter">
-          {ampel === 'rot' ? 'Zu viel Wind' : ampel === 'gelb' ? 'Wind beachten' : ampel ? 'Gutes Flugwetter' : 'Wind & Vorhersage'}
+          {ampel === 'rot' ? 'Zu viel Wind' : ampel === 'gelb' ? 'Wind beachten' : 'Wind & Vorhersage'}
         </Kachel>
         <Link to="/webcam" className="karte relative col-span-2 block h-40 overflow-hidden bg-gradient-to-br from-himmel-200 to-himmel-500">
           <Icon name="webcam" className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 text-white/70" />

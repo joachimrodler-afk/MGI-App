@@ -46,13 +46,13 @@ export default function Wetter() {
   // Ampel: stärkster Wert aus Stationsmessung und vorhergesagten Böen
   const boeen = Math.max(w?.boeen ?? 0, station.daten?.erreichbar ? st?.wind ?? 0 : 0);
   const ampel = w || st ? windAmpel(boeen, e.windGelb, e.windRot, w?.niederschlag ?? 0, w?.code ?? 0) : null;
-  const ampelText = { gruen: 'Gutes Flugwetter', gelb: 'Wind/Wetter beachten', rot: 'Zu viel Wind – Flugbetrieb kritisch' };
+  const ampelText = { gruen: '', gelb: 'Wind/Wetter beachten', rot: 'Zu viel Wind – Flugbetrieb kritisch' };
   const ampelFarbe = { gruen: 'bg-emerald-500 text-white', gelb: 'bg-sonne text-tinte', rot: 'bg-mgi-rot text-white' };
 
   return (
     <Seite titel="Wetter am Platz" aktion={<button onClick={neu} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-himmel-100 dark:hover:bg-slate-800" aria-label="Aktualisieren"><Icon name="aktualisieren" /></button>}>
       <div className="space-y-4">
-        {ampel && <div className={klassen('rounded-2xl p-4 text-center text-lg font-bold shadow', ampelFarbe[ampel])}>{ampelText[ampel]}</div>}
+        {ampel && ampel !== 'gruen' && <div className={klassen('rounded-2xl p-4 text-center text-lg font-bold shadow', ampelFarbe[ampel])}>{ampelText[ampel]}</div>}
 
         {/* Eigene Wetterstation am Platz */}
         <div className="karte p-5">
