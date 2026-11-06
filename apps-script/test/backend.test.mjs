@@ -308,3 +308,18 @@ console.log('Arbeitsdienst-Parser OK');
   // nach Löschen aller Abschnitte keine erneute Vorbelegung
   console.log('Technik OK');
 }
+
+// Mitglied endgültig löschen: nur deaktiviert, nicht sich selbst, nur Admin
+{
+  const fr = ok(rufe('mitglied_anlegen', { vorname: 'Weg', nachname: 'Gehen', rolle: 'mitglied' }, admin.token));
+  const weg = ok(rufe('login', { name: 'Weg Gehen', pin: fr.pin }));
+  const id = weg.mitgliedId;
+  assert.equal(rufe('mitglied_loeschen', { id }, admin.token).ok, false, 'erst deaktivieren');
+  assert.equal(rufe('mitglied_loeschen', { id }, klaus.token).status, 403);
+  assert.equal(rufe('mitglied_loeschen', { id: admin.mitgliedId }, admin.token).ok, false, 'nicht selbst');
+  ok(rufe('mitglied_aendern', { id, aktiv: false }, admin.token));
+  ok(rufe('mitglied_loeschen', { id }, admin.token));
+  assert.ok(!ok(rufe('mitglieder_liste', {}, admin.token)).some((m) => m.id === id));
+  assert.equal(rufe('ich', {}, weg.token).ok, false, 'Anmeldung weg');
+  console.log('Mitglied löschen OK');
+}

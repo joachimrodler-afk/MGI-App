@@ -266,6 +266,16 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       if (d.aktiv === false || d.rolle) db.sitzungen = db.sitzungen.filter((x) => x.mitgliedId !== d.id);
       return fertig(true);
     }
+    case 'mitglied_loeschen': {
+      const a = admin();
+      if (d.id === a.mitgliedId) throw new ApiFehler('Du kannst dich nicht selbst löschen', 400);
+      const m = db.mitglieder.find((x) => x.id === d.id);
+      if (!m) throw new ApiFehler('Mitglied nicht gefunden', 404);
+      if (m.aktiv) throw new ApiFehler('Bitte das Mitglied zuerst deaktivieren', 400);
+      db.mitglieder = db.mitglieder.filter((x) => x.id !== d.id);
+      db.sitzungen = db.sitzungen.filter((x) => x.mitgliedId !== d.id);
+      return fertig(true);
+    }
     case 'pin_zuruecksetzen': {
       admin();
       const m = db.mitglieder.find((x) => x.id === d.id)!;

@@ -88,6 +88,7 @@ function Inhalt() {
   const [sparte, setSparte] = useState<'flug' | 'schiff' | ''>('flug');
   const [pin, setPin] = useState<{ name: string; pin: string } | null>(null);
   const [fehler2, setFehler2] = useState('');
+  const [loeschFrage, setLoeschFrage] = useState('');
   const [arbeitet, setArbeitet] = useState(false);
   const [suche, setSuche] = useState('');
   const [offen, setOffen] = useState(false);
@@ -109,6 +110,10 @@ function Inhalt() {
       setPin({ name: `${m.vorname} ${m.nachname}`, pin: r.pin });
     } catch (err) { setFehler2((err as Error).message); }
   }
+  async function loeschen(m: Mitglied) {
+    try { await api('mitglied_loeschen', { id: m.id }); setLoeschFrage(''); void neu(); } catch (err) { setFehler2((err as Error).message); }
+  }
+
   async function aendern(m: Mitglied, d: Partial<Mitglied>) {
     try { await api('mitglied_aendern', { id: m.id, ...d }); void neu(); } catch (err) { setFehler2((err as Error).message); }
   }
@@ -152,8 +157,8 @@ function Inhalt() {
       {fehler && <Fehler fehler={fehler} nochmal={neu} />}
       <div className="karte divide-y divide-himmel-100 dark:divide-slate-700">
         {liste.map((m) => (
-          <details key={m.id} className={klassen('group', !m.aktiv && 'opacity-60')}>
-            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-2">
+          <details key={m.id} className="group">
+            <summary className={klassen('flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-2', !m.aktiv && 'opacity-60')}>
               <span className="flex-1">
                 <span className="block font-semibold">{m.vorname} {m.nachname}{m.id === s.mitgliedId && ' (du)'}</span>
                 <span className="block text-sm text-slate-500">{m.rolle === 'admin' ? 'Admin' : 'Mitglied'}{m.sparte ? ` · ${m.sparte === 'flug' ? 'Flug' : 'Schiff'}` : ''}{!m.aktiv && ' · deaktiviert'}</span>
@@ -169,6 +174,19 @@ function Inhalt() {
                 onClick={() => aendern(m, { aktiv: !m.aktiv })}>
                 {m.aktiv ? 'Deaktivieren (z. B. bei Austritt)' : 'Wieder aktivieren'}
               </Knopf>
+              {!m.aktiv && m.id !== s.mitgliedId && (loeschFrage === m.id ? (
+                <div className="col-span-2 space-y-2 rounded-xl bg-red-50 p-3 text-sm dark:bg-red-950">
+                  <p><b>{m.vorname} {m.nachname}</b> endgültig löschen? Anmeldungen, Push und Nachweise werden entfernt. Im Flugbuch, in der Arbeitsliste und bei Wertungen bleibt der Name stehen. Das lässt sich nicht rückgängig machen.</p>
+                  <div className="flex gap-2">
+                    <Knopf art="gefahr" className="flex-1 !min-h-10" onClick={() => void loeschen(m)}>Endgültig löschen</Knopf>
+                    <Knopf art="sekundaer" className="!min-h-10" onClick={() => setLoeschFrage('')}>Abbrechen</Knopf>
+                  </div>
+                </div>
+              ) : (
+                <Knopf art="leise" className="col-span-2 text-mgi-rot" onClick={() => setLoeschFrage(m.id)}>
+                  <Icon name="muell" className="h-5 w-5" /> Endgültig löschen
+                </Knopf>
+              ))}
             </div>
           </details>
         ))}

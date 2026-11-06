@@ -107,6 +107,7 @@ var AKTIONEN = {
   mitglieder_liste: { recht: 'admin', fn: mitgliederListe_ },
   mitglied_anlegen: { recht: 'admin', fn: mitgliedAnlegen_ },
   mitglied_aendern: { recht: 'admin', fn: mitgliedAendern_ },
+  mitglied_loeschen: { recht: 'admin', fn: mitgliedLoeschen_ },
   pin_zuruecksetzen: { recht: 'admin', fn: pinZuruecksetzen_ },
   // Infos
   start: { recht: 'offen', fn: start_ },
@@ -377,6 +378,25 @@ function mitgliedAendern_(d, s) {
     });
   });
   if (d.aktiv === false || d.rolle) sitzungenEntfernen_(d.id);
+  return true;
+}
+
+/**
+ * Mitglied endgültig löschen (nur wenn vorher deaktiviert, nie sich selbst).
+ * Entfernt Mitgliedszeile, Anmeldungen, Push-Abos und Nachweise.
+ * Flugbuch, Flugleiter, Arbeitsliste und Wertungen behalten den Namen als Text.
+ */
+function mitgliedLoeschen_(d, s) {
+  if (d.id === s.mitgliedId) throw fehler_('Du kannst dich nicht selbst löschen', 400);
+  var m = mitgliedNachId_(d.id);
+  if (!m) throw fehler_('Mitglied nicht gefunden', 404);
+  if (String(m.aktiv) === 'true') throw fehler_('Bitte das Mitglied zuerst deaktivieren', 400);
+  mitSperre_(function () {
+    loescheZeilen_('Mitglieder', function (r) { return r.id === d.id; });
+    loescheZeilen_('Sitzungen', function (r) { return r.mitgliedId === d.id; });
+    loescheZeilen_('PushAbos', function (r) { return r.mitgliedId === d.id; });
+    loescheZeilen_('Nachweise', function (r) { return r.mitgliedId === d.id; });
+  });
   return true;
 }
 
