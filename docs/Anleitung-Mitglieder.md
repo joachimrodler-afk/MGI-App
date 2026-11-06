@@ -32,3 +32,7 @@ Die App erinnert dich dann automatisch:
 ## Besondere Vorkommnisse im Flugbuch
 
 Solange du im Flugbuch angemeldet bist, gibt es unter deiner Anmeldung das Feld **„Besondere Vorkommnisse“**. Dort kannst du frei hineinschreiben, was passiert ist, z. B. einen Absturz, einen Schaden am Platz oder eine Störung. Tippe auf **Speichern**. Was beim Abmelden noch nicht gespeichert war, wird automatisch übernommen. Nach dem Abmelden können nur noch Admins den Text ändern.
+
+## Technik am Platz
+
+Unter **Technik am Platz** (Startseite oder „Mehr“) stehen Infos zur Wetterstation (mit Blockschaltbild), zur Walze, zu den Ladesteckdosen und mehr. Die Zahlenkombination der Dixi-Toilette siehst du nur, wenn du in der App angemeldet bist.

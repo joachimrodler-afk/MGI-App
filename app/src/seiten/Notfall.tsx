@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
 import { Hinweis, Seite } from '../components/ui';
-import { config } from '../config';
+import { config, istGesetzt } from '../config';
 import { useEinstellungen } from '../lib/einstellungen';
 import { klassen, markdown } from '../lib/helfer';
 
@@ -19,7 +19,7 @@ export default function Notfall() {
 
   async function kopieren() {
     try {
-      await navigator.clipboard.writeText(`${koord} – ${adresse} – ${zufahrt}`);
+      await navigator.clipboard.writeText([koord, adresse, istGesetzt(zufahrt) ? zufahrt : ''].filter(Boolean).join(' – '));
       setKopiert(true);
       setTimeout(() => setKopiert(false), 2500);
     } catch {
@@ -49,15 +49,19 @@ export default function Notfall() {
             <p className="text-sm text-slate-500">Zum Vorlesen am Telefon:</p>
             <p className="my-2 rounded-xl bg-himmel-50 p-3 text-lg font-bold dark:bg-slate-800">{nord}</p>
             <p className="mb-1"><b>Adresse:</b> {adresse}</p>
-            <p className="mb-3"><b>Zufahrt:</b> {zufahrt}</p>
+            {istGesetzt(zufahrt) && <p className="mb-3"><b>Zufahrt:</b> {zufahrt}</p>}
             {!koordinatenGeprueft && <Hinweis art="warnung">Die Koordinaten sind noch nicht eingetragen (aktuell Ortsmitte Ismaning). Bitte in config.ts ergänzen.</Hinweis>}
             <div className="mt-3 grid grid-cols-2 gap-2">
               <button onClick={kopieren} className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-himmel-100 font-semibold text-himmel-700 dark:bg-slate-800 dark:text-himmel-200">
                 <Icon name={kopiert ? 'haken' : 'kopieren'} className="h-5 w-5" /> {kopiert ? 'Kopiert' : 'Kopieren'}
               </button>
-              <a href={`https://www.google.com/maps/search/?api=1&query=${lat},${lon}`} target="_blank" rel="noopener noreferrer"
+              <a href={config.platz.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`} target="_blank" rel="noopener noreferrer"
                 className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-himmel-100 font-semibold text-himmel-700 dark:bg-slate-800 dark:text-himmel-200">
                 <Icon name="karte" className="h-5 w-5" /> In Karten öffnen
+              </a>
+              <a href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`} target="_blank" rel="noopener noreferrer"
+                className="col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-himmel-600 font-semibold text-white">
+                <Icon name="flieger" className="h-5 w-5" /> Navigation zum Platz starten
               </a>
             </div>
           </div>

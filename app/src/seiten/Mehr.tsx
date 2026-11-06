@@ -22,6 +22,7 @@ export default function Mehr() {
           <Zeile zu="/flugbuch" icon="flieger" titel="Flugbuch" text="An- und abmelden, wer ist am Platz" />
           <Zeile zu="/brett" icon="pinnwand" titel="Schwarzes Brett" />
           <Zeile zu="/arbeitsdienst" icon="schaufel" titel="Arbeitsdienst" text="Termine und Eintragen" />
+          <Zeile zu="/technik" icon="zahnrad" titel="Technik am Platz" text="Wetterstation, Walze, Dixi, Ladesteckdosen" />
           <Zeile zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" />
         </div>
         <div className="karte divide-y divide-himmel-100 overflow-hidden dark:divide-slate-700">

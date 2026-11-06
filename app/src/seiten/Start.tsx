@@ -44,7 +44,7 @@ function ArbeitsdienstHinweis({ w }: { w: ArbeitsdienstWoche }) {
   return <Link to="/arbeitsdienst" className={kl}>{inhalt}</Link>;
 }
 
-function Kachel({ zu, href, icon, titel, children, farbe = 'blau' }: { zu?: string; href?: string; icon: string; titel: string; children?: ReactNode; farbe?: 'blau' | 'rot' | 'gelb' }) {
+function Kachel({ zu, href, icon, titel, children, farbe = 'blau', breit }: { zu?: string; href?: string; icon: string; titel: string; children?: ReactNode; farbe?: 'blau' | 'rot' | 'gelb'; breit?: boolean }) {
   const ring = { blau: 'bg-himmel-100 text-himmel-700 dark:text-himmel-300', rot: 'bg-red-100 text-mgi-rot dark:text-red-400', gelb: 'bg-sonne-hell text-amber-700 dark:text-sonne' }[farbe];
   const innen = (
     <>
@@ -55,7 +55,7 @@ function Kachel({ zu, href, icon, titel, children, farbe = 'blau' }: { zu?: stri
       {children && <span className="mt-0.5 block text-sm text-slate-600 dark:text-slate-400">{children}</span>}
     </>
   );
-  const cls = 'karte block min-h-32 p-4 transition hover:shadow-md active:scale-[0.98]';
+  const cls = klassen('karte block min-h-32 p-4 transition hover:shadow-md active:scale-[0.98]', breit && 'col-span-2');
   if (href) return <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>{innen}</a>;
   return <Link to={zu!} className={cls}>{innen}</Link>;
 }
@@ -173,7 +173,8 @@ export default function Start() {
         <Kachel zu="/wettbewerbe" icon="pokal" titel="Wettbewerbe" farbe="gelb">Ergebnisse & Wertung</Kachel>
         <Kachel zu="/brett" icon="pinnwand" titel="Schwarzes Brett">Biete · Suche · Info</Kachel>
         <Kachel zu="/arbeitsdienst" icon="schaufel" titel="Arbeitsdienst">Termine & Eintragen</Kachel>
-        <Kachel zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" farbe="rot">Notruf 112, Regeln</Kachel>
+        <Kachel zu="/technik" icon="zahnrad" titel="Technik am Platz">Wetterstation, Walze, Strom …</Kachel>
+        <Kachel zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" farbe="rot" breit>Notruf 112, Anfahrt, Regeln</Kachel>
       </div>
     </div>
   );

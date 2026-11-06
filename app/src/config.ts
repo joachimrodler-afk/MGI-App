@@ -54,16 +54,15 @@ export const config = {
   arbeitsdienstUrl: 'https://docs.google.com/spreadsheets/d/1JmdUEeU4ioUFeHaxiUrYIoH8fhXx-LL8zA88nC-rPaA/edit',
 
   platz: {
-    /**
-     * TODO: Genaue GPS-Koordinaten des Modellflugplatzes eintragen.
-     * Vorläufig: Ortsmitte Ismaning (nur für die Wettervorhersage brauchbar).
-     */
-    lat: 48.2262,
-    lon: 11.6744,
-    koordinatenGeprueft: false,
+    /** GPS-Koordinaten des Modellflugplatzes (aus dem Google-Maps-Eintrag „MGI Modellflugplatz“) */
+    lat: 48.2552913,
+    lon: 11.7225233,
+    koordinatenGeprueft: true,
+    /** Google-Maps-Eintrag des Platzes */
+    mapsUrl: 'https://maps.app.goo.gl/B5yAokCeZMDLbDLC6',
     /** TODO: Zufahrt so beschreiben, dass man sie am Telefon dem Rettungsdienst vorlesen kann */
     zufahrt: 'TODO: Zufahrtsbeschreibung zum Modellflugplatz eintragen.',
-    adresse: 'TODO: Adresse/nächste Straße eintragen',
+    adresse: 'MGI Modellflugplatz, 85737 Ismaning',
   },
 
   /**

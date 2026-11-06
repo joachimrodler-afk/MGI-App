@@ -9,7 +9,7 @@ import { ApiFehler } from './api';
 interface DemoAWoche { kw: string; von: string; bis: string; einsaetze: { zeile: number; einsatz: string; plaetze: string[] }[] }
 import { VORLAGEN } from './vorlagen';
 import type {
-  Anfrage, BrettBeitrag, CheckIn, Einstellungen, FlugbuchEintrag, FlugleiterEintrag, Mitglied, Nachweise, PilotEingabe, Sitzung, Termin, Wertung, Wertungsart, Wettbewerb,
+  Anfrage, BrettBeitrag, TechnikAbschnitt, CheckIn, Einstellungen, FlugbuchEintrag, FlugleiterEintrag, Mitglied, Nachweise, PilotEingabe, Sitzung, Termin, Wertung, Wertungsart, Wettbewerb,
 } from './model';
 
 interface DemoMitglied extends Mitglied { pin: string }
@@ -27,6 +27,7 @@ interface DemoDaten {
   flugbuch?: FlugbuchEintrag[];
   flugleiter?: FlugleiterEintrag[];
   arbeitsliste?: DemoAWoche[];
+  technik?: TechnikAbschnitt[];
 }
 
 const KEY = 'mgi.demo.v2';
@@ -196,6 +197,7 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
     return { anzahl: liste.length, flugleiter: offenFl.length > 0, liste: s ? liste : [] };
   };
   const al = () => (db.arbeitsliste ??= demoArbeitsliste());
+  const tech = () => (db.technik ??= demoTechnik());
   const heuteIso = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
   const ichName = () => { const x = mitglied(); return x.name; };
   const meineArbeitsdienste = () => al().filter((w) => w.bis >= heuteIso)
@@ -353,6 +355,28 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       p.ende = demoUhr(); p.endeTs = new Date().toISOString();
       if (typeof d.vorkommnisse === 'string') p.vorkommnisse = d.vorkommnisse.trim().slice(0, 1000);
       return fertig(flugbuchStatus());
+    }
+    case 'technik_liste': return fertig(tech().filter((a) => s || !a.nurMitglieder));
+    case 'technik_speichern': {
+      const x = admin();
+      const alt = tech().find((a) => a.id === d.id);
+      const bilder = (alt?.bilder ?? []).filter((b) => !((d.entfernteBilder as string[] | undefined) ?? []).includes(b))
+        .concat(((d.neueBilder as string[] | undefined) ?? []).map((b64) => 'data:image/jpeg;base64,' + b64));
+      const a: TechnikAbschnitt = {
+        id: alt?.id ?? 't' + uid(), titel: String(d.titel ?? '').slice(0, 60), icon: String(d.icon ?? 'zahnrad'),
+        grafik: d.grafik === 'wetterstation' ? 'wetterstation' : '', nurMitglieder: d.nurMitglieder === true,
+        text: String(d.text ?? ''), bilder, reihenfolge: alt?.reihenfolge ?? tech().length + 1, geaendert: new Date().toISOString(), geaendertVon: x.name,
+      };
+      if (!a.titel) throw new ApiFehler('Bitte einen Titel angeben', 400);
+      db.technik = alt ? tech().map((t) => (t.id === a.id ? a : t)) : [...tech(), a];
+      return fertig(tech());
+    }
+    case 'technik_loeschen': admin(); db.technik = tech().filter((a) => a.id !== d.id); return fertig(tech());
+    case 'technik_sortieren': {
+      admin();
+      const ids = d.ids as string[];
+      db.technik = tech().map((a) => ({ ...a, reihenfolge: ids.indexOf(a.id) + 1 })).sort((a, b) => a.reihenfolge - b.reihenfolge);
+      return fertig(tech());
     }
     case 'arbeitsdienst_liste': mitglied(); return fertig(arbeitsListe());
     case 'arbeitsdienst_eintragen': {
@@ -517,6 +541,17 @@ function demoArbeitsliste(): DemoAWoche[] {
     if (i === 4) w.einsaetze[0].plaetze = ['Demo Admin', 'Erika Beispiel'];
     return w;
   });
+}
+
+function demoTechnik(): TechnikAbschnitt[] {
+  const a = (titel: string, icon: string, text: string, extra: Partial<TechnikAbschnitt> = {}, i = 0): TechnikAbschnitt =>
+    ({ id: 't' + i, titel, icon, text, grafik: '', nurMitglieder: false, bilder: [], reihenfolge: i + 1, ...extra });
+  return [
+    a('Wetterstation', 'wind', 'Die Wetterstation am Platz misst Wind, Temperatur, Luftfeuchte und Luftdruck.\n## Aufbau\n- **Steuerung:** ESP32 (NodeMCU-32S)\n- **Temperatur, Luftfeuchte, Luftdruck:** BME280 (I²C)\n- **Wind:** Anemometer 4–20 mA, Windfahne analog\n## Ablauf\n- Messung alle 30 Sekunden\n- alle 10 Minuten Upload an Wettermonster', { grafik: 'wetterstation' }, 0),
+    a('Walze', 'schaufel', '_Bitte ergänzen._\n## Wozu\n- …\n## Bedienung\n- …', {}, 1),
+    a('Dixi-Toilette', 'schloss', '**Zahlenkombination Schloss:** 0-0-0-0 (Demo)\n\nBitte nach Benutzung wieder abschließen.', { nurMitglieder: true }, 2),
+    a('Ladesteckdosen', 'akku', 'Die Ladesteckdosen sind mit **15 Ampere** abgesichert.\n- Alle Ladegeräte zusammen dürfen 15 A nicht überschreiten.', {}, 3),
+  ];
 }
 
 function demoStation() {

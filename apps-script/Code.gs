@@ -30,6 +30,7 @@
  *   FCM_SERVICE_ACCOUNT   JSON des Firebase-Service-Accounts (optional, für Push)
  *   APP_URL               Adresse der App (für Links in Push-Nachrichten)
  *   ARBEITSLISTE_ID       Google-Tabelle der Arbeitsdienst-Liste (optional, Standard siehe unten)
+ *   TECHNIK_ORDNER_ID     Drive-Ordner für Fotos im Bereich Technik (wird sonst automatisch angelegt)
  */
 
 var TZ = 'Europe/Berlin';
@@ -56,6 +57,7 @@ var BLAETTER = {
   Flugleiter: ['id', 'datum', 'name', 'vorname', 'fangnetz', 'rasen_gemaeht', 'wetter', 'windrichtung', 'windstaerke',
     'beginn', 'ende', 'mitgliedId', 'beginn_ts', 'ende_ts', 'auto_beendet'],
   Brett: ['id', 'ablauf', 'json'],
+  Technik: ['id', 'reihenfolge', 'json'],
   Nachweise: ['mitgliedId', 'name', 'kenntnisnachweis', 'eid', 'versicherung', 'gemeldet'],
   PushAbos: ['fcmToken', 'mitgliedId', 'einstellungen', 'erstellt'],
 };
@@ -140,6 +142,11 @@ var AKTIONEN = {
   brett_liste: { recht: 'mitglied', fn: brettListe_ },
   brett_speichern: { recht: 'mitglied', fn: brettSpeichern_ },
   brett_loeschen: { recht: 'mitglied', fn: brettLoeschen_ },
+  // Technik
+  technik_liste: { recht: 'lesen', fn: technikListe_ },
+  technik_speichern: { recht: 'admin', fn: technikSpeichern_ },
+  technik_loeschen: { recht: 'admin', fn: technikLoeschen_ },
+  technik_sortieren: { recht: 'admin', fn: technikSortieren_ },
   // Nachweise
   nachweise: { recht: 'mitglied', fn: nachweiseLesen_ },
   nachweise_speichern: { recht: 'mitglied', fn: nachweiseSpeichern_ },
@@ -1139,6 +1146,148 @@ function brettLoeschen_(d, s) {
   if (b.verfasserId !== s.mitgliedId && s.rolle !== 'admin') throw fehler_('Nur eigene Beiträge löschen', 403);
   mitSperre_(function () { loescheZeilen_('Brett', function (x) { return x.id === d.id; }); });
   return true;
+}
+
+// =====================================================================
+// Technik: Infos zu Anlagen am Platz (von Admins in der App gepflegt)
+// Abschnitte mit nurMitglieder = true (z. B. Zahlenschloss) gibt es nur mit Anmeldung.
+// =====================================================================
+
+var TECHNIK_GRAFIKEN = ['', 'wetterstation'];
+
+function technikStandard_() {
+  return [
+    {
+      titel: 'Wetterstation', icon: 'wind', grafik: 'wetterstation', nurMitglieder: false,
+      text: [
+        'Die Wetterstation am Platz misst Wind, Temperatur, Luftfeuchte und Luftdruck. Die Werte erscheinen in der App unter **Wetter** und auf Wettermonster.',
+        '## Aufbau',
+        '- **Steuerung:** ESP32 (NodeMCU-32S) mit WLAN, Hardware-Watchdog (30 s) und Update über WLAN (OTA)',
+        '- **Temperatur, Luftfeuchte, Luftdruck:** Sensor BME280 am I²C-Bus (Adresse 0x76)',
+        '- **Windgeschwindigkeit:** Schalenanemometer mit 4–20-mA-Ausgang über 120-Ω-Messwiderstand an GPIO 34',
+        '- **Windrichtung:** Windfahne mit Analogspannung an GPIO 35 (8 Richtungen)',
+        '- **Akkuspannung:** Spannungsteiler 1 : 5,4 an GPIO 36',
+        '- **Rabenschreck:** Schaltausgang GPIO 14, ein- und ausschaltbar über die Weboberfläche',
+        '## Ablauf',
+        '- Messung alle 30 Sekunden, Werte werden geglättet',
+        '- alle 10 Minuten Upload an Wettermonster',
+        '- Messwert-Seite im Netz (Port 81), die auch die App abruft',
+        '- Neustart automatisch nach 1000 Sendeintervallen oder wenn sich die Software aufhängt',
+      ].join('\n'),
+    },
+    {
+      titel: 'Walze', icon: 'schaufel', grafik: '', nurMitglieder: false,
+      text: [
+        '_Bitte ergänzen (Admins: Stift oben rechts)._',
+        '## Wozu',
+        '- …',
+        '## Bedienung',
+        '- …',
+        '## Hinweise',
+        '- …',
+      ].join('\n'),
+    },
+    {
+      titel: 'Dixi-Toilette', icon: 'schloss', grafik: '', nurMitglieder: true,
+      text: [
+        '**Zahlenkombination Schloss:** _bitte eintragen_',
+        '',
+        'Bitte nach Benutzung wieder abschließen und die Zahlen verstellen.',
+      ].join('\n'),
+    },
+    {
+      titel: 'Ladesteckdosen', icon: 'akku', grafik: '', nurMitglieder: false,
+      text: [
+        'Die Ladesteckdosen sind mit **15 Ampere** abgesichert.',
+        '- Alle gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.',
+        '- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.',
+        '',
+        '_Bitte ergänzen: wo die Steckdosen sind, wie viele, Spannung und wo die Sicherung sitzt._',
+      ].join('\n'),
+    },
+  ];
+}
+
+function technikAlle_() {
+  var zeilen = zeilen_('Technik');
+  if (!zeilen.length && !prop_('TECHNIK_ANGELEGT')) {
+    mitSperre_(function () {
+      if (zeilen_('Technik').length) return;
+      technikStandard_().forEach(function (a, i) {
+        a.id = 't' + Utilities.getUuid().slice(0, 8);
+        a.bilder = [];
+        a.geaendert = new Date().toISOString();
+        blatt_('Technik').appendRow([a.id, i + 1, JSON.stringify(a)]);
+      });
+      PropertiesService.getScriptProperties().setProperty('TECHNIK_ANGELEGT', 'true');
+    });
+    zeilen = zeilen_('Technik');
+  }
+  return zeilen.map(function (r) { var a = JSON.parse(r.json); a.reihenfolge = Number(r.reihenfolge) || 0; return a; })
+    .sort(function (a, b) { return a.reihenfolge - b.reihenfolge; });
+}
+
+function technikListe_(d, s) {
+  return technikAlle_().filter(function (a) { return s || !a.nurMitglieder; });
+}
+
+function technikOrdner_() {
+  var id = prop_('TECHNIK_ORDNER_ID');
+  if (id) return DriveApp.getFolderById(id);
+  var eltern = DriveApp.getFileById(prop_('SHEET_ID', true)).getParents();
+  var basis = eltern.hasNext() ? eltern.next() : DriveApp.getRootFolder();
+  var vorhanden = basis.getFoldersByName('Technik (App)');
+  var ordner = vorhanden.hasNext() ? vorhanden.next() : basis.createFolder('Technik (App)');
+  PropertiesService.getScriptProperties().setProperty('TECHNIK_ORDNER_ID', ordner.getId());
+  return ordner;
+}
+
+function technikSpeichern_(d, s) {
+  var titel = String(d.titel || '').trim().slice(0, 60);
+  if (!titel) throw fehler_('Bitte einen Titel angeben', 400);
+  var alle = technikAlle_();
+  var alt = d.id ? alle.filter(function (a) { return a.id === d.id; })[0] : null;
+  if (d.id && !alt) throw fehler_('Abschnitt nicht gefunden', 404);
+  var bilder = alt ? (alt.bilder || []).slice() : [];
+  if (d.entfernteBilder) bilder = bilder.filter(function (b) { return d.entfernteBilder.indexOf(b) < 0; });
+  (d.neueBilder || []).slice(0, Math.max(0, 6 - bilder.length)).forEach(function (b64, i) {
+    var datei = technikOrdner_().createFile(Utilities.newBlob(Utilities.base64Decode(b64), 'image/jpeg', 'technik_' + Date.now() + '_' + i + '.jpg'));
+    datei.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    bilder.push('https://drive.google.com/thumbnail?id=' + datei.getId() + '&sz=w1600');
+  });
+  var a = {
+    id: alt ? alt.id : 't' + Utilities.getUuid().slice(0, 8),
+    titel: titel,
+    icon: String(d.icon || (alt && alt.icon) || 'zahnrad').slice(0, 20),
+    grafik: TECHNIK_GRAFIKEN.indexOf(d.grafik) >= 0 ? d.grafik : '',
+    nurMitglieder: d.nurMitglieder === true,
+    text: String(d.text || '').slice(0, 8000),
+    bilder: bilder,
+    geaendert: new Date().toISOString(),
+    geaendertVon: s.name,
+  };
+  var reihenfolge = alt ? alt.reihenfolge : alle.reduce(function (m, x) { return Math.max(m, x.reihenfolge); }, 0) + 1;
+  mitSperre_(function () {
+    if (alt) aktualisiereZeile_('Technik', 'id', a.id, function (r) { r.json = JSON.stringify(a); return r; });
+    else blatt_('Technik').appendRow([a.id, reihenfolge, JSON.stringify(a)]);
+  });
+  return technikListe_(d, s);
+}
+
+function technikLoeschen_(d, s) {
+  mitSperre_(function () { loescheZeilen_('Technik', function (x) { return x.id === d.id; }); });
+  return technikListe_(d, s);
+}
+
+/** Reihenfolge: d.ids = alle IDs in der neuen Reihenfolge */
+function technikSortieren_(d, s) {
+  var ids = (d.ids || []).map(String);
+  mitSperre_(function () {
+    ids.forEach(function (id, i) {
+      aktualisiereZeile_('Technik', 'id', id, function (r) { r.reihenfolge = i + 1; return r; });
+    });
+  });
+  return technikListe_(d, s);
 }
 
 // =====================================================================

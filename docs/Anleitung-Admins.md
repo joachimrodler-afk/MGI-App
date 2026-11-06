@@ -86,3 +86,10 @@ Unter **Verwaltung → Mitteilung senden** geht eine Push-Nachricht an alle, die
 ## Besondere Vorkommnisse
 
 Was Piloten unter „Besondere Vorkommnisse“ eintragen, steht im Blatt „Flugbuch“ in der Spalte `vorkommnisse` (wird nach dem Update automatisch hinten angefügt), in der Flugbuch-Übersicht unter dem jeweiligen Piloten und im CSV-Export.
+
+## Technik am Platz
+
+- Abschnitt antippen → **Bearbeiten**: Titel, Symbol, Text (einfaches Markdown), Fotos (max. 6) und optional das Blockschaltbild der Wetterstation.
+- **Nur für angemeldete Mitglieder** einschalten bei allem, was nicht öffentlich sein soll (z. B. Zahlenkombination Dixi-Schloss). Solche Abschnitte schickt das Backend ohne Anmeldung gar nicht erst aus.
+- Mit ↑ ↓ die Reihenfolge ändern, unten **Neuer Abschnitt** für weitere Geräte.
+- Die Texte stehen im Blatt „Technik“ der Tabelle MGI-Flugbuch, Fotos im Drive-Ordner „Technik (App)“ (wird beim ersten Foto automatisch neben der Tabelle angelegt).

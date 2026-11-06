@@ -100,6 +100,21 @@ export interface PushEinstellungen {
   arbeitsdienst?: boolean;
 }
 
+/** Abschnitt im Bereich „Technik am Platz“ */
+export interface TechnikAbschnitt {
+  id: string;
+  titel: string;
+  icon: string;
+  grafik: '' | 'wetterstation';
+  /** nur für angemeldete Mitglieder (z. B. Zahlenschloss) */
+  nurMitglieder: boolean;
+  text: string; // Markdown
+  bilder: string[];
+  reihenfolge: number;
+  geaendert?: string;
+  geaendertVon?: string;
+}
+
 /** Arbeitsliste für die App-Seite */
 export interface ArbeitsdienstWocheVoll {
   kw: string;

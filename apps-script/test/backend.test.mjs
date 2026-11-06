@@ -266,3 +266,26 @@ console.log('Arbeitsdienst-Parser OK');
   assert.ok(l.tabelle);
   console.log('Arbeitsdienst-Eintragen OK');
 }
+
+// Technik: Standard-Abschnitte, Dixi nur für Mitglieder, nur Admins bearbeiten
+{
+  const oeffentlich = ok(rufe('technik_liste', {}));
+  assert.deepEqual(oeffentlich.map((a) => a.titel), ['Wetterstation', 'Walze', 'Ladesteckdosen'], 'Dixi ohne Anmeldung unsichtbar');
+  let t = ok(rufe('technik_liste', {}, klaus.token));
+  assert.equal(t.length, 4);
+  const dixi = t.find((a) => a.titel === 'Dixi-Toilette');
+  assert.equal(dixi.nurMitglieder, true);
+  assert.equal(t[0].grafik, 'wetterstation');
+  assert.equal(rufe('technik_speichern', { ...dixi, text: 'x' }, klaus.token).status, 403);
+  t = ok(rufe('technik_speichern', { ...dixi, text: '**Zahlenkombination Schloss:** 1-2-3-4' }, admin.token));
+  assert.match(t.find((a) => a.id === dixi.id).text, /1-2-3-4/);
+  assert.ok(!JSON.stringify(ok(rufe('technik_liste', {}))).includes('1-2-3-4'), 'Code nie öffentlich');
+  t = ok(rufe('technik_speichern', { titel: 'Rasenmäher', text: 'Benzin: Super E5', nurMitglieder: false }, admin.token));
+  assert.equal(t.at(-1).titel, 'Rasenmäher');
+  t = ok(rufe('technik_sortieren', { ids: [t.at(-1).id, ...t.slice(0, -1).map((a) => a.id)] }, admin.token));
+  assert.equal(t[0].titel, 'Rasenmäher');
+  t = ok(rufe('technik_loeschen', { id: t[0].id }, admin.token));
+  assert.equal(t.length, 4);
+  // nach Löschen aller Abschnitte keine erneute Vorbelegung
+  console.log('Technik OK');
+}
