@@ -1153,7 +1153,10 @@ function brettLoeschen_(d, s) {
 // Abschnitte mit nurMitglieder = true (z. B. Zahlenschloss) gibt es nur mit Anmeldung.
 // =====================================================================
 
-var TECHNIK_GRAFIKEN = ['', 'wetterstation'];
+var TECHNIK_GRAFIKEN = ['', 'wetterstation', 'strom'];
+
+// Erster Text der Ladesteckdosen – wird bei der Migration nur ersetzt, wenn ihn noch niemand geändert hat
+var TECHNIK_LADE_ALT = 'Die Ladesteckdosen sind mit **15 Ampere** abgesichert.';
 
 function technikStandard_() {
   return [
@@ -1175,6 +1178,7 @@ function technikStandard_() {
         '- Neustart automatisch nach 1000 Sendeintervallen oder wenn sich die Software aufhängt',
       ].join('\n'),
     },
+    technikStrom_(),
     {
       titel: 'Walze', icon: 'schaufel', grafik: '', nurMitglieder: false,
       text: [
@@ -1197,15 +1201,71 @@ function technikStandard_() {
     },
     {
       titel: 'Ladesteckdosen', icon: 'akku', grafik: '', nurMitglieder: false,
-      text: [
-        'Die Ladesteckdosen sind mit **15 Ampere** abgesichert.',
-        '- Alle gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.',
-        '- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.',
-        '',
-        '_Bitte ergänzen: wo die Steckdosen sind, wie viele, Spannung und wo die Sicherung sitzt._',
-      ].join('\n'),
+      text: technikLadeText_(),
     },
   ];
+}
+
+function technikStrom_() {
+  return {
+    titel: 'Stromversorgung', icon: 'akku', grafik: 'strom', nurMitglieder: false,
+    text: [
+      'Der Platz wird komplett mit Solarstrom versorgt.',
+      '## Gartenhaus',
+      '- **Bluetti AC200MAX** mit 2 Zusatzakkus **B300** – zusammen **8.192 Wh** (LiFePO₄)',
+      '- **Solar:** 2 Module mit je 500 Wp über einen **DC-Trennschalter** am Solareingang (max. 900 W, 10–145 V, 15 A)',
+      '- **Wechselrichter:** 230 V, reiner Sinus, 2.200 W Dauerleistung',
+      '- Ladezustand und Solarleistung live in der App unter **Strom**',
+      '## 12-V-Ausgang',
+      '- Wetterstation',
+      '- WLAN-Router',
+      '- DC-DC-Wandler zur Pufferbatterie an den Tischen',
+      '## 230-V-Ausgang',
+      '- Mähroboter',
+      '- RTK-Antenne',
+      '## An den Tischen',
+      '- Pufferbatterie, wird über den DC-DC-Wandler vom Bluetti nachgeladen',
+      '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A**',
+      '## Hinweise',
+      '- Die Module haben zusammen 1.000 Wp, das Bluetti nimmt höchstens 900 W auf. An sehr sonnigen Tagen wird die Spitze abgeschnitten – das ist normal.',
+      '- Vor Arbeiten an den Solarleitungen den DC-Trennschalter ausschalten.',
+      '- _Bitte ergänzen: Typ und Kapazität der Pufferbatterie, Typ des DC-DC-Wandlers._',
+    ].join('\n'),
+  };
+}
+
+function technikLadeText_() {
+  return [
+    'Die Ladesteckdosen an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen und sind mit **15 Ampere** abgesichert.',
+    '- Die Pufferbatterie wird über einen DC-DC-Wandler vom Bluetti im Gartenhaus nachgeladen (siehe **Stromversorgung**).',
+    '- Alle gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.',
+    '- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.',
+  ].join('\n');
+}
+
+/** Einmalige Ergänzungen für bereits angelegte Technik-Blätter */
+function technikMigrieren_(liste) {
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('TECHNIK_STROM')) return false;
+  mitSperre_(function () {
+    if (props.getProperty('TECHNIK_STROM')) return;
+    var wetter = liste.filter(function (a) { return a.grafik === 'wetterstation'; })[0];
+    var a = technikStrom_();
+    a.id = 't' + Utilities.getUuid().slice(0, 8);
+    a.bilder = [];
+    a.geaendert = new Date().toISOString();
+    blatt_('Technik').appendRow([a.id, wetter ? wetter.reihenfolge + 0.5 : 0.5, JSON.stringify(a)]);
+    liste.forEach(function (x) {
+      if (x.titel === 'Ladesteckdosen' && String(x.text).indexOf(TECHNIK_LADE_ALT) === 0) {
+        aktualisiereZeile_('Technik', 'id', x.id, function (r) {
+          var j = JSON.parse(r.json); j.text = technikLadeText_(); j.geaendert = new Date().toISOString();
+          r.json = JSON.stringify(j); return r;
+        });
+      }
+    });
+    props.setProperty('TECHNIK_STROM', 'true');
+  });
+  return true;
 }
 
 function technikAlle_() {
@@ -1220,11 +1280,17 @@ function technikAlle_() {
         blatt_('Technik').appendRow([a.id, i + 1, JSON.stringify(a)]);
       });
       PropertiesService.getScriptProperties().setProperty('TECHNIK_ANGELEGT', 'true');
+      PropertiesService.getScriptProperties().setProperty('TECHNIK_STROM', 'true');
     });
     zeilen = zeilen_('Technik');
   }
-  return zeilen.map(function (r) { var a = JSON.parse(r.json); a.reihenfolge = Number(r.reihenfolge) || 0; return a; })
-    .sort(function (a, b) { return a.reihenfolge - b.reihenfolge; });
+  var lies = function (z) {
+    return z.map(function (r) { var a = JSON.parse(r.json); a.reihenfolge = Number(r.reihenfolge) || 0; return a; })
+      .sort(function (a, b) { return a.reihenfolge - b.reihenfolge; });
+  };
+  var liste = lies(zeilen);
+  if (technikMigrieren_(liste)) liste = lies(zeilen_('Technik'));
+  return liste;
 }
 
 function technikListe_(d, s) {

@@ -548,9 +548,10 @@ function demoTechnik(): TechnikAbschnitt[] {
     ({ id: 't' + i, titel, icon, text, grafik: '', nurMitglieder: false, bilder: [], reihenfolge: i + 1, ...extra });
   return [
     a('Wetterstation', 'wind', 'Die Wetterstation am Platz misst Wind, Temperatur, Luftfeuchte und Luftdruck.\n## Aufbau\n- **Steuerung:** ESP32 (NodeMCU-32S)\n- **Temperatur, Luftfeuchte, Luftdruck:** BME280 (I²C)\n- **Wind:** Anemometer 4–20 mA, Windfahne analog\n## Ablauf\n- Messung alle 30 Sekunden\n- alle 10 Minuten Upload an Wettermonster', { grafik: 'wetterstation' }, 0),
+    a('Stromversorgung', 'akku', 'Der Platz wird komplett mit Solarstrom versorgt.\n## Gartenhaus\n- **Bluetti AC200MAX** mit 2 × **B300** – zusammen **8.192 Wh**\n- **Solar:** 2 × 500 Wp über DC-Trennschalter\n## 12-V-Ausgang\n- Wetterstation, WLAN-Router, DC-DC-Wandler\n## 230-V-Ausgang\n- Mähroboter, RTK-Antenne', { grafik: 'strom' }, 4),
     a('Walze', 'schaufel', '_Bitte ergänzen._\n## Wozu\n- …\n## Bedienung\n- …', {}, 1),
     a('Dixi-Toilette', 'schloss', '**Zahlenkombination Schloss:** 0-0-0-0 (Demo)\n\nBitte nach Benutzung wieder abschließen.', { nurMitglieder: true }, 2),
-    a('Ladesteckdosen', 'akku', 'Die Ladesteckdosen sind mit **15 Ampere** abgesichert.\n- Alle Ladegeräte zusammen dürfen 15 A nicht überschreiten.', {}, 3),
+    a('Ladesteckdosen', 'akku', 'Die Ladesteckdosen an zwei Tischen hängen an der **Pufferbatterie** und sind mit **15 Ampere** abgesichert.', {}, 3),
   ];
 }
 

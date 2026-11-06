@@ -270,9 +270,10 @@ console.log('Arbeitsdienst-Parser OK');
 // Technik: Standard-Abschnitte, Dixi nur für Mitglieder, nur Admins bearbeiten
 {
   const oeffentlich = ok(rufe('technik_liste', {}));
-  assert.deepEqual(oeffentlich.map((a) => a.titel), ['Wetterstation', 'Walze', 'Ladesteckdosen'], 'Dixi ohne Anmeldung unsichtbar');
+  assert.deepEqual(oeffentlich.map((a) => a.titel), ['Wetterstation', 'Stromversorgung', 'Walze', 'Ladesteckdosen'], 'Dixi ohne Anmeldung unsichtbar');
   let t = ok(rufe('technik_liste', {}, klaus.token));
-  assert.equal(t.length, 4);
+  assert.equal(t.length, 5);
+  assert.equal(t[1].grafik, 'strom');
   const dixi = t.find((a) => a.titel === 'Dixi-Toilette');
   assert.equal(dixi.nurMitglieder, true);
   assert.equal(t[0].grafik, 'wetterstation');
@@ -285,7 +286,17 @@ console.log('Arbeitsdienst-Parser OK');
   t = ok(rufe('technik_sortieren', { ids: [t.at(-1).id, ...t.slice(0, -1).map((a) => a.id)] }, admin.token));
   assert.equal(t[0].titel, 'Rasenmäher');
   t = ok(rufe('technik_loeschen', { id: t[0].id }, admin.token));
-  assert.equal(t.length, 4);
+  assert.equal(t.length, 5);
+  // Migration eines alten Blatts: Stromversorgung ergänzen, unveränderten Ladesteckdosen-Text ersetzen
+  const strom = t.find((a) => a.titel === 'Stromversorgung');
+  const lade = t.find((a) => a.titel === 'Ladesteckdosen');
+  ok(rufe('technik_loeschen', { id: strom.id }, admin.token));
+  ok(rufe('technik_speichern', { ...lade, text: 'Die Ladesteckdosen sind mit **15 Ampere** abgesichert.\n- alt' }, admin.token));
+  delete props.TECHNIK_STROM;
+  t = ok(rufe('technik_liste', {}, klaus.token));
+  assert.deepEqual(t.map((a) => a.titel), ['Wetterstation', 'Stromversorgung', 'Walze', 'Dixi-Toilette', 'Ladesteckdosen']);
+  assert.match(t.at(-1).text, /Pufferbatterie/);
+  assert.equal(ok(rufe('technik_liste', {}, klaus.token)).length, 5, 'nur einmal');
   // nach Löschen aller Abschnitte keine erneute Vorbelegung
   console.log('Technik OK');
 }

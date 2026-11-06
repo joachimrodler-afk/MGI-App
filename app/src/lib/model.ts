@@ -105,7 +105,7 @@ export interface TechnikAbschnitt {
   id: string;
   titel: string;
   icon: string;
-  grafik: '' | 'wetterstation';
+  grafik: '' | 'wetterstation' | 'strom';
   /** nur für angemeldete Mitglieder (z. B. Zahlenschloss) */
   nurMitglieder: boolean;
   text: string; // Markdown
