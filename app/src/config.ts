@@ -33,9 +33,9 @@ export const config = {
     seite: 'https://www.ipcamlive.com/65d35a6bb9cb9',
     alias: '65d35a6bb9cb9',
     /** Standbild – IPCamLive liefert das aktuelle Bild über diese Adresse */
-    snapshotUrl: 'https://ipcamlive.com/player/snapshot.php?alias=65d35a6bb9cb9',
+    snapshotUrl: 'https://www.ipcamlive.com/player/snapshot.php?alias=65d35a6bb9cb9',
     /** Eingebetteter Live-Player */
-    playerUrl: 'https://g0.ipcamlive.com/player/player.php?alias=65d35a6bb9cb9&autoplay=1',
+    playerUrl: 'https://www.ipcamlive.com/player/player.php?alias=65d35a6bb9cb9&autoplay=1',
     aktualisierenSek: 60,
   },
 
