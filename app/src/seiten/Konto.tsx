@@ -18,7 +18,7 @@ const PUSH_ANLAESSE: { key: keyof PushEinstellungen; name: string; text: string 
   { key: 'nachweise', name: 'Nachweis-Erinnerungen', text: 'vor Ablauf deiner Nachweise' },
 ];
 
-function PushBereich() {
+function PushBereich({ admin }: { admin: boolean }) {
   const [st, setSt] = useState(pushStatus);
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState('');
@@ -52,8 +52,9 @@ function PushBereich() {
       ) : (
         <>
           <div className="divide-y divide-himmel-100 border-t border-himmel-100 dark:divide-slate-700 dark:border-slate-700">
+            {admin && <Schalter an={st.einstellungen.anfragen !== false} onChange={(v) => setze('anfragen', v)} label="Zugangsanfragen" text="nur Admins: jemand möchte in die App" />}
             {PUSH_ANLAESSE.map((a) => (
-              <Schalter key={a.key} an={st.einstellungen[a.key]} onChange={(v) => setze(a.key, v)} label={a.name} text={a.text} />
+              <Schalter key={a.key} an={!!st.einstellungen[a.key]} onChange={(v) => setze(a.key, v)} label={a.name} text={a.text} />
             ))}
           </div>
           <div className="p-4">
@@ -149,7 +150,7 @@ export default function Konto() {
                 <p className="text-sm text-slate-500">{s.rolle === 'admin' ? 'Admin (Vorstand / Wertungsrichter)' : 'Mitglied'}</p>
               </div>
             </div>
-            <PushBereich />
+            <PushBereich admin={s.rolle === 'admin'} />
             <PinAendern />
             <Knopf art="gefahr" className="w-full" onClick={abmelden}>Abmelden</Knopf>
           </>

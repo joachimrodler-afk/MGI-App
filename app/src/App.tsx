@@ -18,7 +18,8 @@ const Wettbewerbe = lazy(() => import('./seiten/Wettbewerbe'));
 const WettbewerbDetail = lazy(() => import('./seiten/WettbewerbDetail'));
 const WettbewerbEingabe = lazy(() => import('./seiten/WettbewerbEingabe'));
 const WettbewerbBearbeiten = lazy(() => import('./seiten/WettbewerbBearbeiten'));
-const Platz = lazy(() => import('./seiten/Platz'));
+const Flugbuch = lazy(() => import('./seiten/Flugbuch'));
+const FlugbuchUebersicht = lazy(() => import('./seiten/verwaltung/FlugbuchUebersicht'));
 const Brett = lazy(() => import('./seiten/Brett'));
 const Nachweise = lazy(() => import('./seiten/Nachweise'));
 const Mehr = lazy(() => import('./seiten/Mehr'));
@@ -118,7 +119,9 @@ export default function App() {
             <Route path="/wettbewerbe/:id" element={<WettbewerbDetail />} />
             <Route path="/wettbewerbe/:id/bearbeiten" element={<WettbewerbBearbeiten />} />
             <Route path="/wettbewerbe/:id/eingabe" element={<WettbewerbEingabe />} />
-            <Route path="/platz" element={<Platz />} />
+            <Route path="/flugbuch" element={<Flugbuch />} />
+            <Route path="/platz" element={<Flugbuch />} />
+            <Route path="/verwaltung/flugbuch" element={<FlugbuchUebersicht />} />
             <Route path="/brett" element={<Brett />} />
             <Route path="/nachweise" element={<Nachweise />} />
             <Route path="/mehr" element={<Mehr />} />

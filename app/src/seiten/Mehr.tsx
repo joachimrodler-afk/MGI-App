@@ -19,7 +19,7 @@ export default function Mehr() {
           <Zeile zu="/wetter" icon="wind" titel="Wetter am Platz" text="Wind, Böen, Vorhersage" />
           <Zeile zu="/webcam" icon="webcam" titel="Webcam" text="Standbild und Live-Stream" />
           <Zeile zu="/strom" icon="akku" titel="Strom am Platz" text="Bluetti-Akku und Solar" />
-          <Zeile zu="/platz" icon="personen" titel="Wer ist am Platz?" />
+          <Zeile zu="/flugbuch" icon="flieger" titel="Flugbuch" text="An- und abmelden, wer ist am Platz" />
           <Zeile zu="/brett" icon="pinnwand" titel="Schwarzes Brett" />
           {istGesetzt(config.arbeitsdienstUrl)
             ? extern(config.arbeitsdienstUrl, 'schaufel', 'Arbeitsdienst', 'Termine und Eintragen')

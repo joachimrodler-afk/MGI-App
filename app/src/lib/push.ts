@@ -9,7 +9,7 @@ import type { PushEinstellungen } from './model';
 
 const KEY = 'mgi.push';
 
-export const STANDARD_PUSH: PushEinstellungen = { termine: true, mitteilungen: true, ergebnisse: true, brett: false, nachweise: true };
+export const STANDARD_PUSH: PushEinstellungen = { anfragen: true, termine: true, mitteilungen: true, ergebnisse: true, brett: false, nachweise: true };
 
 export function pushStatus(): { token?: string; einstellungen: PushEinstellungen } {
   try {

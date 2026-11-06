@@ -65,7 +65,7 @@ export default function Start() {
             )}
           </span>
         </Link>
-        <Link to="/platz" className="karte flex items-center gap-3 p-3">
+        <Link to="/flugbuch" className="karte flex items-center gap-3 p-3">
           <Icon name="personen" className="h-6 w-6 shrink-0 text-himmel-600" />
           <span className="text-sm leading-tight">
             <b className="text-base">{d?.anwesend.anzahl ?? '–'}</b> am Platz
@@ -115,7 +115,7 @@ export default function Start() {
         </Link>
         <Kachel zu="/foto" icon="kamera" titel="Foto aufnehmen" farbe="rot">Direkt auf die Homepage</Kachel>
         <Kachel zu="/wettbewerbe" icon="pokal" titel="Wettbewerbe" farbe="gelb">Ergebnisse & Wertung</Kachel>
-        <Kachel zu="/platz" icon="personen" titel="Wer ist am Platz?">Einchecken</Kachel>
+        <Kachel zu="/flugbuch" icon="flieger" titel="Flugbuch">An- &amp; abmelden, wer ist da?</Kachel>
         <Kachel zu="/brett" icon="pinnwand" titel="Schwarzes Brett">Biete · Suche · Info</Kachel>
         {istGesetzt(config.arbeitsdienstUrl) ? (
           <Kachel href={config.arbeitsdienstUrl} icon="schaufel" titel="Arbeitsdienst">Termine & Eintragen</Kachel>

@@ -89,6 +89,8 @@ export interface Nachweise {
 }
 
 export interface PushEinstellungen {
+  /** nur für Admins: neue Zugangsanfragen */
+  anfragen?: boolean;
   termine: boolean;
   mitteilungen: boolean;
   ergebnisse: boolean;
@@ -185,4 +187,79 @@ export interface Wertung {
   eingabe: Eingabe;
   richter: string;
   zeit: string;
+}
+
+// ---------------------------------------------------------------- Zugangsanfrage
+export interface Anfrage {
+  id: string;
+  vorname: string;
+  nachname: string;
+  nachricht?: string;
+  erstellt: string;
+}
+
+// ---------------------------------------------------------------- Flugbuch
+export type Antrieb = 'segler' | 'elektro' | 'kolben' | 'turbine';
+export type Masse = '<250 g' | '<2 kg' | '<12 kg' | '<25 kg';
+export type Wetter = 'klar' | 'leicht bedeckt' | 'bedeckt' | 'nebelig';
+export type Windrichtung = 'N' | 'NO' | 'O' | 'SO' | 'S' | 'SW' | 'W' | 'NW';
+export type Windstaerke = 'kein' | 'leicht' | 'mäßig' | 'stark';
+
+export interface FlugbuchEintrag {
+  id: string;
+  datum: string; // TT.MM.JJJJ
+  name: string;
+  vorname: string;
+  vereinGast: 'Verein' | 'Gast';
+  kanal: string;
+  schulungsnachweis: boolean;
+  antrieb: Antrieb[];
+  masse: Masse;
+  beginn: string; // HH:mm
+  ende: string;
+  eingetragenVon: string;
+  mitgliedId: string;
+  beginnTs: string;
+  endeTs: string;
+  autoBeendet: boolean;
+}
+
+export interface Flugbedingungen {
+  fangnetz: boolean;
+  rasenGemaeht: boolean;
+  wetter: Wetter;
+  windrichtung: Windrichtung;
+  windstaerke: Windstaerke;
+}
+
+export interface FlugleiterEintrag extends Flugbedingungen {
+  id: string;
+  datum: string;
+  name: string;
+  vorname: string;
+  beginn: string;
+  ende: string;
+  mitgliedId: string;
+  beginnTs: string;
+  endeTs: string;
+  autoBeendet: boolean;
+}
+
+export interface FlugbuchStatus {
+  heute: string;
+  piloten: FlugbuchEintrag[];
+  flugleiter: FlugleiterEintrag[];
+  anwesend: { anzahl: number; flugleiter: boolean; liste: CheckIn[] };
+  autoStunden: number;
+}
+
+export interface PilotEingabe {
+  art: 'verein' | 'gast';
+  gastVorname?: string;
+  gastName?: string;
+  kanal: string;
+  schulungsnachweis: boolean;
+  antrieb: Antrieb[];
+  masse: Masse | '';
+  regelnBestaetigt: boolean;
 }

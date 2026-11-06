@@ -45,7 +45,11 @@ var BLAETTER = {
   Wertungsarten: ['id', 'json'],
   Wettbewerbe: ['id', 'json'],
   Wertungen: ['id', 'wettbewerbId', 'json'],
-  CheckIns: ['mitgliedId', 'name', 'seit', 'flugleiter'],
+  Anfragen: ['id', 'vorname', 'nachname', 'nachricht', 'erstellt', 'status', 'bearbeitet'],
+  Flugbuch: ['id', 'datum', 'name', 'vorname', 'verein_gast', 'kanal', 'schulungsnachweis', 'segler', 'elektro', 'kolben', 'turbine',
+    'max_masse', 'beginn', 'ende', 'regeln_bestaetigt', 'eingetragen_von', 'mitgliedId', 'beginn_ts', 'ende_ts', 'auto_beendet'],
+  Flugleiter: ['id', 'datum', 'name', 'vorname', 'fangnetz', 'rasen_gemaeht', 'wetter', 'windrichtung', 'windstaerke',
+    'beginn', 'ende', 'mitgliedId', 'beginn_ts', 'ende_ts', 'auto_beendet'],
   Brett: ['id', 'ablauf', 'json'],
   Nachweise: ['mitgliedId', 'name', 'kenntnisnachweis', 'eid', 'versicherung', 'gemeldet'],
   PushAbos: ['fcmToken', 'mitgliedId', 'einstellungen', 'erstellt'],
@@ -108,8 +112,18 @@ var AKTIONEN = {
   foto_hochladen: { recht: 'mitglied', fn: fotoHochladen_ },
   // Am Platz
   anwesende: { recht: 'offen', fn: anwesende_ },
-  checkin: { recht: 'mitglied', fn: checkin_ },
-  checkout: { recht: 'mitglied', fn: checkout_ },
+  // Zugangsanfrage
+  zugang_anfragen: { recht: 'offen', fn: zugangAnfragen_ },
+  anfragen_liste: { recht: 'admin', fn: anfragenListe_ },
+  anfrage_freigeben: { recht: 'admin', fn: anfrageFreigeben_ },
+  anfrage_ablehnen: { recht: 'admin', fn: anfrageAblehnen_ },
+  // Flugbuch
+  flugbuch_status: { recht: 'mitglied', fn: flugbuchStatus_ },
+  flugbuch_anmelden: { recht: 'mitglied', fn: flugbuchAnmelden_ },
+  flugbuch_abmelden: { recht: 'mitglied', fn: flugbuchAbmelden_ },
+  flugleiter_anmelden: { recht: 'mitglied', fn: flugleiterAnmelden_ },
+  flugleiter_abmelden: { recht: 'mitglied', fn: flugleiterAbmelden_ },
+  flugbuch_liste: { recht: 'admin', fn: flugbuchListe_ },
   // Schwarzes Brett
   brett_liste: { recht: 'mitglied', fn: brettListe_ },
   brett_speichern: { recht: 'mitglied', fn: brettSpeichern_ },
@@ -174,7 +188,7 @@ function taeglich() {
 /** Stündlich: neue Termine melden, abgelaufene Check-ins entfernen */
 function stuendlich() {
   try { neueTermineMelden_(); } catch (e) { console.error(e); }
-  try { checkinsAufraeumen_(); } catch (e) { console.error(e); }
+  try { flugbuchAutoBeenden_(); } catch (e) { console.error(e); }
 }
 
 function aufraeumen_() {
@@ -666,7 +680,7 @@ var STANDARD_EINSTELLUNGEN = {
   windRot: 40,
   datenschutzFoto:
     'Bitte nur Fotos hochladen, mit denen alle abgebildeten Personen einverstanden sind. Die Fotos erscheinen öffentlich auf der Vereins-Homepage.',
-  checkinStunden: 4,
+  checkinStunden: 6,
 };
 
 function einstellungenLesen_() {
@@ -720,38 +734,269 @@ function dateiname_(s) {
 }
 
 // =====================================================================
-// Wer ist am Platz?
+// Elektronisches Flugbuch (ersetzt „Wer ist am Platz?“)
+// =====================================================================
+// Jede Anmeldung im Flugbuch ist eine Zeile im Blatt „Flugbuch“ (Piloten) bzw.
+// „Flugleiter“. Beim Anmelden wird die Uhrzeit „beginn“, beim Abmelden „ende“
+// eingetragen. Wer eine offene Zeile (ohne Ende) hat, gilt als „am Platz“.
+
+var ANTRIEBE = ['segler', 'elektro', 'kolben', 'turbine'];
+var MASSEN = ['<250 g', '<2 kg', '<12 kg', '<25 kg'];
+var WETTER = ['klar', 'leicht bedeckt', 'bedeckt', 'nebelig'];
+var WINDRICHTUNGEN = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
+var WINDSTAERKEN = ['kein', 'leicht', 'mäßig', 'stark'];
+
+/** Zellwert als Text (falls Google Tabellen doch ein Datum/eine Uhrzeit daraus gemacht hat) */
+function zelle_(v, format) {
+  if (v instanceof Date) return format ? Utilities.formatDate(v, TZ, format) : v.toISOString();
+  return v === undefined || v === null ? '' : String(v);
+}
+
+function heute_() { return Utilities.formatDate(new Date(), TZ, 'dd.MM.yyyy'); }
+function uhr_(d) { return Utilities.formatDate(d || new Date(), TZ, 'HH:mm'); }
+function txt_(v) { return "'" + String(v === undefined || v === null ? '' : v); } // als Text speichern (keine Datums-Umwandlung)
+function jaNein_(b) { return b ? 'ja' : 'nein'; }
+
+function teileName_(voll) {
+  var t = String(voll || '').trim().split(/\s+/);
+  return { vorname: t.slice(0, -1).join(' ') || t[0] || '', nachname: t.length > 1 ? t[t.length - 1] : '' };
+}
+
+function flugbuchEintrag_(r) {
+  return {
+    id: r.id, datum: zelle_(r.datum, 'dd.MM.yyyy'), name: r.name, vorname: r.vorname, vereinGast: r.verein_gast, kanal: zelle_(r.kanal),
+    schulungsnachweis: r.schulungsnachweis === 'ja',
+    antrieb: ANTRIEBE.filter(function (a) { return r[a] === 'x'; }),
+    masse: zelle_(r.max_masse), beginn: zelle_(r.beginn, 'HH:mm'), ende: zelle_(r.ende, 'HH:mm'),
+    eingetragenVon: r.eingetragen_von, mitgliedId: r.mitgliedId,
+    beginnTs: zelle_(r.beginn_ts), endeTs: zelle_(r.ende_ts), autoBeendet: r.auto_beendet === 'ja',
+  };
+}
+
+function flugleiterEintrag_(r) {
+  return {
+    id: r.id, datum: zelle_(r.datum, 'dd.MM.yyyy'), name: r.name, vorname: r.vorname,
+    fangnetz: r.fangnetz === 'ja', rasenGemaeht: r.rasen_gemaeht === 'ja', wetter: r.wetter,
+    windrichtung: r.windrichtung, windstaerke: r.windstaerke,
+    beginn: zelle_(r.beginn, 'HH:mm'), ende: zelle_(r.ende, 'HH:mm'), mitgliedId: r.mitgliedId,
+    beginnTs: zelle_(r.beginn_ts), endeTs: zelle_(r.ende_ts), autoBeendet: r.auto_beendet === 'ja',
+  };
+}
+
+function offenePiloten_() {
+  return zeilen_('Flugbuch').filter(function (r) { return !r.ende_ts; }).map(flugbuchEintrag_);
+}
+function offeneFlugleiter_() {
+  return zeilen_('Flugleiter').filter(function (r) { return !r.ende_ts; }).map(flugleiterEintrag_);
+}
+
+/** Wer ist gerade am Platz? (Öffentlich nur die Anzahl, Namen nur für Mitglieder) */
+function anwesende_(d, s) {
+  var piloten = offenePiloten_();
+  var fl = offeneFlugleiter_();
+  var liste = piloten.map(function (p) {
+    return {
+      mitgliedId: p.vereinGast === 'Gast' ? 'gast:' + p.id : p.mitgliedId,
+      name: p.vorname + ' ' + p.name + (p.vereinGast === 'Gast' ? ' (Gast)' : ''),
+      seit: p.beginnTs,
+      flugleiter: fl.some(function (f) { return f.mitgliedId === p.mitgliedId && p.vereinGast !== 'Gast'; }),
+    };
+  });
+  // Flugleiter, der selbst nicht fliegt, trotzdem anzeigen
+  fl.forEach(function (f) {
+    if (!liste.some(function (x) { return x.mitgliedId === f.mitgliedId; })) {
+      liste.push({ mitgliedId: f.mitgliedId, name: f.vorname + ' ' + f.name, seit: f.beginnTs, flugleiter: true });
+    }
+  });
+  var erg = { anzahl: liste.length, flugleiter: fl.length > 0, liste: [] };
+  if (s) erg.liste = liste;
+  return erg;
+}
+
+function flugbuchStatus_(d, s) {
+  var heute = heute_();
+  var alle = zeilen_('Flugbuch').filter(function (r) { return zelle_(r.datum, 'dd.MM.yyyy') === heute || !r.ende_ts; }).map(flugbuchEintrag_);
+  var fl = zeilen_('Flugleiter').filter(function (r) { return zelle_(r.datum, 'dd.MM.yyyy') === heute || !r.ende_ts; }).map(flugleiterEintrag_);
+  return {
+    heute: heute,
+    piloten: alle,
+    flugleiter: fl,
+    anwesend: anwesende_(d, s),
+    autoStunden: Number(einstellungenLesen_().checkinStunden) || 6,
+  };
+}
+
+function flugbuchAnmelden_(d, s) {
+  var e = d.eintrag || {};
+  if (e.regelnBestaetigt !== true) throw fehler_('Bitte bestätigen, dass dir die Betriebsregeln bekannt sind', 400);
+  var gast = e.art === 'gast';
+  var name, vorname;
+  if (gast) {
+    vorname = String(e.gastVorname || '').trim();
+    name = String(e.gastName || '').trim();
+    if (!vorname || !name) throw fehler_('Bitte Vor- und Nachname des Gastes angeben', 400);
+  } else {
+    var m = mitgliedNachId_(s.mitgliedId);
+    vorname = m ? m.vorname : teileName_(s.name).vorname;
+    name = m ? m.nachname : teileName_(s.name).nachname;
+  }
+  var antrieb = (e.antrieb || []).filter(function (a) { return ANTRIEBE.indexOf(a) >= 0; });
+  if (!antrieb.length) throw fehler_('Bitte die Antriebsart wählen', 400);
+  if (MASSEN.indexOf(e.masse) < 0) throw fehler_('Bitte die Gewichtsklasse wählen', 400);
+  var jetzt = new Date();
+  var id = 'f' + Utilities.getUuid().slice(0, 8);
+  mitSperre_(function () {
+    if (!gast) {
+      var offen = zeilen_('Flugbuch').some(function (r) { return !r.ende_ts && r.mitgliedId === s.mitgliedId && r.verein_gast !== 'Gast'; });
+      if (offen) throw fehler_('Du bist bereits im Flugbuch angemeldet', 400);
+    }
+    blatt_('Flugbuch').appendRow([
+      id, txt_(heute_()), name, vorname, gast ? 'Gast' : 'Verein', txt_(String(e.kanal || '').slice(0, 20)), jaNein_(e.schulungsnachweis),
+      antrieb.indexOf('segler') >= 0 ? 'x' : '', antrieb.indexOf('elektro') >= 0 ? 'x' : '',
+      antrieb.indexOf('kolben') >= 0 ? 'x' : '', antrieb.indexOf('turbine') >= 0 ? 'x' : '',
+      txt_(e.masse), txt_(uhr_(jetzt)), '', 'ja', s.name, s.mitgliedId, txt_(jetzt.toISOString()), '', '',
+    ]);
+  });
+  if (d.flugleiter) flugleiterAnmelden_({ bedingungen: d.flugleiter }, s);
+  return flugbuchStatus_(d, s);
+}
+
+function flugbuchAbmelden_(d, s) {
+  var jetzt = new Date();
+  var gefunden = false;
+  mitSperre_(function () {
+    var zeile = zeilen_('Flugbuch').filter(function (r) { return r.id === d.id && !r.ende_ts; })[0];
+    if (!zeile) return;
+    if (zeile.mitgliedId !== s.mitgliedId && s.rolle !== 'admin') throw fehler_('Nur eigene Einträge oder selbst eingetragene Gäste abmelden', 403);
+    aktualisiereZeile_('Flugbuch', 'id', d.id, function (r) {
+      r.ende = txt_(uhr_(jetzt)); r.ende_ts = txt_(jetzt.toISOString()); r.auto_beendet = 'nein';
+      return r;
+    });
+    gefunden = true;
+  });
+  if (!gefunden) throw fehler_('Eintrag nicht gefunden oder schon abgemeldet', 404);
+  return flugbuchStatus_(d, s);
+}
+
+function flugleiterAnmelden_(d, s) {
+  var b = d.bedingungen || {};
+  if (WETTER.indexOf(b.wetter) < 0) throw fehler_('Bitte das Wetter wählen', 400);
+  if (WINDRICHTUNGEN.indexOf(b.windrichtung) < 0) throw fehler_('Bitte die Windrichtung wählen', 400);
+  if (WINDSTAERKEN.indexOf(b.windstaerke) < 0) throw fehler_('Bitte die Windstärke wählen', 400);
+  var m = mitgliedNachId_(s.mitgliedId);
+  var jetzt = new Date();
+  mitSperre_(function () {
+    var offen = zeilen_('Flugleiter').some(function (r) { return !r.ende_ts && r.mitgliedId === s.mitgliedId; });
+    if (offen) throw fehler_('Du bist bereits als Flugleiter angemeldet', 400);
+    blatt_('Flugleiter').appendRow([
+      'l' + Utilities.getUuid().slice(0, 8), txt_(heute_()), m ? m.nachname : teileName_(s.name).nachname, m ? m.vorname : teileName_(s.name).vorname,
+      jaNein_(b.fangnetz), jaNein_(b.rasenGemaeht), b.wetter, b.windrichtung, b.windstaerke,
+      txt_(uhr_(jetzt)), '', s.mitgliedId, txt_(jetzt.toISOString()), '', '',
+    ]);
+  });
+  return flugbuchStatus_(d, s);
+}
+
+function flugleiterAbmelden_(d, s) {
+  var jetzt = new Date();
+  mitSperre_(function () {
+    zeilen_('Flugleiter').filter(function (r) { return !r.ende_ts && (r.id === d.id || (!d.id && r.mitgliedId === s.mitgliedId)); }).forEach(function (z) {
+      if (z.mitgliedId !== s.mitgliedId && s.rolle !== 'admin') throw fehler_('Nur den eigenen Flugleiter-Eintrag beenden', 403);
+      aktualisiereZeile_('Flugleiter', 'id', z.id, function (r) {
+        r.ende = txt_(uhr_(jetzt)); r.ende_ts = txt_(jetzt.toISOString()); r.auto_beendet = 'nein';
+        return r;
+      });
+    });
+  });
+  return flugbuchStatus_(d, s);
+}
+
+/** Vergessene Abmeldungen nach X Stunden bzw. zum Tageswechsel automatisch beenden */
+function flugbuchAutoBeenden_() {
+  var stunden = Number(einstellungenLesen_().checkinStunden) || 6;
+  var heute = heute_();
+  ['Flugbuch', 'Flugleiter'].forEach(function (blatt) {
+    zeilen_(blatt).filter(function (r) { return !r.ende_ts && r.beginn_ts; }).forEach(function (z) {
+      var beginn = z.beginn_ts instanceof Date ? z.beginn_ts : new Date(z.beginn_ts);
+      var ende = new Date(beginn.getTime() + stunden * 3600000);
+      var anderer = zelle_(z.datum, 'dd.MM.yyyy') !== heute;
+      if (ende.getTime() > Date.now() && !anderer) return;
+      if (anderer) {
+        // spätestens 23:59 am Tag der Anmeldung
+        var tagesende = new Date(Utilities.formatDate(beginn, TZ, "yyyy-MM-dd'T'23:59:00") + Utilities.formatDate(beginn, TZ, 'XXX'));
+        if (tagesende.getTime() < ende.getTime()) ende = tagesende;
+      }
+      if (ende.getTime() > Date.now()) ende = new Date();
+      mitSperre_(function () {
+        aktualisiereZeile_(blatt, 'id', z.id, function (r) {
+          r.ende = txt_(uhr_(ende)); r.ende_ts = txt_(ende.toISOString()); r.auto_beendet = 'ja';
+          return r;
+        });
+      });
+    });
+  });
+}
+
+/** Flugbuch-Übersicht für Admins (Zeitraum, neueste zuerst) */
+function flugbuchListe_(d) {
+  var von = String(d.von || '0000-00-00');
+  var bis = String(d.bis || '9999-12-31');
+  var iso = function (datum) { var t = zelle_(datum, 'dd.MM.yyyy').split('.'); return t.length === 3 ? t[2] + '-' + t[1] + '-' + t[0] : ''; };
+  var imZeitraum = function (r) { var x = iso(r.datum); return x >= von && x <= bis; };
+  return {
+    piloten: zeilen_('Flugbuch').filter(imZeitraum).map(flugbuchEintrag_).reverse(),
+    flugleiter: zeilen_('Flugleiter').filter(imZeitraum).map(flugleiterEintrag_).reverse(),
+    tabelle: SpreadsheetApp.openById(prop_('SHEET_ID', true)).getUrl(),
+  };
+}
+
+// =====================================================================
+// Zugangsanfrage
 // =====================================================================
 
-function anwesende_(d, s) {
-  checkinsAufraeumen_();
-  var liste = zeilen_('CheckIns').map(function (r) {
-    return { mitgliedId: r.mitgliedId, name: r.name, seit: r.seit, flugleiter: String(r.flugleiter) === 'true' };
+function zugangAnfragen_(d) {
+  var vorname = String(d.vorname || '').trim().slice(0, 40);
+  var nachname = String(d.nachname || '').trim().slice(0, 40);
+  if (!vorname || !nachname) throw fehler_('Bitte Vor- und Nachname angeben', 400);
+  // einfache Bremse gegen Massen-Anfragen
+  var cache = CacheService.getScriptCache();
+  var n = Number(cache.get('anfragen') || 0);
+  if (n > 20) throw fehler_('Gerade gehen zu viele Anfragen ein – bitte später erneut versuchen', 429);
+  cache.put('anfragen', String(n + 1), 3600);
+  var voll = (vorname + ' ' + nachname).toLowerCase();
+  var vorhanden = zeilen_('Mitglieder').some(function (m) { return String(m.aktiv) === 'true' && (m.vorname + ' ' + m.nachname).toLowerCase() === voll; });
+  if (vorhanden) throw fehler_('Du bist bereits registriert. PIN vergessen? Bitte beim Vorstand melden.', 400);
+  var offen = zeilen_('Anfragen').some(function (a) { return a.status === 'offen' && (a.vorname + ' ' + a.nachname).toLowerCase() === voll; });
+  if (!offen) {
+    mitSperre_(function () {
+      blatt_('Anfragen').appendRow(['a' + Utilities.getUuid().slice(0, 8), vorname, nachname, String(d.nachricht || '').slice(0, 200), txt_(new Date().toISOString()), 'offen', '']);
+    });
+    pushAnAdmins_('Neue Zugangsanfrage', vorname + ' ' + nachname + ' möchte in die MGI-App.', '#/verwaltung/mitglieder');
+  }
+  return { ok: true };
+}
+
+function anfragenListe_() {
+  return zeilen_('Anfragen').filter(function (a) { return a.status === 'offen'; }).map(function (a) {
+    return { id: a.id, vorname: a.vorname, nachname: a.nachname, nachricht: a.nachricht, erstellt: zelle_(a.erstellt) };
   });
-  // Namen nur für angemeldete Mitglieder, öffentlich nur die Anzahl
-  if (!s) return { anzahl: liste.length, flugleiter: liste.some(function (x) { return x.flugleiter; }), liste: [] };
-  return { anzahl: liste.length, flugleiter: liste.some(function (x) { return x.flugleiter; }), liste: liste };
 }
 
-function checkinsAufraeumen_() {
-  var stunden = Number(einstellungenLesen_().checkinStunden) || 4;
-  var grenze = Date.now() - stunden * 3600000;
-  loescheZeilen_('CheckIns', function (r) { return new Date(r.seit).getTime() < grenze; });
-}
-
-function checkin_(d, s) {
+function anfrageFreigeben_(d, s) {
+  var a = zeilen_('Anfragen').filter(function (x) { return x.id === d.id && x.status === 'offen'; })[0];
+  if (!a) throw fehler_('Anfrage nicht gefunden', 404);
+  var erg = mitgliedAnlegen_({ vorname: d.vorname || a.vorname, nachname: d.nachname || a.nachname, rolle: d.rolle, sparte: d.sparte }, s);
   mitSperre_(function () {
-    loescheZeilen_('CheckIns', function (r) { return r.mitgliedId === s.mitgliedId; });
-    blatt_('CheckIns').appendRow([s.mitgliedId, s.name, new Date().toISOString(), d.flugleiter ? 'true' : 'false']);
+    aktualisiereZeile_('Anfragen', 'id', a.id, function (r) { r.status = 'freigegeben'; r.bearbeitet = s.name + ' ' + new Date().toISOString(); return r; });
   });
-  return anwesende_(d, s);
+  return { id: erg.id, pin: erg.pin, vorname: d.vorname || a.vorname, nachname: d.nachname || a.nachname };
 }
 
-function checkout_(d, s) {
+function anfrageAblehnen_(d, s) {
   mitSperre_(function () {
-    loescheZeilen_('CheckIns', function (r) { return r.mitgliedId === s.mitgliedId; });
+    aktualisiereZeile_('Anfragen', 'id', d.id, function (r) { r.status = 'abgelehnt'; r.bearbeitet = s.name + ' ' + new Date().toISOString(); return r; });
   });
-  return anwesende_(d, s);
+  return true;
 }
 
 // =====================================================================
@@ -892,6 +1137,12 @@ function mitteilungSenden_(d) {
  * Sendet eine Push-Nachricht an alle Abos, die den Anlass eingeschaltet haben.
  * ausser: Mitglied-ID, die nichts bekommt (z. B. Verfasser); nur: nur an dieses Mitglied.
  */
+/** Push nur an Admins (z. B. neue Zugangsanfrage) */
+function pushAnAdmins_(titel, text, pfad) {
+  var admins = zeilen_('Mitglieder').filter(function (m) { return m.rolle === 'admin' && String(m.aktiv) === 'true'; }).map(function (m) { return m.id; });
+  return pushSenden_('anfragen', titel, text, pfad, null, admins);
+}
+
 function pushSenden_(anlass, titel, text, pfad, ausser, nur) {
   var sa = prop_('FCM_SERVICE_ACCOUNT');
   if (!sa) return 0;
@@ -902,7 +1153,7 @@ function pushSenden_(anlass, titel, text, pfad, ausser, nur) {
   var gesendet = 0;
   zeilen_('PushAbos').forEach(function (r) {
     if (ausser && r.mitgliedId === ausser) return;
-    if (nur && r.mitgliedId !== nur) return;
+    if (nur && (Array.isArray(nur) ? nur.indexOf(r.mitgliedId) < 0 : r.mitgliedId !== nur)) return;
     var e = {};
     try { e = JSON.parse(r.einstellungen || '{}'); } catch (x) { /* leer */ }
     if (e[anlass] === false) return;
@@ -1057,6 +1308,13 @@ var _ss = null;
 function blatt_(name) {
   if (!_ss) _ss = SpreadsheetApp.openById(prop_('SHEET_ID', true));
   var sh = _ss.getSheetByName(name);
+  if (!sh && BLAETTER[name]) {
+    // neue Blätter (z. B. nach einem Update) automatisch anlegen
+    sh = _ss.insertSheet(name);
+    sh.appendRow(BLAETTER[name]);
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, 1, BLAETTER[name].length).setFontWeight('bold');
+  }
   if (!sh) throw new Error('Tabellenblatt "' + name + '" fehlt – bitte setup() ausführen');
   return sh;
 }
@@ -1082,8 +1340,14 @@ function aktualisiereZeile_(name, spalte, wert, fn) {
     if (String(werte[i][idx]) === String(wert)) {
       var o = {};
       kopf.forEach(function (k, j) { o[k] = werte[i][j]; });
+      var alt = {};
+      kopf.forEach(function (k, j) { alt[k] = werte[i][j]; });
       var neu = fn(o);
-      sh.getRange(i + 1, 1, 1, kopf.length).setValues([kopf.map(function (k) { return neu[k] === undefined ? '' : neu[k]; })]);
+      // Nur geänderte Zellen schreiben – sonst wandelt Google Tabellen Texte wie „06.11.2026“ oder „11:45“ in Datumswerte um
+      kopf.forEach(function (k, j) {
+        var v = neu[k] === undefined ? '' : neu[k];
+        if (v !== alt[k]) sh.getRange(i + 1, j + 1).setValue(v);
+      });
       return true;
     }
   }

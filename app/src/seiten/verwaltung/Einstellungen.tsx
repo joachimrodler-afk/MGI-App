@@ -58,7 +58,7 @@ function Inhalt() {
       <div className="karte grid grid-cols-2 gap-3 p-4">
         <Feld label="Wind-Ampel gelb ab (Böen km/h)"><input className="eingabe" type="number" value={e.windGelb} onChange={(x) => setE({ ...e, windGelb: Number(x.target.value) })} /></Feld>
         <Feld label="Wind-Ampel rot ab (Böen km/h)"><input className="eingabe" type="number" value={e.windRot} onChange={(x) => setE({ ...e, windRot: Number(x.target.value) })} /></Feld>
-        <Feld label="Auto-Auschecken nach (Std.)"><input className="eingabe" type="number" min={1} max={24} value={e.checkinStunden} onChange={(x) => setE({ ...e, checkinStunden: Number(x.target.value) })} /></Feld>
+        <Feld label="Flugbuch: automatisch abmelden nach (Std.)"><input className="eingabe" type="number" min={1} max={24} value={e.checkinStunden} onChange={(x) => setE({ ...e, checkinStunden: Number(x.target.value) })} /></Feld>
       </div>
 
       <div className="karte p-4">

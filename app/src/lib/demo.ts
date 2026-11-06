@@ -7,7 +7,7 @@
 import { ApiFehler } from './api';
 import { VORLAGEN } from './vorlagen';
 import type {
-  BrettBeitrag, CheckIn, Einstellungen, Mitglied, Nachweise, Sitzung, Termin, Wertung, Wertungsart, Wettbewerb,
+  Anfrage, BrettBeitrag, CheckIn, Einstellungen, FlugbuchEintrag, FlugleiterEintrag, Mitglied, Nachweise, PilotEingabe, Sitzung, Termin, Wertung, Wertungsart, Wettbewerb,
 } from './model';
 
 interface DemoMitglied extends Mitglied { pin: string }
@@ -21,9 +21,12 @@ interface DemoDaten {
   wettbewerbe: Wettbewerb[];
   wertungen: Wertung[];
   einstellungen: Einstellungen;
+  anfragen?: Anfrage[];
+  flugbuch?: FlugbuchEintrag[];
+  flugleiter?: FlugleiterEintrag[];
 }
 
-const KEY = 'mgi.demo.v1';
+const KEY = 'mgi.demo.v2';
 
 const STANDARD_EINST: Einstellungen = {
   platzordnung:
@@ -43,8 +46,11 @@ const STANDARD_EINST: Einstellungen = {
   windRot: 40,
   datenschutzFoto:
     'Bitte nur Fotos hochladen, mit denen alle abgebildeten Personen einverstanden sind. Die Fotos erscheinen öffentlich auf der Vereins-Homepage.',
-  checkinStunden: 4,
+  checkinStunden: 6,
 };
+
+const demoHeute = () => new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const demoUhr = (d = new Date()) => d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 
 function tagPlus(n: number, uhr = '19:00') {
   const d = new Date();
@@ -133,6 +139,17 @@ function lade(): DemoDaten {
       },
     ],
     nachweise: {},
+    anfragen: [{ id: 'a1', vorname: 'Klaus', nachname: 'Butz', nachricht: 'Flugmodelle, Handy 0170 0000000', erstellt: new Date(Date.now() - 3600000).toISOString() }],
+    flugbuch: [{
+      id: 'f1', datum: demoHeute(), name: 'Beispiel', vorname: 'Erika', vereinGast: 'Verein', kanal: 'X', schulungsnachweis: true,
+      antrieb: ['elektro'], masse: '<12 kg', beginn: demoUhr(new Date(Date.now() - 50 * 60000)), ende: '', eingetragenVon: 'Erika Beispiel',
+      mitgliedId: 'm3', beginnTs: new Date(Date.now() - 50 * 60000).toISOString(), endeTs: '', autoBeendet: false,
+    }],
+    flugleiter: [{
+      id: 'l1', datum: demoHeute(), name: 'Beispiel', vorname: 'Erika', fangnetz: true, rasenGemaeht: true, wetter: 'klar', windrichtung: 'SW',
+      windstaerke: 'leicht', beginn: demoUhr(new Date(Date.now() - 50 * 60000)), ende: '', mitgliedId: 'm3',
+      beginnTs: new Date(Date.now() - 50 * 60000).toISOString(), endeTs: '', autoBeendet: false,
+    }],
     arten: [],
     wettbewerbe: wb,
     wertungen: wt,
@@ -164,11 +181,34 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
   const mitglied = () => { if (!s) throw new ApiFehler('Bitte anmelden', 401); return s; };
   const admin = () => { const x = mitglied(); if (x.rolle !== 'admin') throw new ApiFehler('Nur für Admins', 403); return x; };
   const fertig = <R>(r: R) => { speichere(db); return r as unknown as T; };
-  const anwesend = () => ({
-    anzahl: db.checkins.length,
-    flugleiter: db.checkins.some((c) => c.flugleiter),
-    liste: s ? db.checkins : [],
+  const fb = () => (db.flugbuch ??= []);
+  const fl = () => (db.flugleiter ??= []);
+  const anwesend = () => {
+    const offenFl = fl().filter((f) => !f.ende);
+    const liste: CheckIn[] = fb().filter((p) => !p.ende).map((p) => ({
+      mitgliedId: p.vereinGast === 'Gast' ? 'gast:' + p.id : p.mitgliedId, name: `${p.vorname} ${p.name}${p.vereinGast === 'Gast' ? ' (Gast)' : ''}`,
+      seit: p.beginnTs, flugleiter: p.vereinGast === 'Verein' && offenFl.some((f) => f.mitgliedId === p.mitgliedId),
+    }));
+    offenFl.forEach((f) => { if (!liste.some((x) => x.mitgliedId === f.mitgliedId)) liste.push({ mitgliedId: f.mitgliedId, name: `${f.vorname} ${f.name}`, seit: f.beginnTs, flugleiter: true }); });
+    return { anzahl: liste.length, flugleiter: offenFl.length > 0, liste: s ? liste : [] };
+  };
+  const flugbuchStatus = () => ({
+    heute: demoHeute(),
+    piloten: fb().filter((p) => p.datum === demoHeute() || !p.ende),
+    flugleiter: fl().filter((f) => f.datum === demoHeute() || !f.ende),
+    anwesend: anwesend(),
+    autoStunden: db.einstellungen.checkinStunden || 6,
   });
+  const ichMitglied = () => db.mitglieder.find((m) => m.id === mitglied().mitgliedId)!;
+  const flugleiterAn = (b: Record<string, unknown>) => {
+    const m = ichMitglied();
+    if (fl().some((f) => !f.ende && f.mitgliedId === m.id)) throw new ApiFehler('Du bist bereits als Flugleiter angemeldet', 400);
+    fl().push({
+      id: 'l' + uid(), datum: demoHeute(), name: m.nachname, vorname: m.vorname, fangnetz: !!b.fangnetz, rasenGemaeht: !!b.rasenGemaeht,
+      wetter: b.wetter as FlugleiterEintrag['wetter'], windrichtung: b.windrichtung as FlugleiterEintrag['windrichtung'], windstaerke: b.windstaerke as FlugleiterEintrag['windstaerke'],
+      beginn: demoUhr(), ende: '', mitgliedId: m.id, beginnTs: new Date().toISOString(), endeTs: '', autoBeendet: false,
+    });
+  };
 
   switch (aktion) {
     case 'login': {
@@ -250,6 +290,63 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       const m = mitglied();
       db.checkins = db.checkins.filter((c) => c.mitgliedId !== m.mitgliedId);
       return fertig(anwesend());
+    }
+    case 'zugang_anfragen': {
+      const vorname = String(d.vorname || '').trim();
+      const nachname = String(d.nachname || '').trim();
+      if (!vorname || !nachname) throw new ApiFehler('Bitte Vor- und Nachname angeben', 400);
+      if (db.mitglieder.some((m) => m.aktiv && `${m.vorname} ${m.nachname}`.toLowerCase() === `${vorname} ${nachname}`.toLowerCase()))
+        throw new ApiFehler('Du bist bereits registriert. PIN vergessen? Bitte beim Vorstand melden.', 400);
+      (db.anfragen ??= []).push({ id: 'a' + uid(), vorname, nachname, nachricht: String(d.nachricht || ''), erstellt: new Date().toISOString() });
+      return fertig({ ok: true });
+    }
+    case 'anfragen_liste': admin(); return fertig(db.anfragen ?? []);
+    case 'anfrage_freigeben': {
+      admin();
+      const a = (db.anfragen ?? []).find((x) => x.id === d.id);
+      if (!a) throw new ApiFehler('Anfrage nicht gefunden', 404);
+      const pin = String(Math.floor(100000 + Math.random() * 900000));
+      db.mitglieder.push({ id: 'm' + uid(), vorname: a.vorname, nachname: a.nachname, rolle: d.rolle === 'admin' ? 'admin' : 'mitglied', sparte: 'flug', aktiv: true, pin });
+      db.anfragen = (db.anfragen ?? []).filter((x) => x.id !== a.id);
+      return fertig({ pin, vorname: a.vorname, nachname: a.nachname });
+    }
+    case 'anfrage_ablehnen': admin(); db.anfragen = (db.anfragen ?? []).filter((x) => x.id !== d.id); return fertig(true);
+    case 'flugbuch_status': mitglied(); return fertig(flugbuchStatus());
+    case 'flugbuch_anmelden': {
+      const m = ichMitglied();
+      const e = d.eintrag as PilotEingabe;
+      if (!e?.regelnBestaetigt) throw new ApiFehler('Bitte bestätigen, dass dir die Betriebsregeln bekannt sind', 400);
+      if (!e.antrieb?.length) throw new ApiFehler('Bitte die Antriebsart wählen', 400);
+      if (!e.masse) throw new ApiFehler('Bitte die Gewichtsklasse wählen', 400);
+      const gast = e.art === 'gast';
+      if (!gast && fb().some((p) => !p.ende && p.mitgliedId === m.id && p.vereinGast === 'Verein')) throw new ApiFehler('Du bist bereits im Flugbuch angemeldet', 400);
+      fb().push({
+        id: 'f' + uid(), datum: demoHeute(), name: gast ? String(e.gastName) : m.nachname, vorname: gast ? String(e.gastVorname) : m.vorname,
+        vereinGast: gast ? 'Gast' : 'Verein', kanal: e.kanal, schulungsnachweis: !!e.schulungsnachweis, antrieb: e.antrieb, masse: e.masse,
+        beginn: demoUhr(), ende: '', eingetragenVon: `${m.vorname} ${m.nachname}`, mitgliedId: m.id, beginnTs: new Date().toISOString(), endeTs: '', autoBeendet: false,
+      });
+      if (d.flugleiter) flugleiterAn(d.flugleiter as Record<string, unknown>);
+      return fertig(flugbuchStatus());
+    }
+    case 'flugbuch_abmelden': {
+      const ich = mitglied();
+      const p = fb().find((x) => x.id === d.id && !x.ende);
+      if (!p) throw new ApiFehler('Eintrag nicht gefunden oder schon abgemeldet', 404);
+      if (p.mitgliedId !== ich.mitgliedId && ich.rolle !== 'admin') throw new ApiFehler('Nur eigene Einträge abmelden', 403);
+      p.ende = demoUhr(); p.endeTs = new Date().toISOString();
+      return fertig(flugbuchStatus());
+    }
+    case 'flugleiter_anmelden': flugleiterAn(d.bedingungen as Record<string, unknown>); return fertig(flugbuchStatus());
+    case 'flugleiter_abmelden': {
+      const ich = mitglied();
+      fl().filter((f) => !f.ende && (f.id === d.id || f.mitgliedId === ich.mitgliedId)).forEach((f) => { f.ende = demoUhr(); f.endeTs = new Date().toISOString(); });
+      return fertig(flugbuchStatus());
+    }
+    case 'flugbuch_liste': {
+      admin();
+      const isoD = (t: string) => t.split('.').reverse().join('-');
+      const im = (t: string) => isoD(t) >= String(d.von || '0') && isoD(t) <= String(d.bis || '9');
+      return fertig({ piloten: fb().filter((p) => im(p.datum)).reverse(), flugleiter: fl().filter((f) => im(f.datum)).reverse(), tabelle: 'https://docs.google.com/spreadsheets' });
     }
     case 'brett_liste':
       mitglied();

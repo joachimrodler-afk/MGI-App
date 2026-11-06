@@ -4,7 +4,8 @@ import { Icon } from '../../components/Icon';
 import { Feld, Fehler, Hinweis, Knopf, Laden, Seite, useLaden } from '../../components/ui';
 import { api } from '../../lib/api';
 import { klassen } from '../../lib/helfer';
-import type { Mitglied } from '../../lib/model';
+import type { Anfrage, Mitglied } from '../../lib/model';
+import { datumKurz } from '../../lib/helfer';
 import { useSitzung } from '../../lib/sitzung';
 
 function PinAnzeige({ name, pin, schliessen }: { name: string; pin: string; schliessen: () => void }) {
@@ -30,6 +31,50 @@ function PinAnzeige({ name, pin, schliessen }: { name: string; pin: string; schl
         <a href={`mailto:?subject=${encodeURIComponent('Dein Zugang zur MGI-App')}&body=${encodeURIComponent(text)}`} className="flex min-h-12 items-center justify-center rounded-xl bg-himmel-600 font-semibold text-white">E-Mail</a>
       </div>
       <Knopf art="leise" className="w-full" onClick={schliessen}>Fertig</Knopf>
+    </div>
+  );
+}
+
+/** Offene Zugangsanfragen: freigeben (PIN erzeugen) oder ablehnen */
+function Anfragen({ onPin, onNeu }: { onPin: (p: { name: string; pin: string }) => void; onNeu: () => void }) {
+  const { daten, fehler, neu } = useLaden(() => api<Anfrage[]>('anfragen_liste'));
+  const [arbeitet, setArbeitet] = useState('');
+  const [fehler2, setFehler2] = useState('');
+  if (fehler) return <Fehler fehler={fehler} nochmal={neu} />;
+  if (!daten?.length) return null;
+
+  async function freigeben(a: Anfrage, rolle: 'mitglied' | 'admin') {
+    setArbeitet(a.id); setFehler2('');
+    try {
+      const r = await api<{ pin: string; vorname: string; nachname: string }>('anfrage_freigeben', { id: a.id, rolle, sparte: 'flug' });
+      onPin({ name: `${r.vorname} ${r.nachname}`, pin: r.pin });
+      void neu(); onNeu();
+    } catch (err) { setFehler2((err as Error).message); } finally { setArbeitet(''); }
+  }
+  async function ablehnen(a: Anfrage) {
+    if (!confirm(`Anfrage von ${a.vorname} ${a.nachname} ablehnen?`)) return;
+    setArbeitet(a.id);
+    try { await api('anfrage_ablehnen', { id: a.id }); void neu(); } finally { setArbeitet(''); }
+  }
+
+  return (
+    <div className="karte overflow-hidden border-2 border-mgi-rot/40">
+      <h2 className="bg-red-50 px-4 py-2 font-bold text-mgi-rot dark:bg-red-950/40">Offene Zugangsanfragen ({daten.length})</h2>
+      {fehler2 && <div className="p-3"><Fehler fehler={fehler2} /></div>}
+      <ul className="divide-y divide-himmel-100 dark:divide-slate-700">
+        {daten.map((a) => (
+          <li key={a.id} className="space-y-2 px-4 py-3">
+            <div>
+              <p className="font-semibold">{a.vorname} {a.nachname}</p>
+              <p className="text-sm text-slate-500">{datumKurz(a.erstellt)}{a.nachricht ? ` · „${a.nachricht}“` : ''}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Knopf onClick={() => freigeben(a, 'mitglied')} laedt={arbeitet === a.id}><Icon name="haken" className="h-5 w-5" /> Freigeben</Knopf>
+              <Knopf art="gefahr" onClick={() => ablehnen(a)} disabled={arbeitet === a.id}>Ablehnen</Knopf>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -73,6 +118,7 @@ function Inhalt() {
   return (
     <div className="space-y-4">
       {pin && <PinAnzeige {...pin} schliessen={() => setPin(null)} />}
+      <Anfragen onPin={setPin} onNeu={neu} />
       {!offen ? (
         <Knopf className="w-full" onClick={() => setOffen(true)}><Icon name="plus" /> Mitglied anlegen</Knopf>
       ) : (

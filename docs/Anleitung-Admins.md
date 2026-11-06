@@ -3,6 +3,7 @@
 Admins sind der Vorstand und die Wertungsrichter. Der Admin-Bereich steht unter **Mehr → Verwaltung**.
 
 ## Mitglieder & PINs
+- **Zugangsanfragen** erscheinen oben unter *Mitglieder & PINs* (Admins bekommen eine Push-Nachricht). **Freigeben** legt das Mitglied an und zeigt den PIN – per WhatsApp/E-Mail-Button mit App-Link verschicken. **Ablehnen** verwirft die Anfrage.
 - **Mitglied anlegen:** Vor- und Nachname eingeben, Rolle und Sparte wählen. Die App erzeugt einen zufälligen 6-stelligen PIN und zeigt ihn **nur einmal** an. Gib ihn direkt per WhatsApp oder E-Mail weiter, die Buttons dafür sind dabei.
 - **Neuer PIN:** Der alte PIN wird sofort ungültig und das Mitglied auf allen Geräten abgemeldet.
 - **Deaktivieren**, z. B. bei einem Austritt: Das Mitglied kann sich sofort nicht mehr anmelden. Seine Daten bleiben erhalten.
@@ -57,6 +58,11 @@ Wichtig: Dezimalzahlen mit **Punkt** schreiben (`2.5`) und Argumente mit **Semik
 **Versionierung:** Jede Änderung erhöht die Versionsnummer. Ein Wettbewerb rechnet immer mit der Formel-Version, die beim Anlegen galt. Unter **Bearbeiten** kann man ihn bewusst auf die neue Formel umstellen.
 
 Die Formel-Engine führt keinen fremden Code aus. Erlaubt sind nur Zahlen, Variablen und die oben genannten Funktionen.
+
+## Flugbuch
+- Jede An- und Abmeldung landet mit Uhrzeit in der Google-Tabelle (Blätter **Flugbuch** und **Flugleiter**).
+- **Verwaltung → Flugbuch-Übersicht:** Einträge nach Zeitraum, nach Tagen gruppiert, CSV-Export und Link zur Tabelle.
+- Admins können vergessene Einträge anderer unter „Flugbuch heute“ abmelden. Sonst beendet die App offene Einträge automatisch nach der eingestellten Zeit (Standard 6 Std., spätestens am Tagesende) – markiert mit „automatisch“.
 
 ## Einstellungen
 Unter **Verwaltung → Einstellungen** pflegst du:

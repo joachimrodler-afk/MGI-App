@@ -1,6 +1,6 @@
 # Google-Tabelle: Aufbau
 
-`setup()` im Apps Script legt alle Blätter mit den passenden Spaltenköpfen automatisch an. Diese Übersicht dient nur zur Orientierung.
+`setup()` im Apps Script legt alle Blätter mit den passenden Spaltenköpfen automatisch an. Neue Blätter aus späteren Updates (z. B. Flugbuch) legt das Script beim ersten Gebrauch selbst an. Diese Übersicht dient nur zur Orientierung.
 
 > **Bitte nichts von Hand ändern.** Am wichtigsten: keine Spalten verschieben und keine Zeilen sortieren. Die Daten in den `json`-Spalten werden von der App geschrieben.
 
@@ -12,7 +12,10 @@
 | **Wertungsarten** | `id`, `json` | Wertungsarten mit Feldern, Konstanten, Formel und Version |
 | **Wettbewerbe** | `id`, `json` | Wettbewerbe mit Teilnehmern und einer Kopie der Wertungsart |
 | **Wertungen** | `id`, `wettbewerbId`, `json` | Eingaben je Teilnehmer und Durchgang |
-| **CheckIns** | `mitgliedId`, `name`, `seit`, `flugleiter` | Wer gerade am Platz ist |
+| **Flugbuch** | `id`, `datum`, `name`, `vorname`, `verein_gast`, `kanal`, `schulungsnachweis`, `segler`, `elektro`, `kolben`, `turbine`, `max_masse`, `beginn`, `ende`, `regeln_bestaetigt`, `eingetragen_von`, … | Elektronisches Flugbuch (wie der Papiervordruck). `beginn`/`ende` = Uhrzeit An-/Abmeldung, `auto_beendet` = automatisch abgemeldet |
+| **Flugleiter** | `id`, `datum`, `name`, `vorname`, `fangnetz`, `rasen_gemaeht`, `wetter`, `windrichtung`, `windstaerke`, `beginn`, `ende`, … | Modellflugleiter mit Flugbedingungen |
+| **Anfragen** | `id`, `vorname`, `nachname`, `nachricht`, `erstellt`, `status`, `bearbeitet` | Zugangsanfragen (offen/freigegeben/abgelehnt) |
+| **CheckIns** | – | Nicht mehr benutzt (ersetzt durch das Flugbuch), kann gelöscht werden |
 | **Brett** | `id`, `ablauf`, `json` | Beiträge vom Schwarzen Brett |
 | **Nachweise** | `mitgliedId`, `name`, `kenntnisnachweis`, `eid`, `versicherung`, `gemeldet` | Nur die Ablaufdaten, keine Nummern |
 | **PushAbos** | `fcmToken`, `mitgliedId`, `einstellungen` (JSON), `erstellt` | Geräte mit eingeschaltetem Push |

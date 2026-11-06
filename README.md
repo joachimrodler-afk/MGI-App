@@ -15,12 +15,13 @@ Die App der **Modellbau-Gemeinschaft Ismaning e.V.** ist eine Web-App (PWA). Sie
 | **Strom** | Akkustand der Bluetti, Leistung von Solar, Netz, AC und DC, Stand jedes Packs, optional Verlauf (ThingSpeak) |
 | **Foto** | Foto aufnehmen oder aus der Galerie wählen. Es wird verkleinert und landet automatisch im Drive-Ordner der Homepage-Galerie. Ohne Netz kommt es in eine Warteschlange |
 | **Wettbewerbe** | Kunstflug, Segelflug, Limbo, Ballonstechen und eigene Arten mit **frei hinterlegbaren Formeln**. Live-Rangliste, Export als PDF und CSV |
-| **Wer ist am Platz?** | Einchecken (auch als Flugleiter), Liste der Anwesenden, automatisches Auschecken |
+| **Flugbuch** | Elektronisches Flugbuch nach dem Papiervordruck: An-/Abmelden per Button (Uhrzeit wird automatisch ins Google Sheet geschrieben), Verein/Gast, Kanal, Schulungsnachweis, Antriebsart, Gewichtsklasse, Bestätigung der Betriebsregeln; Modellflugleiter mit Flugbedingungen (Fangnetz, Rasen, Wetter, Wind). Daraus ergibt sich „Wer ist am Platz?“. Übersicht und CSV-Export für Admins |
+| **Zugangsanfrage** | Neue Mitglieder fragen in der App Zugang an, ein Admin gibt frei – der PIN wird mit App-Link per WhatsApp/E-Mail verschickt |
 | **Schwarzes Brett** | Biete, Suche und Info mit Fotos und Kontakt-Button. Beiträge laufen nach 60 Tagen ab |
 | **Notfall & Platzordnung** | Notruf 112, Koordinaten zum Vorlesen, Kontakte und Platzordnung, funktioniert auch **offline** |
 | **Nachweise** | Ablaufdaten von Kenntnisnachweis, e-ID und Versicherung mit Push-Erinnerung |
 | **Push-Nachrichten** | Termine, Mitteilungen wie Platzsperrungen, Ergebnisse, Schwarzes Brett und Nachweise. Jedes Mitglied schaltet selbst ein, was es bekommen will |
-| **Verwaltung** | Mitglieder mit persönlichem PIN, Wertungsarten und Formeln, Einstellungen, Mitteilungen |
+| **Verwaltung** | Zugangsanfragen, Mitglieder mit persönlichem PIN (einmal anmelden, dauerhaft angemeldet), Flugbuch-Übersicht, Wertungsarten und Formeln, Einstellungen, Mitteilungen |
 
 **Demo:** Solange in `app/src/config.ts` keine `apiUrl` eingetragen ist, läuft die App im Demo-Modus mit Beispieldaten. Zum Ausprobieren gibt es zwei Zugänge:
 - **Demo Admin** mit PIN `123456`
@@ -152,7 +153,9 @@ npm run dev        # Entwicklungsserver (Demo-Modus, solange apiUrl leer ist)
 npm test           # Unit-Tests der Formel-Engine und Auswertung
 npm run build      # Produktions-Build nach app/dist
 
-node apps-script/test/ics.test.mjs   # Tests des Kalender-Parsers im Backend (vom Repo-Hauptordner aus)
+node apps-script/test/ics.test.mjs       # Tests des Kalender-Parsers im Backend (vom Repo-Hauptordner aus)
+node apps-script/test/backend.test.mjs   # Ablauftest Backend: Anfrage, Freigabe, Login, Flugbuch
+VITE_DEMO=1 npm run dev                  # App mit Beispieldaten statt echtem Backend
 ```
 
 ## Weitere Anleitungen
