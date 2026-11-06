@@ -74,3 +74,10 @@ Unter **Verwaltung → Einstellungen** pflegst du:
 
 ## Mitteilung senden
 Unter **Verwaltung → Mitteilung senden** geht eine Push-Nachricht an alle, die „Wichtige Mitteilungen“ eingeschaltet haben, z. B. „Platz heute gesperrt“.
+
+## Arbeitsdienst-Liste
+
+- Die Liste ist die Google-Tabelle „Arbeitsliste 2026“ im Vereins-Drive. Das erste Blatt wird gelesen: Kalenderwoche | Zeitraum (z. B. `30.03.–05.04.2026`) | Einsatz | Person 1 | Person 2. Zeilen ohne Kalenderwoche gehören zur Woche darüber.
+- Die Namen werden den Mitgliedern in der App zugeordnet (voller Name, „J. Rodler“ oder eindeutiger Nachname). Nicht zuordenbare Namen stehen im Ausführungsprotokoll des Scripts (`taeglich`).
+- Damit sich Mitglieder eintragen können, muss die Tabelle für sie bearbeitbar freigegeben sein.
+- Neues Jahr: neue Tabelle anlegen, in den Script Properties `ARBEITSLISTE_ID` auf die neue ID setzen und `arbeitsdienstUrl` in `app/src/config.ts` anpassen.

@@ -96,6 +96,16 @@ export interface PushEinstellungen {
   ergebnisse: boolean;
   brett: boolean;
   nachweise: boolean;
+  /** Erinnerung an eigene Arbeitsdienst-Wochen */
+  arbeitsdienst?: boolean;
+}
+
+/** Eine Arbeitsdienst-Woche, in der das Mitglied eingetragen ist */
+export interface ArbeitsdienstWoche {
+  kw: string;
+  von: string; // yyyy-mm-dd (Montag)
+  bis: string;
+  einsaetze: string[];
 }
 
 export interface Einstellungen {

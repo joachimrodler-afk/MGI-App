@@ -50,8 +50,8 @@ export const config = {
     stationUrl: 'https://wettermonster.de/wetterdetails?id=1356546',
   },
 
-  /** TODO: Link zur Arbeitsdienst-Seite/-Liste eintragen */
-  arbeitsdienstUrl: 'TODO',
+  /** Arbeitsdienst-Liste (Google-Tabelle im Vereins-Drive) – Mitglieder tragen sich dort ein */
+  arbeitsdienstUrl: 'https://docs.google.com/spreadsheets/d/1-4fZkz3a4TTHiGIb_dJHv5kdszw7dVQG6lIEEgkXuNw/edit',
 
   platz: {
     /**

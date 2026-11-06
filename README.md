@@ -130,7 +130,7 @@ Diese Attribute sind optional:
 
 ## Offene Punkte (in `app/src/config.ts`)
 
-- [ ] `arbeitsdienstUrl`: Link zur Arbeitsdienst-Seite oder -Liste
+- [x] `arbeitsdienstUrl`: Arbeitsdienst-Liste (Google-Tabelle „Arbeitsliste 2026“). Für ein neues Jahr: neue Tabelle anlegen, Link hier und Script Property `ARBEITSLISTE_ID` ändern
 - [ ] `platz.lat`, `platz.lon`, `platz.adresse`, `platz.zufahrt`: genaue Koordinaten und Zufahrt des Flugplatzes, danach `koordinatenGeprueft: true` setzen
 - [ ] `impressumUrl`, `datenschutzUrl`: Links zu Impressum und Datenschutzerklärung der Homepage
 - [ ] ThingSpeak-Kanal (Script-Attribut `THINGSPEAK_KANAL`) für das Verlaufsdiagramm

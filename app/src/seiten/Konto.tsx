@@ -7,7 +7,7 @@ import { api, speichereSitzung } from '../lib/api';
 import { demoZuruecksetzen } from '../lib/demo';
 import { klassen } from '../lib/helfer';
 import type { PushEinstellungen } from '../lib/model';
-import { pushAusschalten, pushEinschalten, pushEinstellungenSpeichern, pushMoeglich, pushStatus } from '../lib/push';
+import { pushAusschalten, pushEinschalten, pushEinstellungenSpeichern, pushMoeglich, pushStatus, STANDARD_PUSH } from '../lib/push';
 import { useSitzung } from '../lib/sitzung';
 
 const PUSH_ANLAESSE: { key: keyof PushEinstellungen; name: string; text: string }[] = [
@@ -16,6 +16,7 @@ const PUSH_ANLAESSE: { key: keyof PushEinstellungen; name: string; text: string 
   { key: 'ergebnisse', name: 'Wettbewerbsergebnisse', text: 'wenn eine Rangliste fertig ist' },
   { key: 'brett', name: 'Schwarzes Brett', text: 'neue Beiträge' },
   { key: 'nachweise', name: 'Nachweis-Erinnerungen', text: 'vor Ablauf deiner Nachweise' },
+  { key: 'arbeitsdienst', name: 'Arbeitsdienst', text: 'eine Woche vorher und am Montag deiner Woche' },
 ];
 
 function PushBereich({ admin }: { admin: boolean }) {
@@ -54,7 +55,7 @@ function PushBereich({ admin }: { admin: boolean }) {
           <div className="divide-y divide-himmel-100 border-t border-himmel-100 dark:divide-slate-700 dark:border-slate-700">
             {admin && <Schalter an={st.einstellungen.anfragen !== false} onChange={(v) => setze('anfragen', v)} label="Zugangsanfragen" text="nur Admins: jemand möchte in die App" />}
             {PUSH_ANLAESSE.map((a) => (
-              <Schalter key={a.key} an={!!st.einstellungen[a.key]} onChange={(v) => setze(a.key, v)} label={a.name} text={a.text} />
+              <Schalter key={a.key} an={st.einstellungen[a.key] ?? STANDARD_PUSH[a.key] ?? false} onChange={(v) => setze(a.key, v)} label={a.name} text={a.text} />
             ))}
           </div>
           <div className="p-4">

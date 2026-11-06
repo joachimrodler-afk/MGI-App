@@ -5,7 +5,7 @@ import { config, istGesetzt } from '../config';
 import { api, erinnere, merke } from '../lib/api';
 import { useEinstellungen } from '../lib/einstellungen';
 import { klassen, tageBis, terminDatum } from '../lib/helfer';
-import type { BluettiAntwort, Termin, WetterstationAntwort } from '../lib/model';
+import type { ArbeitsdienstWoche, BluettiAntwort, Termin, WetterstationAntwort } from '../lib/model';
 import { useSitzung } from '../lib/sitzung';
 import { himmelsrichtung, ladeWetter, windAmpel, type WetterJetzt } from '../lib/wetter';
 import { AkkuRing } from '../components/AkkuRing';
@@ -16,6 +16,34 @@ interface StartDaten {
   termine?: Termin[];
   bluetti?: BluettiAntwort;
   wetterstation?: WetterstationAntwort;
+  /** nur angemeldet: eigene kommende Arbeitsdienst-Wochen */
+  arbeitsdienst?: ArbeitsdienstWoche[];
+}
+
+/** Hinweis auf eigenen Arbeitsdienst: ab 14 Tage vorher bis Ende der Woche */
+function ArbeitsdienstHinweis({ w }: { w: ArbeitsdienstWoche }) {
+  const tag = (iso: string) => { const [j, m, t] = iso.split('-').map(Number); return new Date(j, m - 1, t); };
+  const heute = new Date(); heute.setHours(0, 0, 0, 0);
+  const tage = Math.round((tag(w.von).getTime() - heute.getTime()) / 86400000);
+  if (tage > 14) return null;
+  const kurz = (iso: string) => tag(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  const wann = tage <= 0 ? 'Diese Woche' : tage <= 7 ? 'Nächste Woche' : `In ${tage} Tagen`;
+  const inhalt = (
+    <>
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+        <Icon name="schaufel" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-xs font-bold uppercase tracking-wide text-amber-800 dark:text-amber-300">{wann} · {w.kw}</span>
+        <span className="block font-bold">Du hast Arbeitsdienst</span>
+        <span className="block text-sm text-slate-700 dark:text-slate-300">{kurz(w.von)}–{kurz(w.bis)} · {w.einsaetze.join(', ') || 'Arbeitsdienst'}</span>
+      </span>
+    </>
+  );
+  const kl = 'mb-4 flex items-center gap-3 rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950';
+  return istGesetzt(config.arbeitsdienstUrl)
+    ? <a href={config.arbeitsdienstUrl} target="_blank" rel="noopener noreferrer" className={kl}>{inhalt}</a>
+    : <div className={kl}>{inhalt}</div>;
 }
 
 function Kachel({ zu, href, icon, titel, children, farbe = 'blau' }: { zu?: string; href?: string; icon: string; titel: string; children?: ReactNode; farbe?: 'blau' | 'rot' | 'gelb' }) {
@@ -81,6 +109,8 @@ export default function Start() {
           </span>
         </Link>
       </div>
+
+      {s && d?.arbeitsdienst?.[0] && <ArbeitsdienstHinweis w={d.arbeitsdienst[0]} />}
 
       {/* FLUGBUCH – groß und auffällig */}
       <Link to="/flugbuch" className={klassen('mb-4 flex items-center gap-4 rounded-2xl p-5 text-white shadow-lg ring-2 ring-white/40 active:scale-[0.99]',

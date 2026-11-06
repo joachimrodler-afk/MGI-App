@@ -174,3 +174,34 @@ const html = `<h2>MGI Wetterstation</h2>
 const ws = JSON.parse(JSON.stringify(ctx.wetterstationParsen(html)));
 assert.deepEqual(ws, { temperatur: 3.8, wind: 0.2, richtung: 'NO', luftdruck: 967.5, luftfeuchte: 94, batterie: 13.74 });
 console.log('Wetterstation-Parser OK');
+
+// Arbeitsdienst-Liste
+const al = JSON.parse(JSON.stringify(ctx.arbeitslisteParsen([
+  ['Kalenderwoche', 'Zeitraum', 'Einsatz', 'Person 1', 'Person 2'],
+  ['KW14', '30.03.–05.04.2026', 'Arbeitsdienst', 'Ada Admin', ''],
+  ['', '', 'Walzen', '', 'Huber'],
+  ['KW22', '25.05.–31.05', 'Arbeitsdienst; Walzen', '', ''],
+  ['KW53', '28.12.–03.01.2027', 'Arbeitsdienst', 'J. Rodler', ''],
+  ['Hinweis', 'Text', '', '', ''],
+  ['', '', 'gehört nicht dazu', 'X', ''],
+], 2026)));
+assert.deepEqual(al, [
+  { kw: 'KW14', von: '2026-03-30', bis: '2026-04-05', einsaetze: ['Arbeitsdienst', 'Walzen'], personen: ['Ada Admin', 'Huber'] },
+  { kw: 'KW22', von: '2026-05-25', bis: '2026-05-31', einsaetze: ['Arbeitsdienst', 'Walzen'], personen: [] },
+  { kw: 'KW53', von: '2026-12-28', bis: '2027-01-03', einsaetze: ['Arbeitsdienst'], personen: ['J. Rodler'] },
+]);
+const mg = [
+  { id: '1', vorname: 'Joachim', nachname: 'Rodler', aktiv: 'true' },
+  { id: '2', vorname: 'Klaus', nachname: 'Huber', aktiv: 'true' },
+  { id: '3', vorname: 'Anna', nachname: 'Huber', aktiv: 'false' },
+  { id: '4', vorname: 'Max', nachname: 'Maier', aktiv: 'true' },
+  { id: '5', vorname: 'Eva', nachname: 'Maier', aktiv: 'true' },
+];
+assert.equal(ctx.personZuMitglied('Joachim Rodler', mg), '1');
+assert.equal(ctx.personZuMitglied('rodler, joachim', mg), '1');
+assert.equal(ctx.personZuMitglied('J. Rodler', mg), '1');
+assert.equal(ctx.personZuMitglied('Huber', mg), '2'); // Anna ist inaktiv
+assert.equal(ctx.personZuMitglied('Maier', mg), null); // nicht eindeutig
+assert.equal(ctx.personZuMitglied('Eva Maier', mg), '5');
+assert.equal(ctx.personZuMitglied('Unbekannt', mg), null);
+console.log('Arbeitsdienst-Parser OK');

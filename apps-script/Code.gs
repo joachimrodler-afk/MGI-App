@@ -29,6 +29,7 @@
  *   ERSTER_ADMIN          "Vorname;Nachname;PIN" – wird bei setup() angelegt, danach löschen!
  *   FCM_SERVICE_ACCOUNT   JSON des Firebase-Service-Accounts (optional, für Push)
  *   APP_URL               Adresse der App (für Links in Push-Nachrichten)
+ *   ARBEITSLISTE_ID       Google-Tabelle der Arbeitsdienst-Liste (optional, Standard siehe unten)
  */
 
 var TZ = 'Europe/Berlin';
@@ -38,6 +39,9 @@ var SITZUNG_UNBEGRENZT = 0;
 var MAX_FEHLVERSUCHE = 5;
 var SPERRE_MIN = 10;
 var HASH_RUNDEN = 300;
+// Arbeitsdienst-Liste (Google-Tabelle im Vereins-Drive). Keine geheime Angabe;
+// für ein neues Jahr einfach ARBEITSLISTE_ID in den Script Properties setzen.
+var ARBEITSLISTE_STANDARD_ID = '1-4fZkz3a4TTHiGIb_dJHv5kdszw7dVQG6lIEEgkXuNw';
 
 var BLAETTER = {
   Mitglieder: ['id', 'vorname', 'nachname', 'rolle', 'sparte', 'salt', 'hash', 'aktiv', 'erstellt'],
@@ -114,6 +118,8 @@ var AKTIONEN = {
   foto_hochladen: { recht: 'mitglied', fn: fotoHochladen_ },
   // Am Platz
   anwesende: { recht: 'offen', fn: anwesende_ },
+  // Arbeitsdienst
+  arbeitsdienst_meine: { recht: 'mitglied', fn: arbeitsdienstMeine_ },
   // Zugangsanfrage
   zugang_anfragen: { recht: 'offen', fn: zugangAnfragen_ },
   anfragen_liste: { recht: 'admin', fn: anfragenListe_ },
@@ -184,6 +190,7 @@ function setup() {
 function taeglich() {
   try { terminErinnerungen_(); } catch (e) { console.error(e); }
   try { nachweisErinnerungen_(); } catch (e) { console.error(e); }
+  try { arbeitsdienstErinnerungen_(); } catch (e) { console.error(e); }
   aufraeumen_();
 }
 
@@ -391,6 +398,7 @@ function start_(d, s) {
     try { erg.bluetti = bluetti_(); } catch (e) { erg.bluetti = { erreichbar: false }; }
     try { erg.wetterstation = wetterstation_(); } catch (e) { erg.wetterstation = { erreichbar: false }; }
   }
+  if (s) { try { erg.arbeitsdienst = arbeitsdienstMeine_(d, s); } catch (e) { console.error(e); } }
   return erg;
 }
 
@@ -1156,6 +1164,129 @@ function nachweisErinnerungen_() {
       aktualisiereZeile_('Nachweise', 'mitgliedId', r.mitgliedId, function (x) { x.gemeldet = neu.filter(String).join(','); return x; });
     }
   });
+}
+
+// =====================================================================
+// Arbeitsdienst (Liste in eigener Google-Tabelle)
+// =====================================================================
+
+/**
+ * Tabellenwerte -> Liste der Wochen.
+ * Spalten: Kalenderwoche | Zeitraum "30.03.–05.04.2026" | Einsatz | Person 1 | Person 2 …
+ * Zeilen ohne Kalenderwoche gehören zur Woche darüber (weitere Einsätze/Personen).
+ */
+function arbeitslisteParsen(werte, jahrStandard) {
+  var liste = [];
+  var akt = null;
+  (werte || []).forEach(function (zeile, i) {
+    var z = zeile.map(function (v) { return String(v == null ? '' : v).trim(); });
+    if (i === 0 && /woche|kw/i.test(z[0]) && !/\d/.test(z[0])) return; // Kopfzeile
+    if (/^KW\s*\d+/i.test(z[0])) {
+      var zr = zeitraumParsen_(z[1], jahrStandard);
+      if (!zr) { akt = null; return; }
+      akt = { kw: z[0].replace(/\s+/g, '').toUpperCase(), von: zr.von, bis: zr.bis, einsaetze: [], personen: [] };
+      liste.push(akt);
+    } else if (z[0]) {
+      akt = null; // anderer Inhalt (z. B. Erläuterungen) beendet die Woche
+      return;
+    }
+    if (!akt) return;
+    if (z[2]) z[2].split(';').forEach(function (e) { e = e.trim(); if (e && akt.einsaetze.indexOf(e) < 0) akt.einsaetze.push(e); });
+    z.slice(3).forEach(function (p) { if (p && akt.personen.indexOf(p) < 0) akt.personen.push(p); });
+  });
+  return liste;
+}
+
+function zeitraumParsen_(t, jahrStandard) {
+  var m = String(t || '').match(/(\d{1,2})\.(\d{1,2})\.?(\d{4})?\s*[–—-]\s*(\d{1,2})\.(\d{1,2})\.?(\d{4})?/);
+  if (!m) return null;
+  var jb = Number(m[6] || m[3] || jahrStandard);
+  var jv = Number(m[3] || (Number(m[2]) > Number(m[5]) ? jb - 1 : jb));
+  var f = function (j, mo, ta) { return j + '-' + ('0' + mo).slice(-2) + '-' + ('0' + ta).slice(-2); };
+  return { von: f(jv, m[2], m[1]), bis: f(jb, m[5], m[4]) };
+}
+
+function namenNorm_(n) {
+  return String(n || '').toLowerCase().replace(/[.,;()]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Ordnet einen eingetragenen Namen einem Mitglied zu (voller Name oder eindeutiger Nachname). */
+function personZuMitglied(name, mitglieder) {
+  var n = namenNorm_(name);
+  if (!n) return null;
+  var aktive = mitglieder.filter(function (m) { return String(m.aktiv) === 'true'; });
+  var voll = aktive.filter(function (m) {
+    var v = namenNorm_(m.vorname), na = namenNorm_(m.nachname);
+    return n === v + ' ' + na || n === na + ' ' + v;
+  });
+  if (voll.length === 1) return voll[0].id;
+  var nach = aktive.filter(function (m) { return namenNorm_(m.nachname) === n; });
+  if (nach.length === 1) return nach[0].id;
+  // „J. Rodler“ oder „Joachim R.“
+  var teile = n.split(' ');
+  if (teile.length === 2) {
+    var kurz = aktive.filter(function (m) {
+      var v = namenNorm_(m.vorname), na = namenNorm_(m.nachname);
+      return (teile[1] === na && v.indexOf(teile[0]) === 0) || (teile[0] === v && na.indexOf(teile[1]) === 0);
+    });
+    if (kurz.length === 1) return kurz[0].id;
+  }
+  return null;
+}
+
+function arbeitsliste_() {
+  var cache = CacheService.getScriptCache();
+  var c = cache.get('arbeitsliste');
+  if (c) return JSON.parse(c);
+  var ss = SpreadsheetApp.openById(prop_('ARBEITSLISTE_ID') || ARBEITSLISTE_STANDARD_ID);
+  var jahr = (String(ss.getName()).match(/20\d\d/) || [Utilities.formatDate(new Date(), TZ, 'yyyy')])[0];
+  var liste = arbeitslisteParsen(ss.getSheets()[0].getDataRange().getDisplayValues(), Number(jahr));
+  try { cache.put('arbeitsliste', JSON.stringify(liste), 600); } catch (e) { /* zu groß */ }
+  return liste;
+}
+
+/** Die nächsten Arbeitsdienst-Wochen des angemeldeten Mitglieds (laufende Woche eingeschlossen). */
+function arbeitsdienstMeine_(d, s) {
+  var heute = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  var mitglieder = zeilen_('Mitglieder');
+  return arbeitsliste_().filter(function (w) {
+    return w.bis >= heute && w.personen.some(function (p) { return personZuMitglied(p, mitglieder) === s.mitgliedId; });
+  }).slice(0, 3).map(function (w) { return { kw: w.kw, von: w.von, bis: w.bis, einsaetze: w.einsaetze }; });
+}
+
+/** Täglich: 7 Tage vorher und am Montag der Woche erinnern (jeweils einmal). */
+function arbeitsdienstErinnerungen_() {
+  if (!prop_('FCM_SERVICE_ACCOUNT')) return; // ohne Push nichts zu tun (Hinweis auf der Startseite gibt es trotzdem)
+  var props = PropertiesService.getScriptProperties();
+  var gemeldet = [];
+  try { gemeldet = JSON.parse(props.getProperty('ARBEITSDIENST_GEMELDET') || '[]'); } catch (e) { gemeldet = []; }
+  var heute = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  var heuteMs = lokalMs_(heute + 'T00:00:00');
+  var mitglieder = zeilen_('Mitglieder');
+  var neu = gemeldet.slice();
+  arbeitsliste_().forEach(function (w) {
+    var tage = Math.round((lokalMs_(w.von + 'T00:00:00') - heuteMs) / 86400000);
+    var was = w.einsaetze.length ? w.einsaetze.join(', ') : 'Arbeitsdienst';
+    var zeit = w.von.split('-').reverse().join('.').slice(0, 6) + '–' + w.bis.split('-').reverse().join('.');
+    [7, 0].forEach(function (grenze) {
+      if (tage > grenze || tage < grenze - 6) return;
+      w.personen.forEach(function (p) {
+        var id = personZuMitglied(p, mitglieder);
+        if (!id) { console.warn('Arbeitsdienst: „' + p + '“ keinem Mitglied zugeordnet'); return; }
+        var marke = w.kw + ':' + w.von + ':' + grenze + ':' + id;
+        if (neu.indexOf(marke) >= 0) return;
+        var text = grenze === 7
+          ? 'Nächste Woche (' + w.kw + ', ' + zeit + ') bist du für den Arbeitsdienst eingetragen: ' + was + '.'
+          : 'Diese Woche (' + w.kw + ', ' + zeit + ') hast du Arbeitsdienst: ' + was + '. Danke!';
+        pushSenden_('arbeitsdienst', 'Arbeitsdienst', text, '#/', null, id);
+        neu.push(marke);
+      });
+    });
+  });
+  // nur Marken der letzten Monate behalten
+  var grenzeAlt = Utilities.formatDate(new Date(Date.now() - 90 * 86400000), TZ, 'yyyy-MM-dd');
+  neu = neu.filter(function (m) { return (m.split(':')[1] || '') >= grenzeAlt; });
+  if (JSON.stringify(neu) !== JSON.stringify(gemeldet)) props.setProperty('ARBEITSDIENST_GEMELDET', JSON.stringify(neu));
 }
 
 // =====================================================================

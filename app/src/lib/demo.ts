@@ -256,7 +256,7 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       return fertig({ pin: m.pin });
     }
     case 'start':
-      return fertig({ oeffentlich: true, anwesend: anwesend(), termine: demoTermine().slice(0, 3), bluetti: demoBluetti(), wetterstation: demoStation() });
+      return fertig({ oeffentlich: true, anwesend: anwesend(), termine: demoTermine().slice(0, 3), bluetti: demoBluetti(), wetterstation: demoStation(), arbeitsdienst: s ? demoArbeitsdienst() : undefined });
     case 'wetterstation': return fertig(demoStation());
     case 'termine': return fertig(demoTermine());
     case 'bluetti': return fertig(demoBluetti());
@@ -449,6 +449,16 @@ function demoBluetti() {
       pack1_soc: 81, pack2_soc: 77, pack3_soc: 76, connected: true,
     },
   };
+}
+
+/** Demo: der angemeldete Nutzer hat nächste Woche Arbeitsdienst */
+function demoArbeitsdienst() {
+  const mo = new Date(); mo.setHours(0, 0, 0, 0);
+  mo.setDate(mo.getDate() - ((mo.getDay() + 6) % 7) + 7);
+  const so = new Date(mo); so.setDate(mo.getDate() + 6);
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const kw = (d: Date) => { const t = new Date(d); t.setDate(t.getDate() + 3); const j = new Date(t.getFullYear(), 0, 4); return 1 + Math.round(((t.getTime() - j.getTime()) / 86400000 - 3 + ((j.getDay() + 6) % 7)) / 7); };
+  return [{ kw: 'KW' + kw(mo), von: iso(mo), bis: iso(so), einsaetze: ['Arbeitsdienst', 'Walzen'] }];
 }
 
 function demoStation() {

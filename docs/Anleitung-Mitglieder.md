@@ -18,3 +18,11 @@
 - 📌 **Schwarzes Brett:** Biete, Suche und Info. Du kannst deine eigenen Beiträge bearbeiten und löschen.
 - 🪪 **Meine Nachweise** (unter Mehr): Trag die Ablaufdaten von Kenntnisnachweis, e-ID und Versicherung ein. Die App erinnert dich 30 und 7 Tage vor Ablauf.
 - 🔔 **Push-Nachrichten** (Mehr → Mein Konto): Du schaltest selbst ein, worüber du informiert werden willst.
+
+## Arbeitsdienst
+
+Die Kachel **Arbeitsdienst** auf der Startseite öffnet die Arbeitsliste (Google-Tabelle). Trag dich dort in eine Woche ein, unter „Person 1“ oder „Person 2“, und zwar **mit Vor- und Nachnamen so wie in der App** (z. B. „Max Muster“). Ein Nachname allein genügt nur, wenn er im Verein eindeutig ist.
+
+Die App erinnert dich dann automatisch:
+- auf der Startseite ab zwei Wochen vorher mit einem gelben Hinweis,
+- per Push-Nachricht am Montag der Woche davor und am Montag deiner Woche (abschaltbar unter Konto → Push-Nachrichten).
