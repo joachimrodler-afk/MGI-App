@@ -322,7 +322,7 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       if (!gast && fb().some((p) => !p.ende && p.mitgliedId === m.id && p.vereinGast === 'Verein')) throw new ApiFehler('Du bist bereits im Flugbuch angemeldet', 400);
       fb().push({
         id: 'f' + uid(), datum: demoHeute(), name: gast ? String(e.gastName) : m.nachname, vorname: gast ? String(e.gastVorname) : m.vorname,
-        vereinGast: gast ? 'Gast' : 'Verein', kanal: e.kanal, schulungsnachweis: !!e.schulungsnachweis, antrieb: e.antrieb, masse: e.masse,
+        vereinGast: gast ? 'Gast' : 'Verein', kanal: '', schulungsnachweis: !!e.schulungsnachweis, antrieb: e.antrieb, masse: e.masse,
         beginn: demoUhr(), ende: '', eingetragenVon: `${m.vorname} ${m.nachname}`, mitgliedId: m.id, beginnTs: new Date().toISOString(), endeTs: '', autoBeendet: false,
       });
       if (d.flugleiter) flugleiterAn(d.flugleiter as Record<string, unknown>);

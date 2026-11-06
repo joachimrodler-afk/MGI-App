@@ -12,7 +12,7 @@
 | **Wertungsarten** | `id`, `json` | Wertungsarten mit Feldern, Konstanten, Formel und Version |
 | **Wettbewerbe** | `id`, `json` | Wettbewerbe mit Teilnehmern und einer Kopie der Wertungsart |
 | **Wertungen** | `id`, `wettbewerbId`, `json` | Eingaben je Teilnehmer und Durchgang |
-| **Flugbuch** | `id`, `datum`, `name`, `vorname`, `verein_gast`, `kanal`, `schulungsnachweis`, `segler`, `elektro`, `kolben`, `turbine`, `max_masse`, `beginn`, `ende`, `regeln_bestaetigt`, `eingetragen_von`, … | Elektronisches Flugbuch (wie der Papiervordruck). `beginn`/`ende` = Uhrzeit An-/Abmeldung, `auto_beendet` = automatisch abgemeldet |
+| **Flugbuch** | `id`, `datum`, `name`, `vorname`, `verein_gast`, `kanal`, `schulungsnachweis`, `segler`, `elektro`, `kolben`, `turbine`, `max_masse`, `beginn`, `ende`, `regeln_bestaetigt`, `eingetragen_von`, … | Elektronisches Flugbuch (wie der Papiervordruck; die Spalte `kanal` wird nicht mehr abgefragt und bleibt leer). `beginn`/`ende` = Uhrzeit An-/Abmeldung, `auto_beendet` = automatisch abgemeldet |
 | **Flugleiter** | `id`, `datum`, `name`, `vorname`, `fangnetz`, `rasen_gemaeht`, `wetter`, `windrichtung`, `windstaerke`, `beginn`, `ende`, … | Modellflugleiter mit Flugbedingungen |
 | **Anfragen** | `id`, `vorname`, `nachname`, `nachricht`, `erstellt`, `status`, `bearbeitet` | Zugangsanfragen (offen/freigegeben/abgelehnt) |
 | **CheckIns** | – | Nicht mehr benutzt (ersetzt durch das Flugbuch), kann gelöscht werden |

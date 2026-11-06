@@ -92,7 +92,7 @@ function useBedingungenVorschlag(): [Flugbedingungen, (b: Flugbedingungen) => vo
 function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneFlugleiter: boolean; fertig: (s: FlugbuchStatus) => void; nurGast?: boolean; abbrechen?: () => void }) {
   const letzte = (() => { try { return JSON.parse(localStorage.getItem(LETZTE_KEY) || 'null'); } catch { return null; } })();
   const [e, setE] = useState<PilotEingabe>({
-    art: nurGast ? 'gast' : 'verein', kanal: letzte?.kanal ?? 'X', schulungsnachweis: letzte?.schulungsnachweis ?? false,
+    art: nurGast ? 'gast' : 'verein', schulungsnachweis: letzte?.schulungsnachweis ?? false,
     antrieb: letzte?.antrieb ?? [], masse: letzte?.masse ?? '', regelnBestaetigt: false,
   });
   const [flugleiter, setFlugleiter] = useState(false);
@@ -112,7 +112,7 @@ function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneF
     setLaedt(true);
     try {
       const s = await api<FlugbuchStatus>('flugbuch_anmelden', { eintrag: e, flugleiter: flugleiter && !gast ? bed : undefined });
-      if (!gast) localStorage.setItem(LETZTE_KEY, JSON.stringify({ kanal: e.kanal, schulungsnachweis: e.schulungsnachweis, antrieb: e.antrieb, masse: e.masse }));
+      if (!gast) localStorage.setItem(LETZTE_KEY, JSON.stringify({ schulungsnachweis: e.schulungsnachweis, antrieb: e.antrieb, masse: e.masse }));
       fertig(s);
     } catch (err) {
       setFehler((err as Error).message);
@@ -139,13 +139,6 @@ function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneF
           <Feld label="Name Gast"><input className="eingabe" required value={e.gastName ?? ''} onChange={(x) => setE({ ...e, gastName: x.target.value })} /></Feld>
         </div>
       )}
-
-      <div className="grid grid-cols-[1fr_auto] items-end gap-3">
-        <Feld label="Kanal-Nr. / X (= 2,4 GHz)">
-          <input className="eingabe" value={e.kanal} onChange={(x) => setE({ ...e, kanal: x.target.value.toUpperCase() })} maxLength={20} />
-        </Feld>
-        <button type="button" onClick={() => setE({ ...e, kanal: 'X' })} className="min-h-12 rounded-xl bg-himmel-100 px-3 text-sm font-semibold dark:bg-slate-800">2,4 GHz</button>
-      </div>
 
       <div className="-mx-4 border-y border-himmel-100 dark:border-slate-700">
         <Schalter an={e.schulungsnachweis} onChange={(v) => setE({ ...e, schulungsnachweis: v })} label="Schulungsnachweis vorhanden" />
@@ -197,7 +190,7 @@ function EintragZeile({ p, kannAbmelden, abmelden, arbeitet }: { p: FlugbuchEint
       <span className="min-w-0 flex-1">
         <span className="block font-semibold">{p.vorname} {p.name}{p.vereinGast === 'Gast' && <span className="font-normal text-slate-500"> · Gast</span>}</span>
         <span className="block text-sm text-slate-500">
-          {p.beginn}{p.ende ? `–${p.ende}` : ' – läuft'}{p.autoBeendet && ' (auto)'} · {antriebText(p.antrieb)} · {p.masse} · Kanal {p.kanal || '–'}
+          {p.beginn}{p.ende ? `–${p.ende}` : ' – läuft'}{p.autoBeendet && ' (auto)'} · {antriebText(p.antrieb)} · {p.masse}
         </span>
       </span>
       {kannAbmelden && !p.ende && <Knopf art="sekundaer" onClick={abmelden} laedt={arbeitet} className="!min-h-10 !px-3 text-sm">Abmelden</Knopf>}
@@ -242,7 +235,7 @@ function Inhalt() {
           <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
             <Icon name="haken" className="mr-1 inline h-6 w-6" /> Seit {ich.beginn} Uhr im Flugbuch angemeldet
           </p>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{antriebText(ich.antrieb)} · {ich.masse} · Kanal {ich.kanal || '–'}{ich.schulungsnachweis ? ' · Schulungsnachweis' : ''}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{antriebText(ich.antrieb)} · {ich.masse}{ich.schulungsnachweis ? ' · Schulungsnachweis' : ''}</p>
           <Knopf className="w-full text-lg" onClick={() => aktion('flugbuch_abmelden', { id: ich.id }, ich.id)} laedt={arbeitet === ich.id}>
             Abmelden · Ende {uhrzeit(new Date().toISOString())} Uhr
           </Knopf>

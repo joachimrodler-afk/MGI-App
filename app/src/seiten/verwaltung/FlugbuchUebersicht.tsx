@@ -9,10 +9,10 @@ import type { FlugbuchEintrag, FlugleiterEintrag } from '../../lib/model';
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 function csv(piloten: FlugbuchEintrag[]) {
-  const kopf = ['Datum', 'Name', 'Vorname', 'Verein/Gast', 'Kanal', 'Schulungsnachweis', 'Segler', 'Elektro', 'Kolben', 'Turbine', 'max. Masse', 'Beginn', 'Ende', 'automatisch beendet', 'eingetragen von'];
+  const kopf = ['Datum', 'Name', 'Vorname', 'Verein/Gast', 'Schulungsnachweis', 'Segler', 'Elektro', 'Kolben', 'Turbine', 'max. Masse', 'Beginn', 'Ende', 'automatisch beendet', 'eingetragen von'];
   const x = (b: boolean) => (b ? 'x' : '');
   const zeilen = piloten.map((p) => [
-    p.datum, p.name, p.vorname, p.vereinGast, p.kanal, p.schulungsnachweis ? 'ja' : 'nein',
+    p.datum, p.name, p.vorname, p.vereinGast, p.schulungsnachweis ? 'ja' : 'nein',
     x(p.antrieb.includes('segler')), x(p.antrieb.includes('elektro')), x(p.antrieb.includes('kolben')), x(p.antrieb.includes('turbine')),
     p.masse, p.beginn, p.ende, p.autoBeendet ? 'ja' : '', p.eingetragenVon,
   ]);

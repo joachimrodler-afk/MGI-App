@@ -257,7 +257,6 @@ export interface PilotEingabe {
   art: 'verein' | 'gast';
   gastVorname?: string;
   gastName?: string;
-  kanal: string;
   schulungsnachweis: boolean;
   antrieb: Antrieb[];
   masse: Masse | '';

@@ -35,8 +35,8 @@ export const config = {
     alias: '65d35a6bb9cb9',
     /** Standbild – IPCamLive liefert das aktuelle Bild über diese Adresse */
     snapshotUrl: 'https://www.ipcamlive.com/player/snapshot.php?alias=65d35a6bb9cb9',
-    /** Eingebetteter Live-Player */
-    playerUrl: 'https://www.ipcamlive.com/player/player.php?alias=65d35a6bb9cb9&autoplay=1',
+    // Hinweis: Der Live-Player lässt sich im kostenlosen IPCamLive-Paket nicht einbetten,
+    // daher öffnet die App für den Live-Stream die IPCamLive-Seite (seite).
     aktualisierenSek: 60,
   },
 

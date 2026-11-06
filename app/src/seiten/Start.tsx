@@ -12,7 +12,7 @@ import { AkkuRing } from '../components/AkkuRing';
 
 interface StartDaten {
   oeffentlich: boolean;
-  anwesend: { anzahl: number; flugleiter: boolean };
+  anwesend: { anzahl: number; flugleiter: boolean; liste?: { mitgliedId: string; seit: string; flugleiter: boolean }[] };
   termine?: Termin[];
   bluetti?: BluettiAntwort;
 }
@@ -47,6 +47,7 @@ export default function Start() {
   const naechster = d?.termine?.[0];
   const ampel = wetter ? windAmpel(wetter.boeen, einstellungen.windGelb, einstellungen.windRot, wetter.niederschlag, wetter.code) : null;
   const b = d?.bluetti?.daten;
+  const ichAmPlatz = s ? d?.anwesend.liste?.find((x) => x.mitgliedId === s.mitgliedId) : undefined;
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-6 pt-4">
@@ -73,6 +74,26 @@ export default function Start() {
           </span>
         </Link>
       </div>
+
+      {/* FLUGBUCH – groß und auffällig */}
+      <Link to="/flugbuch" className={klassen('mb-4 flex items-center gap-4 rounded-2xl p-5 text-white shadow-lg ring-2 ring-white/40 active:scale-[0.99]',
+        ichAmPlatz ? 'bg-gradient-to-br from-emerald-500 to-emerald-700' : 'bg-gradient-to-br from-mgi-rot to-mgi-rot-dunkel')}>
+        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20">
+          <Icon name="flieger" className="h-10 w-10" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-2xl font-extrabold tracking-tight">Flugbuch</span>
+          <span className="block font-semibold opacity-95">
+            {ichAmPlatz
+              ? `Du bist seit ${new Date(ichAmPlatz.seit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr angemeldet`
+              : 'Jetzt anmelden'}
+          </span>
+          <span className="block text-sm opacity-90">
+            {d ? `${d.anwesend.anzahl} am Platz · ${d.anwesend.flugleiter ? 'Flugleiter da' : 'kein Flugleiter'}` : 'An- und abmelden'}
+          </span>
+        </span>
+        <span className="rounded-xl bg-white px-3 py-2 text-sm font-bold text-tinte shadow">{ichAmPlatz ? 'Abmelden' : 'Anmelden'}</span>
+      </Link>
 
       {/* Logo & nächster Termin */}
       <div className="karte mb-4 flex items-center gap-4 overflow-hidden p-4">
@@ -115,14 +136,13 @@ export default function Start() {
         </Link>
         <Kachel zu="/foto" icon="kamera" titel="Foto aufnehmen" farbe="rot">Direkt auf die Homepage</Kachel>
         <Kachel zu="/wettbewerbe" icon="pokal" titel="Wettbewerbe" farbe="gelb">Ergebnisse & Wertung</Kachel>
-        <Kachel zu="/flugbuch" icon="flieger" titel="Flugbuch">An- &amp; abmelden, wer ist da?</Kachel>
         <Kachel zu="/brett" icon="pinnwand" titel="Schwarzes Brett">Biete · Suche · Info</Kachel>
         {istGesetzt(config.arbeitsdienstUrl) ? (
           <Kachel href={config.arbeitsdienstUrl} icon="schaufel" titel="Arbeitsdienst">Termine & Eintragen</Kachel>
         ) : (
           <Kachel zu="/mehr" icon="schaufel" titel="Arbeitsdienst">Link folgt</Kachel>
         )}
-        <div className="col-span-2"><Kachel zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" farbe="rot">Notruf 112, Standort, Regeln am Platz</Kachel></div>
+        <Kachel zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" farbe="rot">Notruf 112, Regeln</Kachel>
       </div>
     </div>
   );
