@@ -48,7 +48,7 @@ Für das Backend braucht der Verein **keinen eigenen Server**. Google Apps Scrip
 Die Einrichtung dauert etwa eine Stunde. Am besten benutzt du dafür das Google-Konto, dem schon die Vereins-Homepage gehört.
 
 ### 1. Google-Tabelle anlegen
-1. Auf [sheets.google.com](https://sheets.google.com) eine neue, leere Tabelle anlegen und z. B. **„MGI-App Daten“** nennen.
+1. Auf [sheets.google.com](https://sheets.google.com) eine neue, leere Tabelle anlegen und z. B. **„MGI-Flugbuch“ (im Ordner MGI → MGI-App)** nennen.
 2. Die **ID** der Tabelle steht in der Adresszeile zwischen `/d/` und `/edit`. Kopiere sie, du brauchst sie in Schritt 4.
 3. Tabellenblätter musst du nicht anlegen, das übernimmt Schritt 5. Welche Blätter es gibt, steht in [docs/Google-Sheet-Vorlage.md](docs/Google-Sheet-Vorlage.md).
 
