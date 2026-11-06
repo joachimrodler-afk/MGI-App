@@ -98,7 +98,7 @@ export default function Start() {
         </Kachel>
         <Link to="/webcam" className="karte relative col-span-2 block h-40 overflow-hidden bg-gradient-to-br from-himmel-200 to-himmel-500">
           <Icon name="webcam" className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 text-white/70" />
-          <img src={config.webcam.snapshotUrl} alt="Aktuelles Webcam-Bild vom Flugplatz" className="relative h-full w-full object-cover" loading="lazy"
+          <img src={`${config.webcam.snapshotUrl}&t=${Math.floor(Date.now() / 60000)}`} alt="Aktuelles Webcam-Bild vom Flugplatz" className="relative h-full w-full object-cover"
             onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
           <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/70 to-transparent p-3 font-bold text-white">
             <Icon name="webcam" /> Webcam Flugplatz
