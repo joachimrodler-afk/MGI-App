@@ -256,7 +256,8 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       return fertig({ pin: m.pin });
     }
     case 'start':
-      return fertig({ oeffentlich: true, anwesend: anwesend(), termine: demoTermine().slice(0, 3), bluetti: demoBluetti() });
+      return fertig({ oeffentlich: true, anwesend: anwesend(), termine: demoTermine().slice(0, 3), bluetti: demoBluetti(), wetterstation: demoStation() });
+    case 'wetterstation': return fertig(demoStation());
     case 'termine': return fertig(demoTermine());
     case 'bluetti': return fertig(demoBluetti());
     case 'bluetti_verlauf': {
@@ -447,5 +448,12 @@ function demoBluetti() {
       dc_active: true, ac_active: true, pack_count: 3, pack_internal: true, pack_b300_1: true, pack_b300_2: true,
       pack1_soc: 81, pack2_soc: 77, pack3_soc: 76, connected: true,
     },
+  };
+}
+
+function demoStation() {
+  return {
+    erreichbar: true, zeit: new Date().toISOString(),
+    daten: { temperatur: 3.8, wind: 6.4, richtung: 'SW', luftdruck: 967.5, luftfeuchte: 94, batterie: 13.74 },
   };
 }

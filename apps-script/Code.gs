@@ -21,6 +21,7 @@
  *   BRETT_ORDNER_ID       Drive-Ordner für Fotos vom Schwarzen Brett (NICHT der Galerieordner)
  *   KALENDER_ICS_URL      privater ICS-Link von kalender.digital
  *   BLUETTI_URL           z. B. http://mgi-ism.ddns.net:8080
+ *   WETTERSTATION_URL     eigene Wetterstation (ESP32), Standard http://mgi-ism.ddns.net:81/
  *   BLUETTI_USER/_PASS    nur falls ENABLE_AUTH in der ESP32-Firmware aktiv ist
  *   THINGSPEAK_KANAL      Kanal-ID (optional, für das Verlaufsdiagramm)
  *   THINGSPEAK_READ_KEY   Read-API-Key (nur bei privatem Kanal)
@@ -106,6 +107,7 @@ var AKTIONEN = {
   termine: { recht: 'lesen', fn: function () { return termine_(); } },
   bluetti: { recht: 'lesen', fn: function () { return bluetti_(); } },
   bluetti_verlauf: { recht: 'lesen', fn: bluettiVerlauf_ },
+  wetterstation: { recht: 'lesen', fn: function () { return wetterstation_(); } },
   einstellungen: { recht: 'offen', fn: einstellungenLesen_ },
   einstellungen_speichern: { recht: 'admin', fn: einstellungenSpeichern_ },
   // Fotos
@@ -387,6 +389,7 @@ function start_(d, s) {
   if (darf) {
     try { erg.termine = termine_().slice(0, 3); } catch (e) { erg.termine = []; }
     try { erg.bluetti = bluetti_(); } catch (e) { erg.bluetti = { erreichbar: false }; }
+    try { erg.wetterstation = wetterstation_(); } catch (e) { erg.wetterstation = { erreichbar: false }; }
   }
   return erg;
 }
@@ -664,6 +667,54 @@ function bluettiVerlauf_(d) {
     punkte: feeds.map(function (f) { return { zeit: f.created_at, soc: zahl(f.field1), solar: zahl(f.field2) }; }),
   };
   try { cache.put(key, JSON.stringify(erg), 600); } catch (e) { /* zu groß */ }
+  return erg;
+}
+
+// =====================================================================
+// Eigene Wetterstation am Platz (ESP32, Repo Wetterstation-5.0)
+// =====================================================================
+// Die Station liefert eine kleine HTML-Tabelle („Messwert | Wert“). Das Script liest sie
+// alle 2 Minuten aus (Cache) und gibt die Werte als JSON an die App weiter.
+
+var RICHTUNG_DE = { N: 'N', NE: 'NO', NO: 'NO', E: 'O', O: 'O', SE: 'SO', SO: 'SO', S: 'S', SW: 'SW', W: 'W', NW: 'NW' };
+
+function wetterstationParsen(html) {
+  var werte = {};
+  var re = /<td>([^<]+)<\/td>\s*<td[^>]*>([^<]+)<\/td>/gi;
+  var m;
+  while ((m = re.exec(html))) werte[m[1].trim().toLowerCase()] = m[2].trim();
+  var zahl = function (k) { var v = werte[k]; if (!v) return null; var n = parseFloat(v.replace(',', '.')); return isNaN(n) ? null : n; };
+  var r = String(werte['windrichtung'] || '').toUpperCase();
+  return {
+    temperatur: zahl('temperatur'),
+    wind: zahl('windgeschwindigkeit'),
+    richtung: RICHTUNG_DE[r] || r || null,
+    luftdruck: zahl('luftdruck'),
+    luftfeuchte: zahl('luftfeuchtigkeit'),
+    batterie: zahl('batteriespannung'),
+  };
+}
+
+function wetterstation_() {
+  var cache = CacheService.getScriptCache();
+  var c = cache.get('wetterstation');
+  if (c) return JSON.parse(c);
+  var props = PropertiesService.getScriptProperties();
+  var url = prop_('WETTERSTATION_URL') || 'http://mgi-ism.ddns.net:81/';
+  var erg;
+  try {
+    var res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    if (res.getResponseCode() !== 200) throw new Error('HTTP ' + res.getResponseCode());
+    var daten = wetterstationParsen(res.getContentText());
+    if (daten.temperatur === null && daten.wind === null) throw new Error('Keine Messwerte gefunden');
+    erg = { erreichbar: true, daten: daten, zeit: new Date().toISOString() };
+    props.setProperty('WETTERSTATION_LETZT', JSON.stringify(erg));
+    cache.put('wetterstation', JSON.stringify(erg), 120);
+  } catch (e) {
+    var letzt = JSON.parse(props.getProperty('WETTERSTATION_LETZT') || 'null');
+    erg = { erreichbar: false, daten: letzt ? letzt.daten : undefined, zeit: letzt ? letzt.zeit : undefined, ausCache: !!letzt };
+    cache.put('wetterstation', JSON.stringify(erg), 120);
+  }
   return erg;
 }
 

@@ -262,3 +262,18 @@ export interface PilotEingabe {
   masse: Masse | '';
   regelnBestaetigt: boolean;
 }
+
+// ---------------------------------------------------------------- Eigene Wetterstation
+export interface WetterstationAntwort {
+  erreichbar: boolean;
+  daten?: {
+    temperatur: number | null;
+    wind: number | null; // km/h
+    richtung: string | null; // N, NO, O, …
+    luftdruck: number | null;
+    luftfeuchte: number | null;
+    batterie: number | null;
+  };
+  zeit?: string;
+  ausCache?: boolean;
+}

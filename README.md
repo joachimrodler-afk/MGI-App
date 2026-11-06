@@ -10,7 +10,7 @@ Die App der **Modellbau-Gemeinschaft Ismaning e.V.** ist eine Web-App (PWA). Sie
 |---|---|
 | **Startseite** | Wind, Böen und Temperatur, Anzahl der Mitglieder am Platz, nächster Termin, Kacheln zu allen Bereichen |
 | **Termine** | Die nächsten Termine aus dem kalender.digital-Kalender, einzelne Termine lassen sich in den eigenen Kalender übernehmen |
-| **Wetter** | Wind mit Kompass, Böen, Vorhersage für die nächsten Stunden und eine Ampel für den Flugbetrieb (Grenzwerte einstellbar) |
+| **Wetter** | Live-Messwerte der vereinseigenen Wetterstation am Platz (Wind, Richtung, Temperatur, Luftfeuchte, Luftdruck, Batterie), dazu Böen-/Regenvorhersage von Open-Meteo und eine Ampel für den Flugbetrieb (Grenzwerte einstellbar) |
 | **Webcam** | Standbild, das sich jede Minute aktualisiert. Antippen öffnet den Live-Stream auf der IPCamLive-Seite (Einbetten ist im kostenlosen IPCamLive-Paket nicht möglich) |
 | **Strom** | Akkustand der Bluetti, Leistung von Solar, Netz, AC und DC, Stand jedes Packs, optional Verlauf (ThingSpeak) |
 | **Foto** | Foto aufnehmen oder aus der Galerie wählen. Es wird verkleinert und landet automatisch im Drive-Ordner der Homepage-Galerie. Ohne Netz kommt es in eine Warteschlange |
@@ -139,7 +139,7 @@ Diese Attribute sind optional:
 
 ## Bekannte Grenzen
 
-- **Wettermonster** bietet keine offene Schnittstelle und sperrt automatische Abrufe. Die App zeigt deshalb Wind und Vorhersage von **Open-Meteo** für die Platz-Koordinaten an und verlinkt die Vereins-Wetterstation.
+- **Wetter:** Die Messwerte kommen direkt von der eigenen Wetterstation (ESP32, `http://mgi-ism.ddns.net:81/`, Script-Attribut `WETTERSTATION_URL` optional). Wettermonster wird nur verlinkt (keine offene Schnittstelle, automatische Abrufe dort untersagt). Böen und Vorhersage kommen von Open-Meteo.
 - **Webcam:** Das Standbild und der Player kommen direkt von IPCamLive. Falls IPCamLive die Adressen ändert, müssen sie in `config.ts` unter `webcam` angepasst werden.
 - **Bluetti:** Der ESP32 ist per `http` erreichbar. Deshalb ruft das Apps Script die Werte ab und gibt sie per `https` an die App weiter. Ist der ESP32 offline, zeigt die App den letzten bekannten Wert. Sicherheitshinweis: Die Firmware hat den Passwortschutz ausgeschaltet (`ENABLE_AUTH = false`), daher kann jeder im Internet `/api/status` lesen. Schalten kann man darüber nichts.
 - **PDF-Export** läuft über die Druckfunktion des Browsers. Dort „Als PDF speichern“ wählen.

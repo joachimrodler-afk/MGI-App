@@ -10,7 +10,7 @@ import { Feld, Fehler, Hinweis, Knopf, Laden, Leer, Schalter, Seite, useLaden } 
 import { api } from '../lib/api';
 import { klassen, uhrzeit } from '../lib/helfer';
 import type {
-  Antrieb, Flugbedingungen, FlugbuchEintrag, FlugbuchStatus, FlugleiterEintrag, Masse, PilotEingabe, Wetter, Windrichtung, Windstaerke,
+  WetterstationAntwort, Antrieb, Flugbedingungen, FlugbuchEintrag, FlugbuchStatus, FlugleiterEintrag, Masse, PilotEingabe, Wetter, Windrichtung, Windstaerke,
 } from '../lib/model';
 import { useSitzung } from '../lib/sitzung';
 import { himmelsrichtung, ladeWetter } from '../lib/wetter';
@@ -80,11 +80,23 @@ function BedingungenFormular({ wert, setWert }: { wert: Flugbedingungen; setWert
 function useBedingungenVorschlag(): [Flugbedingungen, (b: Flugbedingungen) => void] {
   const [b, setB] = useState<Flugbedingungen>({ fangnetz: true, rasenGemaeht: true, wetter: 'klar', windrichtung: 'W', windstaerke: 'leicht' });
   useEffect(() => {
-    ladeWetter().then((w) => {
-      const staerke: Windstaerke = w.wind < 3 ? 'kein' : w.wind < 20 ? 'leicht' : w.wind < 39 ? 'mäßig' : 'stark';
-      const wetter: Wetter = w.code === 0 || w.code === 1 ? 'klar' : w.code === 2 ? 'leicht bedeckt' : w.code >= 45 && w.code <= 48 ? 'nebelig' : 'bedeckt';
-      setB((x) => ({ ...x, windrichtung: himmelsrichtung(w.richtung) as Windrichtung, windstaerke: staerke, wetter }));
-    }).catch(() => undefined);
+    const staerke = (kmh: number): Windstaerke => (kmh < 3 ? 'kein' : kmh < 20 ? 'leicht' : kmh < 39 ? 'mäßig' : 'stark');
+    void Promise.allSettled([ladeWetter(), api<WetterstationAntwort>('wetterstation')]).then(([v, s]) => {
+      const w = v.status === 'fulfilled' ? v.value : null;
+      const st = s.status === 'fulfilled' && s.value.erreichbar ? s.value.daten : undefined;
+      setB((x) => {
+        const n = { ...x };
+        if (w) {
+          n.wetter = w.code === 0 || w.code === 1 ? 'klar' : w.code === 2 ? 'leicht bedeckt' : w.code >= 45 && w.code <= 48 ? 'nebelig' : 'bedeckt';
+          n.windrichtung = himmelsrichtung(w.richtung) as Windrichtung;
+          n.windstaerke = staerke(w.wind);
+        }
+        // Messwerte der eigenen Station am Platz haben Vorrang
+        if (st?.richtung && (RICHTUNGEN as string[]).includes(st.richtung)) n.windrichtung = st.richtung as Windrichtung;
+        if (st?.wind !== null && st?.wind !== undefined) n.windstaerke = staerke(st.wind);
+        return n;
+      });
+    });
   }, []);
   return [b, setB];
 }

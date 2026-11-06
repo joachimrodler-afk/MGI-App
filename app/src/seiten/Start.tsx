@@ -5,7 +5,7 @@ import { config, istGesetzt } from '../config';
 import { api, erinnere, merke } from '../lib/api';
 import { useEinstellungen } from '../lib/einstellungen';
 import { klassen, tageBis, terminDatum } from '../lib/helfer';
-import type { BluettiAntwort, Termin } from '../lib/model';
+import type { BluettiAntwort, Termin, WetterstationAntwort } from '../lib/model';
 import { useSitzung } from '../lib/sitzung';
 import { himmelsrichtung, ladeWetter, windAmpel, type WetterJetzt } from '../lib/wetter';
 import { AkkuRing } from '../components/AkkuRing';
@@ -15,6 +15,7 @@ interface StartDaten {
   anwesend: { anzahl: number; flugleiter: boolean; liste?: { mitgliedId: string; seit: string; flugleiter: boolean }[] };
   termine?: Termin[];
   bluetti?: BluettiAntwort;
+  wetterstation?: WetterstationAntwort;
 }
 
 function Kachel({ zu, href, icon, titel, children, farbe = 'blau' }: { zu?: string; href?: string; icon: string; titel: string; children?: ReactNode; farbe?: 'blau' | 'rot' | 'gelb' }) {
@@ -45,7 +46,11 @@ export default function Start() {
   }, [s?.token]);
 
   const naechster = d?.termine?.[0];
-  const ampel = wetter ? windAmpel(wetter.boeen, einstellungen.windGelb, einstellungen.windRot, wetter.niederschlag, wetter.code) : null;
+  // Messwerte der eigenen Station am Platz haben Vorrang, Böen/Regen kommen aus der Vorhersage
+  const station = d?.wetterstation?.erreichbar ? d.wetterstation.daten : undefined;
+  const windJetzt = station?.wind ?? wetter?.wind;
+  const boeen = Math.max(wetter?.boeen ?? 0, station?.wind ?? 0);
+  const ampel = wetter || station ? windAmpel(boeen, einstellungen.windGelb, einstellungen.windRot, wetter?.niederschlag ?? 0, wetter?.code ?? 0) : null;
   const b = d?.bluetti?.daten;
   const ichAmPlatz = s ? d?.anwesend.liste?.find((x) => x.mitgliedId === s.mitgliedId) : undefined;
 
@@ -56,10 +61,12 @@ export default function Start() {
         <Link to="/wetter" className="karte flex items-center gap-3 p-3">
           <span className={klassen('h-3.5 w-3.5 shrink-0 rounded-full', ampel === 'rot' ? 'bg-mgi-rot' : ampel === 'gelb' ? 'bg-sonne' : ampel ? 'bg-emerald-500' : 'bg-slate-300')} aria-hidden />
           <span className="text-sm leading-tight">
-            {wetter ? (
+            {windJetzt !== undefined && windJetzt !== null ? (
               <>
-                <b className="text-base">{Math.round(wetter.wind)}</b> km/h {himmelsrichtung(wetter.richtung)}
-                <span className="block text-slate-500">Böen {Math.round(wetter.boeen)} · {Math.round(wetter.temperatur)} °C</span>
+                <b className="text-base">{Math.round(windJetzt)}</b> km/h {station?.richtung ?? (wetter ? himmelsrichtung(wetter.richtung) : '')}
+                <span className="block text-slate-500">
+                  {wetter ? `Böen ${Math.round(wetter.boeen)} · ` : ''}{Math.round((station?.temperatur ?? wetter?.temperatur) ?? 0)} °C{station ? ' · Station' : ''}
+                </span>
               </>
             ) : (
               <span className="text-slate-500">Wetter lädt …</span>

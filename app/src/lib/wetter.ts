@@ -29,7 +29,12 @@ export async function ladeWetter(): Promise<WetterJetzt> {
     forecast_days: '2',
     wind_speed_unit: 'kmh',
   });
-  const res = await fetch(`https://api.open-meteo.com/v1/forecast?${p}`);
+  let res: Response;
+  try {
+    res = await fetch(`https://api.open-meteo.com/v1/forecast?${p}`);
+  } catch {
+    throw new Error('Wettervorhersage gerade nicht erreichbar');
+  }
   if (!res.ok) throw new Error('Wetterdienst nicht erreichbar');
   const j = await res.json();
   const jetzt = j.current.time as string;

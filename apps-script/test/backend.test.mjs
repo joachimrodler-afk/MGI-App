@@ -166,3 +166,11 @@ ok(rufe('anfrage_ablehnen', { id: a2[0].id }, admin.token));
 assert.equal(ok(rufe('anfragen_liste', {}, admin.token)).length, 0);
 
 console.log('Backend-Ablauftest OK');
+
+// Wetterstation-Parser mit dem echten HTML der MGI-Station
+const html = `<h2>MGI Wetterstation</h2>
+<table><tbody><tr><th>Messwert</th><th style="text-align:right;">Wert</th></tr>
+<tr><td>Temperatur</td><td class="val">3.8 °C</td></tr><tr><td>Windgeschwindigkeit</td><td class="val">0.2 km/h</td></tr><tr><td>Windrichtung</td><td class="val">NE</td></tr><tr><td>Luftdruck</td><td class="val">967.5 hPa</td></tr><tr><td>Luftfeuchtigkeit</td><td class="val">94.0 %</td></tr><tr><td>Batteriespannung</td><td class="val">13.74 V</td></tr></tbody></table>`;
+const ws = JSON.parse(JSON.stringify(ctx.wetterstationParsen(html)));
+assert.deepEqual(ws, { temperatur: 3.8, wind: 0.2, richtung: 'NO', luftdruck: 967.5, luftfeuchte: 94, batterie: 13.74 });
+console.log('Wetterstation-Parser OK');
