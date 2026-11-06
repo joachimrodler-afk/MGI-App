@@ -297,6 +297,14 @@ console.log('Arbeitsdienst-Parser OK');
   assert.deepEqual(t.map((a) => a.titel), ['Wetterstation', 'Stromversorgung', 'Walze', 'Dixi-Toilette', 'Ladesteckdosen']);
   assert.match(t.at(-1).text, /Pufferbatterie/);
   assert.equal(ok(rufe('technik_liste', {}, klaus.token)).length, 5, 'nur einmal');
+  assert.match(t.find((x) => x.titel === 'Stromversorgung').text, /100 Ah/);
+  // Textersetzung in einem älteren Stromversorgungs-Abschnitt
+  const st2 = t.find((x) => x.titel === 'Stromversorgung');
+  ok(rufe('technik_speichern', { ...st2, text: 'A\n- Pufferbatterie, wird über den DC-DC-Wandler vom Bluetti nachgeladen\n- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A**\nB' }, admin.token));
+  delete props.TECHNIK_PUFFER;
+  const st3 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung').text;
+  assert.match(st3, /LiFePO₄, 12,8 V, 100 Ah/);
+  assert.match(st3, /rund 190 W/);
   // nach Löschen aller Abschnitte keine erneute Vorbelegung
   console.log('Technik OK');
 }

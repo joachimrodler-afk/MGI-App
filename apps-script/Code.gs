@@ -1224,12 +1224,12 @@ function technikStrom_() {
       '- Mähroboter',
       '- RTK-Antenne',
       '## An den Tischen',
-      '- Pufferbatterie, wird über den DC-DC-Wandler vom Bluetti nachgeladen',
-      '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A**',
+      '- **Pufferbatterie:** LiFePO₄, 12,8 V, 100 Ah (rund 1.280 Wh), wird über den DC-DC-Wandler vom Bluetti nachgeladen',
+      '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)',
       '## Hinweise',
       '- Die Module haben zusammen 1.000 Wp, das Bluetti nimmt höchstens 900 W auf. An sehr sonnigen Tagen wird die Spitze abgeschnitten – das ist normal.',
       '- Vor Arbeiten an den Solarleitungen den DC-Trennschalter ausschalten.',
-      '- _Bitte ergänzen: Typ und Kapazität der Pufferbatterie, Typ des DC-DC-Wandlers._',
+      '- _Bitte ergänzen: Typ des DC-DC-Wandlers._',
     ].join('\n'),
   };
 }
@@ -1243,10 +1243,43 @@ function technikLadeText_() {
   ].join('\n');
 }
 
+// Textersetzungen für bereits angelegte Abschnitte (nur wenn die alte Zeile noch unverändert drinsteht)
+var TECHNIK_ERSETZUNGEN = {
+  TECHNIK_PUFFER: [
+    ['- Pufferbatterie, wird über den DC-DC-Wandler vom Bluetti nachgeladen', '- **Pufferbatterie:** LiFePO₄, 12,8 V, 100 Ah (rund 1.280 Wh), wird über den DC-DC-Wandler vom Bluetti nachgeladen'],
+    ['- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A**\n', '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)\n'],
+    ['- _Bitte ergänzen: Typ und Kapazität der Pufferbatterie, Typ des DC-DC-Wandlers._', '- _Bitte ergänzen: Typ des DC-DC-Wandlers._'],
+  ],
+};
+
+function technikErsetzen_(liste) {
+  var props = PropertiesService.getScriptProperties();
+  var geaendert = false;
+  Object.keys(TECHNIK_ERSETZUNGEN).forEach(function (flag) {
+    if (props.getProperty(flag)) return;
+    mitSperre_(function () {
+      if (props.getProperty(flag)) return;
+      liste.forEach(function (x) {
+        var neu = String(x.text || '');
+        TECHNIK_ERSETZUNGEN[flag].forEach(function (e) { neu = neu.split(e[0]).join(e[1]); });
+        if (neu !== x.text) {
+          aktualisiereZeile_('Technik', 'id', x.id, function (r) {
+            var j = JSON.parse(r.json); j.text = neu; j.geaendert = new Date().toISOString();
+            r.json = JSON.stringify(j); return r;
+          });
+          geaendert = true;
+        }
+      });
+      props.setProperty(flag, 'true');
+    });
+  });
+  return geaendert;
+}
+
 /** Einmalige Ergänzungen für bereits angelegte Technik-Blätter */
 function technikMigrieren_(liste) {
   var props = PropertiesService.getScriptProperties();
-  if (props.getProperty('TECHNIK_STROM')) return false;
+  if (props.getProperty('TECHNIK_STROM')) return technikErsetzen_(liste);
   mitSperre_(function () {
     if (props.getProperty('TECHNIK_STROM')) return;
     var wetter = liste.filter(function (a) { return a.grafik === 'wetterstation'; })[0];
@@ -1265,6 +1298,8 @@ function technikMigrieren_(liste) {
     });
     props.setProperty('TECHNIK_STROM', 'true');
   });
+  // neuer Abschnitt hat schon den aktuellen Text – Ersetzungen als erledigt markieren
+  Object.keys(TECHNIK_ERSETZUNGEN).forEach(function (f) { props.setProperty(f, 'true'); });
   return true;
 }
 
@@ -1281,6 +1316,7 @@ function technikAlle_() {
       });
       PropertiesService.getScriptProperties().setProperty('TECHNIK_ANGELEGT', 'true');
       PropertiesService.getScriptProperties().setProperty('TECHNIK_STROM', 'true');
+      Object.keys(TECHNIK_ERSETZUNGEN).forEach(function (f) { PropertiesService.getScriptProperties().setProperty(f, 'true'); });
     });
     zeilen = zeilen_('Technik');
   }

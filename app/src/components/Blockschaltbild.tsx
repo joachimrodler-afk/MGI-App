@@ -132,8 +132,8 @@ export function BlockschaltbildStrom() {
         {/* Tische */}
         <path d="M107,418 V458" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} markerEnd="url(#mgi-pfeil-s)" />
         <Rahmen x={4} y={436} w={352} h={148} titel="Vorne bei den Tischen" rechts />
-        <Box x={42} y={460} w={276} h={38} titel="Pufferbatterie" />
-        <path d="M180,498 V512" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
+        <Box x={42} y={458} w={276} h={42} titel="Pufferbatterie" unter="LiFePO₄ · 12,8 V · 100 Ah (≈ 1.280 Wh)" />
+        <path d="M180,500 V512" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
         <rect x={136} y={512} width={88} height={22} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
         <text x={180} y={527} textAnchor="middle" fontSize={11} fontWeight={700} className="fill-mgi-rot">Sicherung 15 A</text>
         <path d="M180,534 V544 H95 V548 M180,544 H265 V548" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
