@@ -1,0 +1,354 @@
+/**
+ * DEMO-MODUS: Simuliert das Backend im Browser (Daten nur auf diesem Gerät).
+ * Wird benutzt, solange in config.ts keine apiUrl eingetragen ist.
+ *
+ * Demo-Zugänge:   „Demo Admin“ / PIN 123456      „Max Muster“ / PIN 111111
+ */
+import { ApiFehler } from './api';
+import { VORLAGEN } from './vorlagen';
+import type {
+  BrettBeitrag, CheckIn, Einstellungen, Mitglied, Nachweise, Sitzung, Termin, Wertung, Wertungsart, Wettbewerb,
+} from './model';
+
+interface DemoMitglied extends Mitglied { pin: string }
+interface DemoDaten {
+  mitglieder: DemoMitglied[];
+  sitzungen: Sitzung[];
+  checkins: CheckIn[];
+  brett: BrettBeitrag[];
+  nachweise: Record<string, Nachweise>;
+  arten: Wertungsart[];
+  wettbewerbe: Wettbewerb[];
+  wertungen: Wertung[];
+  einstellungen: Einstellungen;
+}
+
+const KEY = 'mgi.demo.v1';
+
+const STANDARD_EINST: Einstellungen = {
+  platzordnung:
+    '## Platzordnung (Beispiel)\n\n' +
+    '- Flugbetrieb nur mit anwesendem **Flugleiter**\n' +
+    '- Flugzeiten: werktags 9–12 und 14–19 Uhr, Sonn- und Feiertage 10–12 und 15–19 Uhr\n' +
+    '- Verbrenner nur mit Schalldämpfer, Lärmgrenzwert beachten\n' +
+    '- Drohnen nur im ausgewiesenen Flugraum, nicht über Zuschauer\n' +
+    '- Vor dem Start Sender-Frequenz bzw. 2,4-GHz-Check durchführen\n\n' +
+    '_Dies ist ein Beispieltext. Admins können ihn unter Verwaltung → Einstellungen ändern._',
+  notfallInfo:
+    '- **Erste-Hilfe-Kasten:** im Container neben der Tür (Beispiel)\n- **Feuerlöscher:** an der Pilotenbox (Beispiel)\n- **Defibrillator:** nächster AED im Ort – bitte eintragen',
+  notfallKontakte: [
+    { name: 'Vorsitzender', rolle: 'Vorstand', telefon: '+49 89 0000000' },
+  ],
+  windGelb: 25,
+  windRot: 40,
+  datenschutzFoto:
+    'Bitte nur Fotos hochladen, mit denen alle abgebildeten Personen einverstanden sind. Die Fotos erscheinen öffentlich auf der Vereins-Homepage.',
+  checkinStunden: 4,
+};
+
+function tagPlus(n: number, uhr = '19:00') {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  const p = (x: number) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${uhr}:00`;
+}
+
+function demoTermine(): Termin[] {
+  return [
+    { titel: 'Bastelabend im Vereinsheim', beginn: tagPlus(2), ende: tagPlus(2, '21:30'), ganztaegig: false, ort: 'Vereinsheim' },
+    { titel: 'Arbeitsdienst Flugplatz', beginn: tagPlus(5, '09:00'), ende: tagPlus(5, '13:00'), ganztaegig: false, ort: 'Modellflugplatz', beschreibung: 'Rasen mähen, Hecke schneiden. Bitte Handschuhe mitbringen.' },
+    { titel: 'MGI Jahreshauptversammlung', beginn: tagPlus(14), ende: tagPlus(14, '22:00'), ganztaegig: false, ort: 'Gaststätte (Beispiel)' },
+    { titel: 'Weihnachtsfeier', beginn: tagPlus(29, '00:00'), ende: tagPlus(30, '00:00'), ganztaegig: true },
+    { titel: 'Winterfliegen in der Halle', beginn: tagPlus(40, '18:00'), ende: tagPlus(40, '21:00'), ganztaegig: false, ort: 'Turnhalle' },
+  ];
+}
+
+function zufall(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+function demoWettbewerbe(): { wb: Wettbewerb[]; wt: Wertung[] } {
+  const namen = ['Anton B.', 'Bernd K.', 'Christoph M.', 'Doris F.', 'Erich S.', 'Felix H.'];
+  const wb: Wettbewerb[] = [];
+  const wt: Wertung[] = [];
+  const r = zufall(42);
+  VORLAGEN.forEach((art, ai) => {
+    const id = 'demo' + ai;
+    const tn = namen.slice(0, 4 + (ai % 3)).map((n, i) => ({ id: `${id}t${i}`, name: n, klasse: '' }));
+    const durchgaenge = art.id === 'limbo' ? 2 : 3;
+    wb.push({
+      id, name: `Vereinsmeisterschaft ${art.name.split(' ')[0]}`, datum: tagPlus(-20 - ai * 7).slice(0, 10), art: { ...art },
+      klassen: [], teilnehmer: tn, durchgaenge, status: ai === 0 ? 'offen' : 'abgeschlossen', erstellt: new Date().toISOString(),
+    });
+    tn.forEach((t, ti) => {
+      for (let d = 1; d <= durchgaenge; d++) {
+        if (ai === 0 && d === 3 && ti > 1) continue; // laufender Wettbewerb
+        let eingabe: Wertung['eingabe'];
+        if (art.id === 'kunstflug') {
+          eingabe = { felder: {}, elemente: art.elemente!.liste.map(() => ({ noten: [0, 0, 0].map(() => Math.round((5 + r() * 5) * 2) / 2) })) };
+        } else if (art.id === 'segelflug') {
+          eingabe = { felder: { flugzeit: Math.round(260 + r() * 70), landepunkte: Math.round(r() * 10) * 10 } };
+        } else if (art.id === 'limbo') {
+          eingabe = { felder: { durchfluege: Math.round(1 + r() * 6), hoehe: [100, 150, 200][Math.floor(r() * 3)], beruehrungen: Math.round(r() * 2) } };
+        } else {
+          eingabe = { felder: { ballons: Math.round(2 + r() * 3), zeit: Math.round(40 + r() * 80), strafpunkte: Math.round(r() * 2) * 5 } };
+        }
+        wt.push({ id: `${id}_${t.id}_${d}`, wettbewerbId: id, teilnehmerId: t.id, durchgang: d, eingabe, richter: 'Demo Admin', zeit: new Date().toISOString() });
+      }
+    });
+  });
+  return { wb, wt };
+}
+
+function lade(): DemoDaten {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (d) return d;
+  } catch {
+    /* neu anlegen */
+  }
+  const { wb, wt } = demoWettbewerbe();
+  const d: DemoDaten = {
+    mitglieder: [
+      { id: 'm1', vorname: 'Demo', nachname: 'Admin', rolle: 'admin', sparte: 'flug', aktiv: true, pin: '123456' },
+      { id: 'm2', vorname: 'Max', nachname: 'Muster', rolle: 'mitglied', sparte: 'flug', aktiv: true, pin: '111111' },
+      { id: 'm3', vorname: 'Erika', nachname: 'Beispiel', rolle: 'mitglied', sparte: 'schiff', aktiv: true, pin: '222222' },
+    ],
+    sitzungen: [],
+    checkins: [{ mitgliedId: 'm3', name: 'Erika Beispiel', seit: new Date(Date.now() - 50 * 60000).toISOString(), flugleiter: true }],
+    brett: [
+      {
+        id: 'b1', kategorie: 'biete', titel: 'Segler 2,5 m Spannweite', text: 'Gut erhalten, mit Servos, ohne Empfänger. Abholung am Platz.',
+        preis: '150 €', kontakt: 'Telefon: 0170 0000000', fotos: [], verfasserId: 'm2', verfasser: 'Max Muster',
+        erstellt: new Date(Date.now() - 3 * 86400000).toISOString(), ablauf: new Date(Date.now() + 57 * 86400000).toISOString(),
+      },
+      {
+        id: 'b2', kategorie: 'suche', titel: 'Ladegerät 4S', text: 'Suche ein gebrauchtes Ladegerät für 4S-Akkus.',
+        fotos: [], verfasserId: 'm3', verfasser: 'Erika Beispiel',
+        erstellt: new Date(Date.now() - 86400000).toISOString(), ablauf: new Date(Date.now() + 59 * 86400000).toISOString(),
+      },
+    ],
+    nachweise: {},
+    arten: [],
+    wettbewerbe: wb,
+    wertungen: wt,
+    einstellungen: STANDARD_EINST,
+  };
+  speichere(d);
+  return d;
+}
+
+function speichere(d: DemoDaten) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(d));
+  } catch {
+    /* Speicher voll – Demo läuft trotzdem */
+  }
+}
+
+export function demoZuruecksetzen() {
+  localStorage.removeItem(KEY);
+}
+
+const warte = () => new Promise((r) => setTimeout(r, 150 + Math.random() * 200));
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, token?: string): Promise<T> {
+  await warte();
+  const db = lade();
+  const s = token ? db.sitzungen.find((x) => x.token === token) ?? null : null;
+  const mitglied = () => { if (!s) throw new ApiFehler('Bitte anmelden', 401); return s; };
+  const admin = () => { const x = mitglied(); if (x.rolle !== 'admin') throw new ApiFehler('Nur für Admins', 403); return x; };
+  const fertig = <R>(r: R) => { speichere(db); return r as unknown as T; };
+  const anwesend = () => ({
+    anzahl: db.checkins.length,
+    flugleiter: db.checkins.some((c) => c.flugleiter),
+    liste: s ? db.checkins : [],
+  });
+
+  switch (aktion) {
+    case 'login': {
+      const name = String(d.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      const m = db.mitglieder.find((x) => x.aktiv && (`${x.vorname} ${x.nachname}`.toLowerCase() === name || x.nachname.toLowerCase() === name));
+      if (!m || m.pin !== String(d.pin)) throw new ApiFehler('Name oder PIN falsch', 401);
+      const sitz: Sitzung = { token: uid() + uid(), mitgliedId: m.id, name: `${m.vorname} ${m.nachname}`, rolle: m.rolle, ablauf: Date.now() + 30 * 86400000 };
+      db.sitzungen.push(sitz);
+      return fertig(sitz);
+    }
+    case 'logout':
+      db.sitzungen = db.sitzungen.filter((x) => x.token !== token);
+      return fertig(true);
+    case 'ich': return fertig(mitglied());
+    case 'pin_aendern': {
+      const m = db.mitglieder.find((x) => x.id === mitglied().mitgliedId)!;
+      if (m.pin !== d.alt) throw new ApiFehler('Bisheriger PIN ist falsch', 400);
+      if (!/^\d{6,8}$/.test(String(d.neu))) throw new ApiFehler('Der neue PIN muss 6–8 Ziffern haben', 400);
+      m.pin = String(d.neu);
+      return fertig(true);
+    }
+    case 'mitglieder_liste':
+      admin();
+      return fertig(db.mitglieder.map(({ pin: _p, ...m }) => m));
+    case 'mitglied_anlegen': {
+      admin();
+      const pin = String(Math.floor(100000 + Math.random() * 900000));
+      const id = 'm' + uid();
+      db.mitglieder.push({ id, vorname: String(d.vorname), nachname: String(d.nachname), rolle: d.rolle === 'admin' ? 'admin' : 'mitglied', sparte: (d.sparte as Mitglied['sparte']) || '', aktiv: true, pin });
+      return fertig({ id, pin });
+    }
+    case 'mitglied_aendern': {
+      const a = admin();
+      if (d.id === a.mitgliedId && (d.rolle === 'mitglied' || d.aktiv === false)) throw new ApiFehler('Du kannst dir nicht selbst die Admin-Rechte entziehen oder dich deaktivieren', 400);
+      const m = db.mitglieder.find((x) => x.id === d.id);
+      if (m) Object.assign(m, Object.fromEntries(Object.entries(d).filter(([k, v]) => k !== 'id' && v !== undefined)));
+      if (d.aktiv === false || d.rolle) db.sitzungen = db.sitzungen.filter((x) => x.mitgliedId !== d.id);
+      return fertig(true);
+    }
+    case 'pin_zuruecksetzen': {
+      admin();
+      const m = db.mitglieder.find((x) => x.id === d.id)!;
+      m.pin = String(Math.floor(100000 + Math.random() * 900000));
+      db.sitzungen = db.sitzungen.filter((x) => x.mitgliedId !== d.id);
+      return fertig({ pin: m.pin });
+    }
+    case 'start':
+      return fertig({ oeffentlich: true, anwesend: anwesend(), termine: demoTermine().slice(0, 3), bluetti: demoBluetti() });
+    case 'termine': return fertig(demoTermine());
+    case 'bluetti': return fertig(demoBluetti());
+    case 'bluetti_verlauf': {
+      const tage = d.tage === 7 ? 7 : 1;
+      const n = tage === 7 ? 168 : 144;
+      const schritt = (tage * 86400000) / n;
+      const punkte = Array.from({ length: n }, (_, i) => {
+        const t = Date.now() - (n - i) * schritt;
+        const h = new Date(t).getHours() + new Date(t).getMinutes() / 60;
+        const sonne = Math.max(0, Math.sin(((h - 7) / 11) * Math.PI));
+        return { zeit: new Date(t).toISOString(), soc: Math.round(55 + 30 * Math.sin(((h - 10) / 24) * 2 * Math.PI)), solar: Math.round(sonne * 480) };
+      });
+      return fertig({ eingerichtet: true, punkte });
+    }
+    case 'einstellungen': return fertig(db.einstellungen);
+    case 'einstellungen_speichern':
+      admin();
+      db.einstellungen = { ...db.einstellungen, ...(d as Partial<Einstellungen>) };
+      return fertig(db.einstellungen);
+    case 'foto_hochladen':
+      mitglied();
+      return fertig({ id: uid(), name: `demo_${Date.now()}.jpg` });
+    case 'anwesende': return fertig(anwesend());
+    case 'checkin': {
+      const m = mitglied();
+      db.checkins = db.checkins.filter((c) => c.mitgliedId !== m.mitgliedId);
+      db.checkins.push({ mitgliedId: m.mitgliedId, name: m.name, seit: new Date().toISOString(), flugleiter: !!d.flugleiter });
+      return fertig(anwesend());
+    }
+    case 'checkout': {
+      const m = mitglied();
+      db.checkins = db.checkins.filter((c) => c.mitgliedId !== m.mitgliedId);
+      return fertig(anwesend());
+    }
+    case 'brett_liste':
+      mitglied();
+      return fertig(db.brett.slice().sort((a, b) => b.erstellt.localeCompare(a.erstellt)));
+    case 'brett_speichern': {
+      const m = mitglied();
+      const alt = db.brett.find((b) => b.id === d.id);
+      if (alt && alt.verfasserId !== m.mitgliedId && m.rolle !== 'admin') throw new ApiFehler('Nur eigene Beiträge bearbeiten', 403);
+      const neueFotos = ((d.neueFotos as string[]) || []).map((b64) => 'data:image/jpeg;base64,' + b64);
+      const fotos = [...(alt?.fotos ?? []).filter((f) => !((d.entfernteFotos as string[]) || []).includes(f)), ...neueFotos].slice(0, 3);
+      const b: BrettBeitrag = {
+        id: alt?.id ?? 'b' + uid(), kategorie: (d.kategorie as BrettBeitrag['kategorie']) || 'info', titel: String(d.titel || ''),
+        text: String(d.text || ''), preis: String(d.preis || ''), kontakt: String(d.kontakt || ''), fotos,
+        verfasserId: alt?.verfasserId ?? m.mitgliedId, verfasser: alt?.verfasser ?? m.name, erstellt: alt?.erstellt ?? new Date().toISOString(),
+        ablauf: new Date(Date.now() + 60 * 86400000).toISOString(),
+      };
+      if (!b.titel) throw new ApiFehler('Titel fehlt', 400);
+      db.brett = [...db.brett.filter((x) => x.id !== b.id), b];
+      return fertig(b);
+    }
+    case 'brett_loeschen': {
+      const m = mitglied();
+      const b = db.brett.find((x) => x.id === d.id);
+      if (b && b.verfasserId !== m.mitgliedId && m.rolle !== 'admin') throw new ApiFehler('Nur eigene Beiträge löschen', 403);
+      db.brett = db.brett.filter((x) => x.id !== d.id);
+      return fertig(true);
+    }
+    case 'nachweise': return fertig(db.nachweise[mitglied().mitgliedId] ?? {});
+    case 'nachweise_speichern': {
+      const m = mitglied();
+      db.nachweise[m.mitgliedId] = { kenntnisnachweis: d.kenntnisnachweis as string, eid: d.eid as string, versicherung: d.versicherung as string };
+      return fertig(db.nachweise[m.mitgliedId]);
+    }
+    case 'push_abo': mitglied(); return fertig(true);
+    case 'push_abo_loeschen': return fertig(true);
+    case 'mitteilung_senden': admin(); return fertig({ gesendet: 0 });
+    case 'wertungsarten': return fertig(db.arten);
+    case 'wertungsart_speichern': {
+      admin();
+      const alt = db.arten.find((a) => a.id === d.id) ?? VORLAGEN.find((a) => a.id === d.id);
+      const a = { ...(d as unknown as Wertungsart), version: (alt?.version ?? 0) + 1, geaendert: new Date().toISOString() };
+      db.arten = [...db.arten.filter((x) => x.id !== a.id), a];
+      return fertig(a);
+    }
+    case 'wertungsart_loeschen':
+      admin();
+      db.arten = db.arten.filter((x) => x.id !== d.id);
+      return fertig(true);
+    case 'wettbewerbe':
+      return fertig(db.wettbewerbe.map((w) => ({ id: w.id, name: w.name, datum: w.datum, artName: w.art.name, status: w.status, teilnehmer: w.teilnehmer.length }))
+        .sort((a, b) => b.datum.localeCompare(a.datum)));
+    case 'wettbewerb': {
+      const w = db.wettbewerbe.find((x) => x.id === d.id);
+      if (!w) throw new ApiFehler('Wettbewerb nicht gefunden', 404);
+      return fertig({ wettbewerb: w, wertungen: db.wertungen.filter((x) => x.wettbewerbId === w.id) });
+    }
+    case 'wettbewerb_speichern': {
+      admin();
+      const w = { ...(d as unknown as Wettbewerb) };
+      if (!w.id) { w.id = 'w' + uid(); w.erstellt = new Date().toISOString(); w.status = 'offen'; }
+      w.teilnehmer = w.teilnehmer.map((t) => ({ ...t, id: t.id || 't' + uid() }));
+      db.wettbewerbe = [...db.wettbewerbe.filter((x) => x.id !== w.id), w];
+      return fertig(w);
+    }
+    case 'wettbewerb_loeschen':
+      admin();
+      db.wettbewerbe = db.wettbewerbe.filter((x) => x.id !== d.id);
+      db.wertungen = db.wertungen.filter((x) => x.wettbewerbId !== d.id);
+      return fertig(true);
+    case 'wertung_speichern': {
+      const a = admin();
+      const w: Wertung = {
+        id: `${d.wettbewerbId}_${d.teilnehmerId}_${d.durchgang}`, wettbewerbId: String(d.wettbewerbId), teilnehmerId: String(d.teilnehmerId),
+        durchgang: Number(d.durchgang), eingabe: d.eingabe as Wertung['eingabe'], richter: a.name, zeit: new Date().toISOString(),
+      };
+      db.wertungen = [...db.wertungen.filter((x) => x.id !== w.id), w];
+      return fertig(w);
+    }
+    case 'wertung_loeschen':
+      admin();
+      db.wertungen = db.wertungen.filter((x) => x.id !== d.id);
+      return fertig(true);
+  }
+  throw new ApiFehler('Unbekannte Aktion: ' + aktion, 400);
+}
+
+function demoBluetti() {
+  const h = new Date().getHours();
+  const sonne = Math.max(0, Math.sin(((h - 7) / 11) * Math.PI));
+  const solar = Math.round(sonne * 460);
+  const ac = 85;
+  const dc = 12;
+  return {
+    erreichbar: true,
+    zeit: new Date().toISOString(),
+    daten: {
+      soc: 78, solar_input_w: solar, grid_input_w: 0, ac_output_w: ac, dc_output_w: dc, net_power_w: solar - ac - dc,
+      dc_active: true, ac_active: true, pack_count: 3, pack_internal: true, pack_b300_1: true, pack_b300_2: true,
+      pack1_soc: 81, pack2_soc: 77, pack3_soc: 76, connected: true,
+    },
+  };
+}

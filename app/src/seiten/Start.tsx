@@ -1,0 +1,129 @@
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { Icon } from '../components/Icon';
+import { config, istGesetzt } from '../config';
+import { api, erinnere, merke } from '../lib/api';
+import { useEinstellungen } from '../lib/einstellungen';
+import { klassen, tageBis, terminDatum } from '../lib/helfer';
+import type { BluettiAntwort, Termin } from '../lib/model';
+import { useSitzung } from '../lib/sitzung';
+import { himmelsrichtung, ladeWetter, windAmpel, type WetterJetzt } from '../lib/wetter';
+import { AkkuRing } from '../components/AkkuRing';
+
+interface StartDaten {
+  oeffentlich: boolean;
+  anwesend: { anzahl: number; flugleiter: boolean };
+  termine?: Termin[];
+  bluetti?: BluettiAntwort;
+}
+
+function Kachel({ zu, href, icon, titel, children, farbe = 'blau' }: { zu?: string; href?: string; icon: string; titel: string; children?: ReactNode; farbe?: 'blau' | 'rot' | 'gelb' }) {
+  const ring = { blau: 'bg-himmel-100 text-himmel-700 dark:text-himmel-300', rot: 'bg-red-100 text-mgi-rot dark:text-red-400', gelb: 'bg-sonne-hell text-amber-700 dark:text-sonne' }[farbe];
+  const innen = (
+    <>
+      <span className={klassen('flex h-11 w-11 items-center justify-center rounded-xl dark:bg-slate-800', ring)}>
+        <Icon name={icon} />
+      </span>
+      <span className="mt-2 block font-bold leading-tight">{titel}</span>
+      {children && <span className="mt-0.5 block text-sm text-slate-600 dark:text-slate-400">{children}</span>}
+    </>
+  );
+  const cls = 'karte block min-h-32 p-4 transition hover:shadow-md active:scale-[0.98]';
+  if (href) return <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>{innen}</a>;
+  return <Link to={zu!} className={cls}>{innen}</Link>;
+}
+
+export default function Start() {
+  const s = useSitzung();
+  const { einstellungen } = useEinstellungen();
+  const [d, setD] = useState<StartDaten | null>(() => erinnere<StartDaten>('start'));
+  const [wetter, setWetter] = useState<WetterJetzt | null>(() => erinnere<WetterJetzt>('wetter'));
+
+  useEffect(() => {
+    api<StartDaten>('start').then((x) => { setD(x); merke('start', x); }).catch(() => undefined);
+    ladeWetter().then((w) => { setWetter(w); merke('wetter', w); }).catch(() => undefined);
+  }, [s?.token]);
+
+  const naechster = d?.termine?.[0];
+  const ampel = wetter ? windAmpel(wetter.boeen, einstellungen.windGelb, einstellungen.windRot, wetter.niederschlag, wetter.code) : null;
+  const b = d?.bluetti?.daten;
+
+  return (
+    <div className="mx-auto max-w-2xl px-4 pb-6 pt-4">
+      {/* Statuszeile */}
+      <div className="mb-4 grid grid-cols-2 gap-3">
+        <Link to="/wetter" className="karte flex items-center gap-3 p-3">
+          <span className={klassen('h-3.5 w-3.5 shrink-0 rounded-full', ampel === 'rot' ? 'bg-mgi-rot' : ampel === 'gelb' ? 'bg-sonne' : ampel ? 'bg-emerald-500' : 'bg-slate-300')} aria-hidden />
+          <span className="text-sm leading-tight">
+            {wetter ? (
+              <>
+                <b className="text-base">{Math.round(wetter.wind)}</b> km/h {himmelsrichtung(wetter.richtung)}
+                <span className="block text-slate-500">Böen {Math.round(wetter.boeen)} · {Math.round(wetter.temperatur)} °C</span>
+              </>
+            ) : (
+              <span className="text-slate-500">Wetter lädt …</span>
+            )}
+          </span>
+        </Link>
+        <Link to="/platz" className="karte flex items-center gap-3 p-3">
+          <Icon name="personen" className="h-6 w-6 shrink-0 text-himmel-600" />
+          <span className="text-sm leading-tight">
+            <b className="text-base">{d?.anwesend.anzahl ?? '–'}</b> am Platz
+            <span className="block text-slate-500">{d?.anwesend.flugleiter ? 'Flugleiter da' : 'kein Flugleiter'}</span>
+          </span>
+        </Link>
+      </div>
+
+      {/* Logo & nächster Termin */}
+      <div className="karte mb-4 flex items-center gap-4 overflow-hidden p-4">
+        <img src="logo-640.jpg" alt="Logo der Modellbau-Gemeinschaft Ismaning e.V." className="h-24 w-24 shrink-0 rounded-full" />
+        <div className="min-w-0 flex-1">
+          {s && <p className="text-sm text-slate-500">Hallo {s.name.split(' ')[0]}!</p>}
+          {naechster ? (
+            <Link to="/kalender" className="block">
+              <span className="text-xs font-bold uppercase tracking-wide text-mgi-rot">Nächster Termin · {tageBis(naechster.beginn)}</span>
+              <span className="block truncate text-lg font-bold">{naechster.titel}</span>
+              <span className="block text-sm text-slate-600 dark:text-slate-400">{terminDatum(naechster.beginn, naechster.ganztaegig, naechster.ende)}</span>
+            </Link>
+          ) : (
+            <p className="font-bold">{config.vereinsname}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Kachel zu="/kalender" icon="kalender" titel="Termine">Alle kommenden Termine</Kachel>
+        <Kachel zu="/wetter" icon="wind" titel="Wetter">
+          {ampel === 'rot' ? 'Zu viel Wind' : ampel === 'gelb' ? 'Wind beachten' : ampel ? 'Gutes Flugwetter' : 'Wind & Vorhersage'}
+        </Kachel>
+        <Link to="/webcam" className="karte relative col-span-2 block h-40 overflow-hidden bg-gradient-to-br from-himmel-200 to-himmel-500">
+          <Icon name="webcam" className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 text-white/70" />
+          <img src={config.webcam.snapshotUrl} alt="Aktuelles Webcam-Bild vom Flugplatz" className="relative h-full w-full object-cover" loading="lazy"
+            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
+          <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/70 to-transparent p-3 font-bold text-white">
+            <Icon name="webcam" /> Webcam Flugplatz
+          </span>
+        </Link>
+        <Link to="/strom" className="karte flex min-h-32 items-center gap-3 p-4">
+          <AkkuRing prozent={b?.soc ?? null} groesse={64} />
+          <span>
+            <span className="block font-bold">Strom</span>
+            <span className="block text-sm text-slate-600 dark:text-slate-400">
+              {!d?.bluetti ? 'Bluetti' : b ? `☀ ${b.solar_input_w} W` : 'nicht erreichbar'}
+            </span>
+          </span>
+        </Link>
+        <Kachel zu="/foto" icon="kamera" titel="Foto aufnehmen" farbe="rot">Direkt auf die Homepage</Kachel>
+        <Kachel zu="/wettbewerbe" icon="pokal" titel="Wettbewerbe" farbe="gelb">Ergebnisse & Wertung</Kachel>
+        <Kachel zu="/platz" icon="personen" titel="Wer ist am Platz?">Einchecken</Kachel>
+        <Kachel zu="/brett" icon="pinnwand" titel="Schwarzes Brett">Biete · Suche · Info</Kachel>
+        {istGesetzt(config.arbeitsdienstUrl) ? (
+          <Kachel href={config.arbeitsdienstUrl} icon="schaufel" titel="Arbeitsdienst">Termine & Eintragen</Kachel>
+        ) : (
+          <Kachel zu="/mehr" icon="schaufel" titel="Arbeitsdienst">Link folgt</Kachel>
+        )}
+        <div className="col-span-2"><Kachel zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" farbe="rot">Notruf 112, Standort, Regeln am Platz</Kachel></div>
+      </div>
+    </div>
+  );
+}
