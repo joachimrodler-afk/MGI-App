@@ -17,7 +17,7 @@ export const config = {
    * Adresse der Apps-Script-Web-App (endet auf /exec).
    * Leer lassen = Demo-Modus mit Beispieldaten (nur auf diesem Gerät gespeichert).
    */
-  apiUrl: '',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbwYpvHj7fK74ioY2YbiPidO2uFnxhsYZVR5ks-9u9pVMIARDS_NMVcm-62gOzls-GdAMg/exec',
 
   /** Dürfen Kalender, Wetter, Webcam und Ergebnisse ohne Anmeldung angezeigt werden? */
   oeffentlichLesbar: true,
