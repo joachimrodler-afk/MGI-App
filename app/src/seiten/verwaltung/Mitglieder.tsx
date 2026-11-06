@@ -8,7 +8,18 @@ import type { Mitglied } from '../../lib/model';
 import { useSitzung } from '../../lib/sitzung';
 
 function PinAnzeige({ name, pin, schliessen }: { name: string; pin: string; schliessen: () => void }) {
-  const text = `Hallo ${name.split(' ')[0]}, dein Zugang zur MGI-App:\nName: ${name}\nPIN: ${pin}\n\nBitte ändere den PIN nach der ersten Anmeldung unter „Mein Konto“.`;
+  // Adresse der App (funktioniert unter jeder Domain, z. B. GitHub Pages)
+  const appLink = `${location.origin}${location.pathname}`;
+  const text =
+    `Hallo ${name.split(' ')[0]}, hier ist dein Zugang zur MGI-App:\n\n` +
+    `👉 ${appLink}\n\n` +
+    `Name: ${name}\nPIN: ${pin}\n\n` +
+    `So geht's:\n` +
+    `1. Link öffnen und die App auf den Startbildschirm legen\n` +
+    `   – Android: Menü ⋮ → „App installieren“\n` +
+    `   – iPhone: Teilen-Symbol → „Zum Home-Bildschirm“\n` +
+    `2. App öffnen, oben aufs Schloss tippen, Name und PIN eingeben – du bleibst dann angemeldet.\n` +
+    `3. Bitte den PIN danach unter „Mehr → Mein Konto“ ändern.`;
   return (
     <div className="karte space-y-3 border-2 border-sonne p-4">
       <p className="font-bold">PIN für {name}</p>
