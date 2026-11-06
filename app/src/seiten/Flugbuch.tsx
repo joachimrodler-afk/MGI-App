@@ -217,6 +217,8 @@ function Inhalt() {
   const [fehler2, setFehler2] = useState('');
   const [flOffen, setFlOffen] = useState(false);
   const [gastForm, setGastForm] = useState(false);
+  // Besondere Vorkommnisse: eigener Entwurf, wird bei der 30-Sekunden-Aktualisierung nicht überschrieben
+  const [notiz, setNotiz] = useState<{ id: string; text: string } | null>(null);
   const [bed, setBed] = useBedingungenVorschlag();
 
   // alle 30 Sekunden aktualisieren, damit „Jetzt am Platz“ stimmt
@@ -236,6 +238,9 @@ function Inhalt() {
   const flAktiv = st.flugleiter.filter((f) => !f.ende);
   const ichFl: FlugleiterEintrag | undefined = flAktiv.find((f) => f.mitgliedId === s.mitgliedId);
   const heute = st.piloten.slice().sort((a, b) => b.beginnTs.localeCompare(a.beginnTs));
+  const gespeichert = ich?.vorkommnisse ?? '';
+  const entwurf = ich && notiz?.id === ich.id ? notiz.text : gespeichert;
+  const geaendert = !!ich && entwurf.trim() !== gespeichert.trim();
 
   return (
     <div className="space-y-4">
@@ -248,7 +253,20 @@ function Inhalt() {
             <Icon name="haken" className="mr-1 inline h-6 w-6" /> Seit {ich.beginn} Uhr im Flugbuch angemeldet
           </p>
           <p className="text-sm text-slate-600 dark:text-slate-400">{antriebText(ich.antrieb)} · {ich.masse}{ich.schulungsnachweis ? ' · Schulungsnachweis' : ''}</p>
-          <Knopf className="w-full text-lg" onClick={() => aktion('flugbuch_abmelden', { id: ich.id }, ich.id)} laedt={arbeitet === ich.id}>
+          <div className="rounded-xl bg-himmel-50 p-3 dark:bg-slate-800">
+            <label htmlFor="vorkommnisse" className="mb-1 block text-sm font-bold">Besondere Vorkommnisse</label>
+            <textarea id="vorkommnisse" className="eingabe min-h-24 bg-white dark:bg-slate-900" maxLength={1000} value={entwurf}
+              onChange={(e) => setNotiz({ id: ich.id, text: e.target.value })}
+              placeholder="z. B. Absturz, Beinahe-Zusammenstoß, Schaden am Platz, Störung der Fernsteuerung …" />
+            <div className="mt-2 flex items-center gap-3">
+              <Knopf art="sekundaer" className="!min-h-10 !px-4 text-sm" disabled={!geaendert} laedt={arbeitet === 'notiz'}
+                onClick={() => aktion('flugbuch_kommentar', { id: ich.id, text: entwurf }, 'notiz')}>Speichern</Knopf>
+              <span className="text-xs text-slate-500">
+                {geaendert ? 'Noch nicht gespeichert – wird spätestens beim Abmelden übernommen.' : gespeichert ? 'Gespeichert im Flugbuch.' : 'Optional, kann bis zum Abmelden ergänzt werden.'}
+              </span>
+            </div>
+          </div>
+          <Knopf className="w-full text-lg" onClick={() => aktion('flugbuch_abmelden', geaendert ? { id: ich.id, vorkommnisse: entwurf } : { id: ich.id }, ich.id)} laedt={arbeitet === ich.id}>
             Abmelden · Ende {uhrzeit(new Date().toISOString())} Uhr
           </Knopf>
           <p className="text-center text-xs text-slate-500">Vergessen? Nach {st.autoStunden} Std. wird automatisch abgemeldet.</p>

@@ -335,6 +335,16 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       if (!p) throw new ApiFehler('Eintrag nicht gefunden oder schon abgemeldet', 404);
       if (p.mitgliedId !== ich.mitgliedId && ich.rolle !== 'admin') throw new ApiFehler('Nur eigene Einträge abmelden', 403);
       p.ende = demoUhr(); p.endeTs = new Date().toISOString();
+      if (typeof d.vorkommnisse === 'string') p.vorkommnisse = d.vorkommnisse.trim().slice(0, 1000);
+      return fertig(flugbuchStatus());
+    }
+    case 'flugbuch_kommentar': {
+      const ich = mitglied();
+      const p = fb().find((x) => x.id === d.id);
+      if (!p) throw new ApiFehler('Eintrag nicht gefunden', 404);
+      if (p.mitgliedId !== ich.mitgliedId && ich.rolle !== 'admin') throw new ApiFehler('Nur zum eigenen Eintrag', 403);
+      if (p.ende && ich.rolle !== 'admin') throw new ApiFehler('Du bist schon abgemeldet', 400);
+      p.vorkommnisse = String(d.text ?? '').trim().slice(0, 1000);
       return fertig(flugbuchStatus());
     }
     case 'flugleiter_anmelden': flugleiterAn(d.bedingungen as Record<string, unknown>); return fertig(flugbuchStatus());

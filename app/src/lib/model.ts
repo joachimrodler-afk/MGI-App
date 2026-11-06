@@ -232,6 +232,8 @@ export interface FlugbuchEintrag {
   beginnTs: string;
   endeTs: string;
   autoBeendet: boolean;
+  /** Besondere Vorkommnisse (Freitext) */
+  vorkommnisse?: string;
 }
 
 export interface Flugbedingungen {

@@ -51,7 +51,7 @@ export const config = {
   },
 
   /** Arbeitsdienst-Liste (Google-Tabelle im Vereins-Drive) – Mitglieder tragen sich dort ein */
-  arbeitsdienstUrl: 'https://docs.google.com/spreadsheets/d/1-4fZkz3a4TTHiGIb_dJHv5kdszw7dVQG6lIEEgkXuNw/edit',
+  arbeitsdienstUrl: 'https://docs.google.com/spreadsheets/d/1JmdUEeU4ioUFeHaxiUrYIoH8fhXx-LL8zA88nC-rPaA/edit',
 
   platz: {
     /**

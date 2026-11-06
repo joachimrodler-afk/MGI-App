@@ -17,12 +17,14 @@ function neueTabelle() {
       rows,
       appendRow: (r) => rows.push(r.map((v) => (typeof v === 'string' && v.startsWith("'") ? v.slice(1) : v))),
       setFrozenRows: () => {},
-      getRange: (r, c) => ({
+      getLastColumn: () => Math.max(0, ...rows.map((r) => r.length)),
+      getRange: (r, c, nr, nc) => ({
+        getValues: () => rows.slice(r - 1, r - 1 + (nr || 1)).map((z) => Array.from({ length: nc || 1 }, (_, i) => z[c - 1 + i] ?? '')),
         setFontWeight: () => {},
         setValue: (v) => { rows[r - 1][c - 1] = typeof v === 'string' && v.startsWith("'") ? v.slice(1) : v; },
         setValues: () => {},
       }),
-      getDataRange: () => ({ getValues: () => rows.map((r) => r.slice()) }),
+      getDataRange: () => ({ getValues: () => { const w = Math.max(0, ...rows.map((r) => r.length)); return rows.map((r) => Array.from({ length: w }, (_, i) => r[i] ?? '')); } }),
       getLastRow: () => rows.length,
       deleteRow: (i) => rows.splice(i - 1, 1),
     };
@@ -130,8 +132,17 @@ const oeff = ok(rufe('anwesende', {}));
 assert.equal(oeff.anzahl, 2);
 assert.equal(oeff.liste.length, 0);
 
+// Besondere Vorkommnisse, solange angemeldet
+assert.equal(p.vorkommnisse, '');
+st = ok(rufe('flugbuch_kommentar', { id: p.id, text: '  Landung im Mais, Modell geborgen  ' }, klaus.token));
+assert.equal(st.piloten.find((x) => x.id === p.id).vorkommnisse, 'Landung im Mais, Modell geborgen');
+assert.equal(rufe('flugbuch_kommentar', { id: p.id, text: 'fremd' }, admin.token).ok, true, 'Admin darf');
+st = ok(rufe('flugbuch_kommentar', { id: p.id, text: 'Landung im Mais, Modell geborgen' }, klaus.token));
+
 // Abmelden: Ende wird eingetragen
 st = ok(rufe('flugbuch_abmelden', { id: p.id }, klaus.token));
+assert.equal(rufe('flugbuch_kommentar', { id: p.id, text: 'zu spät' }, klaus.token).ok, false, 'nach Abmelden gesperrt');
+assert.equal(st.piloten.find((x) => x.id === p.id).vorkommnisse, 'Landung im Mais, Modell geborgen');
 const pNachher = st.piloten.find((x) => x.id === p.id);
 assert.match(pNachher.ende, /^\d\d:\d\d$/);
 assert.equal(st.anwesend.anzahl, 2, 'Gast + Flugleiter noch da');
@@ -205,3 +216,16 @@ assert.equal(ctx.personZuMitglied('Maier', mg), null); // nicht eindeutig
 assert.equal(ctx.personZuMitglied('Eva Maier', mg), '5');
 assert.equal(ctx.personZuMitglied('Unbekannt', mg), null);
 console.log('Arbeitsdienst-Parser OK');
+
+// Update: fehlende Spalte wird an ein altes Blatt angehängt
+{
+  const alt = neueTabelle().insertSheet('Flugbuch');
+  const kopfAlt = ctx.BLAETTER.Flugbuch.filter((k) => k !== 'vorkommnisse');
+  alt.appendRow(kopfAlt);
+  alt.appendRow(kopfAlt.map(() => 'x'));
+  vm.runInContext('_spaltenGeprueft = {}', ctx);
+  ctx.spaltenErgaenzen_(alt, 'Flugbuch');
+  assert.equal(alt.rows[0].at(-1), 'vorkommnisse');
+  assert.equal(alt.rows[0].length, ctx.BLAETTER.Flugbuch.length);
+  console.log('Spalten-Update OK');
+}

@@ -9,12 +9,12 @@ import type { FlugbuchEintrag, FlugleiterEintrag } from '../../lib/model';
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 function csv(piloten: FlugbuchEintrag[]) {
-  const kopf = ['Datum', 'Name', 'Vorname', 'Verein/Gast', 'Schulungsnachweis', 'Segler', 'Elektro', 'Kolben', 'Turbine', 'max. Masse', 'Beginn', 'Ende', 'automatisch beendet', 'eingetragen von'];
+  const kopf = ['Datum', 'Name', 'Vorname', 'Verein/Gast', 'Schulungsnachweis', 'Segler', 'Elektro', 'Kolben', 'Turbine', 'max. Masse', 'Beginn', 'Ende', 'automatisch beendet', 'eingetragen von', 'Besondere Vorkommnisse'];
   const x = (b: boolean) => (b ? 'x' : '');
   const zeilen = piloten.map((p) => [
     p.datum, p.name, p.vorname, p.vereinGast, p.schulungsnachweis ? 'ja' : 'nein',
     x(p.antrieb.includes('segler')), x(p.antrieb.includes('elektro')), x(p.antrieb.includes('kolben')), x(p.antrieb.includes('turbine')),
-    p.masse, p.beginn, p.ende, p.autoBeendet ? 'ja' : '', p.eingetragenVon,
+    p.masse, p.beginn, p.ende, p.autoBeendet ? 'ja' : '', p.eingetragenVon, p.vorkommnisse ?? '',
   ]);
   const esc = (s: string) => (/[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
   return [kopf, ...zeilen].map((z) => z.map((v) => esc(String(v ?? ''))).join(';')).join('\r\n');
@@ -67,15 +67,22 @@ function Inhalt() {
                   <table className="w-full text-[13px]">
                     <thead><tr className="text-left text-xs text-slate-500"><th className="px-3 py-1.5">Pilot</th><th className="px-1">V/G</th><th className="px-1">Antrieb</th><th className="px-1">Masse</th><th className="px-3 text-right">Zeit</th></tr></thead>
                     <tbody>
-                      {liste.map((p) => (
+                      {liste.map((p) => [
                         <tr key={p.id} className="border-t border-himmel-100 dark:border-slate-800">
                           <td className="px-3 py-2 font-semibold">{p.vorname} {p.name}{p.schulungsnachweis && <span title="Schulungsnachweis"> ✓</span>}</td>
                           <td className="px-1">{p.vereinGast === 'Gast' ? 'G' : 'V'}</td>
                           <td className="px-1">{p.antrieb.map((a) => a[0].toUpperCase()).join('')}</td>
                           <td className="px-1">{p.masse}</td>
                           <td className="whitespace-nowrap px-3 text-right tabular-nums">{p.beginn}–{p.ende || '…'}{p.autoBeendet ? '*' : ''}</td>
-                        </tr>
-                      ))}
+                        </tr>,
+                        p.vorkommnisse ? (
+                          <tr key={p.id + '-v'}>
+                            <td colSpan={5} className="whitespace-pre-line px-3 pb-2 text-xs text-amber-800 dark:text-amber-300">
+                              <b>Vorkommnis:</b> {p.vorkommnisse}
+                            </td>
+                          </tr>
+                        ) : null,
+                      ])}
                     </tbody>
                   </table>
                 </div>

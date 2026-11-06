@@ -26,3 +26,7 @@ Die Kachel **Arbeitsdienst** auf der Startseite öffnet die Arbeitsliste (Google
 Die App erinnert dich dann automatisch:
 - auf der Startseite ab zwei Wochen vorher mit einem gelben Hinweis,
 - per Push-Nachricht am Montag der Woche davor und am Montag deiner Woche (abschaltbar unter Konto → Push-Nachrichten).
+
+## Besondere Vorkommnisse im Flugbuch
+
+Solange du im Flugbuch angemeldet bist, gibt es unter deiner Anmeldung das Feld **„Besondere Vorkommnisse“**. Dort kannst du frei hineinschreiben, was passiert ist, z. B. einen Absturz, einen Schaden am Platz oder eine Störung. Tippe auf **Speichern**. Was beim Abmelden noch nicht gespeichert war, wird automatisch übernommen. Nach dem Abmelden können nur noch Admins den Text ändern.
