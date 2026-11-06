@@ -4,7 +4,7 @@
 - **Android:** Menü (⋮) → **„App installieren“**
 - **iPhone:** Teilen-Symbol → **„Zum Home-Bildschirm“**
 
-**Anmelden:** Tippe oben auf das Schloss und gib deinen **Vor- und Nachnamen** und deinen **persönlichen PIN** ein. Ändere den PIN nach der ersten Anmeldung unter **Mehr → Mein Konto → PIN ändern**. Wenn du den PIN vergessen hast, kann der Vorstand ihn zurücksetzen.
+**Anmelden:** Tippe oben auf das Schloss und gib deinen **Vor- und Nachnamen** und deinen **persönlichen PIN** ein. Das ist nur **einmal** nötig – danach bleibst du auf diesem Handy dauerhaft angemeldet (bis du dich abmeldest oder der Vorstand einen neuen PIN vergibt). Auf dem iPhone bitte in der installierten App anmelden, nicht in Safari. Ändere den PIN nach der ersten Anmeldung unter **Mehr → Mein Konto → PIN ändern**. Wenn du den PIN vergessen hast, kann der Vorstand ihn zurücksetzen.
 
 **Die wichtigsten Funktionen**
 - 🚨 **Notfall** (roter Button oben): Notruf 112, Koordinaten für den Rettungsdienst und die Platzordnung. Funktioniert auch ohne Netz.

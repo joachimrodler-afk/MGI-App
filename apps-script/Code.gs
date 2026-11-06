@@ -31,7 +31,9 @@
  */
 
 var TZ = 'Europe/Berlin';
-var SITZUNG_TAGE = 30;
+// Anmeldungen laufen nicht ab: einmal anmelden, dauerhaft angemeldet.
+// Beendet wird eine Anmeldung nur durch Abmelden, neuen PIN oder Deaktivieren.
+var SITZUNG_UNBEGRENZT = 0;
 var MAX_FEHLVERSUCHE = 5;
 var SPERRE_MIN = 10;
 var HASH_RUNDEN = 300;
@@ -177,7 +179,10 @@ function stuendlich() {
 
 function aufraeumen_() {
   var jetzt = Date.now();
-  loescheZeilen_('Sitzungen', function (r) { return Number(r.ablauf) < jetzt; });
+  // Sitzungen laufen nicht ab (siehe SITZUNG_UNBEGRENZT); nur verwaiste Sitzungen entfernen
+  var ids = {};
+  zeilen_('Mitglieder').forEach(function (m) { if (String(m.aktiv) === 'true') ids[m.id] = true; });
+  loescheZeilen_('Sitzungen', function (r) { return !ids[r.mitgliedId]; });
   loescheZeilen_('Brett', function (r) { return r.ablauf && new Date(r.ablauf).getTime() < jetzt; });
 }
 
@@ -214,7 +219,7 @@ function login_(d) {
   }
   cache.remove(key);
   var token = Utilities.getUuid() + Utilities.getUuid().replace(/-/g, '');
-  var ablauf = Date.now() + SITZUNG_TAGE * 86400000;
+  var ablauf = SITZUNG_UNBEGRENZT;
   blatt_('Sitzungen').appendRow([token, m.id, ablauf]);
   return sitzungObjekt_(token, m, ablauf);
 }
@@ -236,7 +241,7 @@ function sitzungPruefen_(token) {
   var c = cache.get('s_' + token);
   if (c) return JSON.parse(c);
   var s = zeilen_('Sitzungen').filter(function (r) { return r.token === token; })[0];
-  if (!s || Number(s.ablauf) < Date.now()) throw fehler_('Sitzung abgelaufen – bitte neu anmelden', 401);
+  if (!s) throw fehler_('Abgemeldet – bitte neu anmelden', 401);
   var m = mitgliedNachId_(s.mitgliedId);
   if (!m || String(m.aktiv) !== 'true') throw fehler_('Zugang deaktiviert', 401);
   var obj = sitzungObjekt_(token, m, s.ablauf);

@@ -7,7 +7,7 @@
 | Blatt | Spalten | Inhalt |
 |---|---|---|
 | **Mitglieder** | `id`, `vorname`, `nachname`, `rolle` (mitglied/admin), `sparte` (flug/schiff), `salt`, `hash`, `aktiv` (true/false), `erstellt` | Mitglieder. Der PIN steht **nur als Hash** darin |
-| **Sitzungen** | `token`, `mitgliedId`, `ablauf` (ms) | Anmeldungen (30 Tage gültig). Abgelaufene löscht der tägliche Trigger |
+| **Sitzungen** | `token`, `mitgliedId`, `ablauf` (ms) | Anmeldungen. Sie laufen nicht ab; sie enden durch Abmelden, neuen PIN oder Deaktivieren. Sitzungen deaktivierter Mitglieder löscht der tägliche Trigger |
 | **Einstellungen** | `schluessel`, `wert` (JSON) | Platzordnung, Notfall-Infos, Kontakte, Windgrenzen, Datenschutztext, Check-in-Dauer |
 | **Wertungsarten** | `id`, `json` | Wertungsarten mit Feldern, Konstanten, Formel und Version |
 | **Wettbewerbe** | `id`, `json` | Wettbewerbe mit Teilnehmern und einer Kopie der Wertungsart |

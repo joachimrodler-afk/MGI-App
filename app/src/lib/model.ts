@@ -7,6 +7,7 @@ export interface Sitzung {
   mitgliedId: string;
   name: string;
   rolle: Rolle;
+  /** 0 = unbegrenzt gültig */
   ablauf: number;
 }
 

@@ -17,6 +17,9 @@ window.addEventListener('mgi-thema', thema);
 
 registerSW({ immediate: true });
 
+// Browser bitten, die Anmeldung nicht automatisch zu löschen (dauerhaft angemeldet bleiben)
+void navigator.storage?.persist?.().catch(() => undefined);
+
 // Wartende Fotos beim Start hochladen
 if (navigator.onLine) setTimeout(() => void hochladen(), 3000);
 

@@ -175,7 +175,7 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       const name = String(d.name || '').trim().toLowerCase().replace(/\s+/g, ' ');
       const m = db.mitglieder.find((x) => x.aktiv && (`${x.vorname} ${x.nachname}`.toLowerCase() === name || x.nachname.toLowerCase() === name));
       if (!m || m.pin !== String(d.pin)) throw new ApiFehler('Name oder PIN falsch', 401);
-      const sitz: Sitzung = { token: uid() + uid(), mitgliedId: m.id, name: `${m.vorname} ${m.nachname}`, rolle: m.rolle, ablauf: Date.now() + 30 * 86400000 };
+      const sitz: Sitzung = { token: uid() + uid(), mitgliedId: m.id, name: `${m.vorname} ${m.nachname}`, rolle: m.rolle, ablauf: 0 };
       db.sitzungen.push(sitz);
       return fertig(sitz);
     }

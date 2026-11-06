@@ -34,7 +34,7 @@ export function LoginFormular({ text }: { text?: string }) {
         </span>
         <div>
           <h2 className="font-bold">Anmelden</h2>
-          <p className="text-sm text-slate-500">{text ?? 'Mit deinem Namen und deinem persönlichen PIN.'}</p>
+          <p className="text-sm text-slate-500">{text ?? 'Einmal mit Namen und persönlichem PIN – danach bleibst du auf diesem Gerät angemeldet.'}</p>
         </div>
       </div>
       <Feld label="Vor- und Nachname">

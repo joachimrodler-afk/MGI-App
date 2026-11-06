@@ -17,7 +17,8 @@ export class ApiFehler extends Error {
 export function ladeSitzung(): Sitzung | null {
   try {
     const s = JSON.parse(localStorage.getItem(SITZUNG_KEY) || 'null') as Sitzung | null;
-    if (s && s.ablauf > Date.now()) return s;
+    // Anmeldungen laufen nicht ab – nur Abmelden, neuer PIN oder Deaktivieren beenden sie
+    if (s && s.token) return s;
   } catch {
     /* kein Speicher verfügbar */
   }
