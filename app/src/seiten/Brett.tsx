@@ -84,13 +84,18 @@ function Formular({ alt, fertig }: { alt?: BrettBeitrag; fertig: () => void }) {
       {kategorie !== 'info' && <Feld label="Preis (optional)"><input className="eingabe" value={preis} onChange={(e) => setPreis(e.target.value)} maxLength={30} placeholder="z. B. 50 € oder VB" /></Feld>}
       <div>
         <span className="label">Kontakt (optional – nur angeben, was du teilen möchtest)</span>
-        <div className="flex gap-2">
-          <select className="eingabe w-36" value={kArt} onChange={(e) => setKArt(e.target.value as KontaktArt)} aria-label="Kontaktart">
-            <option value="tel">Telefon</option>
-            <option value="wa">WhatsApp</option>
-            <option value="mail">E-Mail</option>
-          </select>
-          <input className="eingabe flex-1" value={kWert} onChange={(e) => setKWert(e.target.value)} inputMode={kArt === 'mail' ? 'email' : 'tel'} aria-label="Kontakt" />
+        <div className="space-y-2">
+          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Kontaktart">
+            {([['tel', 'Telefon'], ['wa', 'WhatsApp'], ['mail', 'E-Mail']] as const).map(([k, n]) => (
+              <button type="button" key={k} role="radio" aria-checked={kArt === k} onClick={() => setKArt(k)}
+                className={klassen('min-h-11 rounded-xl font-semibold', kArt === k ? 'bg-himmel-600 text-white' : 'bg-himmel-100 dark:bg-slate-800')}>
+                {n}
+              </button>
+            ))}
+          </div>
+          <input className="eingabe" value={kWert} onChange={(e) => setKWert(e.target.value)}
+            type={kArt === 'mail' ? 'email' : 'tel'} inputMode={kArt === 'mail' ? 'email' : 'tel'} autoComplete={kArt === 'mail' ? 'email' : 'tel'}
+            placeholder={kArt === 'mail' ? 'name@beispiel.de' : 'Handynummer, z. B. 0170 1234567'} aria-label={kArt === 'mail' ? 'E-Mail-Adresse' : 'Telefonnummer'} />
         </div>
       </div>
       <div>
