@@ -66,6 +66,19 @@ export default function Notfall() {
             </div>
           </div>
 
+          <div className="karte overflow-hidden">
+            <h2 className="px-4 pt-3 font-bold">Anfahrt</h2>
+            <a href="anfahrt-karte.jpg" target="_blank" rel="noopener noreferrer" className="block px-4 pt-2">
+              <img src="anfahrt-karte.jpg" alt="Karte der Anfahrt: von Fischerhäuser über die Wiesstraße, von Ismaning über die Moosstraße oder von der B388 über den Feldweg zum Flugplatz; nördlich des Platzes ist die Flugzone gesperrt"
+                className="w-full rounded-xl" />
+            </a>
+            <ul className="space-y-1.5 p-4 text-sm">
+              <li><b>Mit dem Fahrrad:</b> von Fischerhäuser die Wiesstraße entlang, am SC Grüne Heide vorbei und über die S-Bahn-Brücke. Nach der Moosstraße dem Feldweg folgen, der Platz liegt links.</li>
+              <li><b>Mit dem Auto:</b> von der B388 oder über die Moosstraße von Ismaning.</li>
+              <li className="font-semibold text-mgi-rot">Bitte nur von Süden anfahren – nördlich des Platzes ist die Flugzone.</li>
+            </ul>
+          </div>
+
           {e.notfallInfo && (
             <div className="karte md p-4" dangerouslySetInnerHTML={{ __html: markdown(e.notfallInfo) }} />
           )}
