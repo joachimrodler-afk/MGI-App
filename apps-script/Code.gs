@@ -158,6 +158,7 @@ var AKTIONEN = {
   nachweise_speichern: { recht: 'mitglied', fn: nachweiseSpeichern_ },
   // Push
   push_abo: { recht: 'mitglied', fn: pushAbo_ },
+  push_test: { recht: 'mitglied', fn: pushTest_ },
   push_abo_loeschen: { recht: 'offen', fn: pushAboLoeschen_ },
   mitteilung_senden: { recht: 'admin', fn: mitteilungSenden_ },
   // Wettbewerbe
@@ -1812,6 +1813,12 @@ function pushAbo_(d, s) {
   return true;
 }
 
+/** Test-Nachricht an alle eigenen Geräte (Konto → „Test-Nachricht senden“) */
+function pushTest_(d, s) {
+  if (!prop_('FCM_SERVICE_ACCOUNT')) throw fehler_('Push ist im Backend nicht eingerichtet', 400);
+  return { gesendet: pushSenden_('test', 'MGI – Test', 'Push-Nachrichten funktionieren auf diesem Gerät.', '#/konto', null, s.mitgliedId) };
+}
+
 function pushAboLoeschen_(d) {
   if (d.fcmToken) mitSperre_(function () { loescheZeilen_('PushAbos', function (r) { return r.fcmToken === d.fcmToken; }); });
   return true;
@@ -1852,9 +1859,16 @@ function pushSenden_(anlass, titel, text, pfad, ausser, nur) {
       message: {
         token: r.fcmToken,
         data: { titel: titel, text: text, url: appUrl + pfad, anlass: anlass },
-        webpush: { headers: { Urgency: anlass === 'mitteilungen' ? 'high' : 'normal', TTL: '86400' } },
+        // "notification" zusätzlich zu "data": Safari/iPhone stellt Web-Push damit zuverlässiger zu.
+        // Angezeigt wird trotzdem nur einmal – vom Service Worker der App (push-Ereignis).
+        webpush: {
+          headers: { Urgency: anlass === 'mitteilungen' || anlass === 'test' ? 'high' : 'normal', TTL: '86400' },
+          notification: { title: titel, body: text },
+        },
       },
     };
+    // Link nur mit gültiger https-Adresse (sonst lehnt FCM die Nachricht ab)
+    if (/^https:\/\//.test(appUrl)) nachricht.message.webpush.fcm_options = { link: appUrl + pfad };
     var res = UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/' + konto.project_id + '/messages:send', {
       method: 'post',
       contentType: 'application/json',
@@ -1864,7 +1878,8 @@ function pushSenden_(anlass, titel, text, pfad, ausser, nur) {
     });
     var code = res.getResponseCode();
     if (code === 200) gesendet++;
-    else if (code === 404 || code === 400) ungueltig.push(r.fcmToken);
+    // Abo nur löschen, wenn FCM das Gerät nicht mehr kennt – nicht bei einem Fehler in der Nachricht selbst
+    else if (code === 404 || (code === 400 && /registration token|UNREGISTERED/i.test(res.getContentText()))) ungueltig.push(r.fcmToken);
     else console.warn('FCM ' + code + ': ' + res.getContentText().slice(0, 200));
   });
   if (ungueltig.length) loescheZeilen_('PushAbos', function (r) { return ungueltig.indexOf(r.fcmToken) >= 0; });

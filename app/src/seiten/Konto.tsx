@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LoginFormular } from '../components/Anmelden';
 import { Icon } from '../components/Icon';
 import { Feld, Fehler, Hinweis, Knopf, Schalter, Seite } from '../components/ui';
@@ -7,7 +7,7 @@ import { api, speichereSitzung } from '../lib/api';
 import { demoZuruecksetzen } from '../lib/demo';
 import { klassen } from '../lib/helfer';
 import type { PushEinstellungen } from '../lib/model';
-import { pushAusschalten, pushEinschalten, pushEinstellungenSpeichern, pushMoeglich, pushStatus, STANDARD_PUSH } from '../lib/push';
+import { erlaubnisHilfe, pushAuffrischen, pushAusschalten, pushEinschalten, pushEinstellungenSpeichern, pushErlaubnis, pushMoeglich, pushStatus, pushTesten, STANDARD_PUSH } from '../lib/push';
 import { useSitzung } from '../lib/sitzung';
 
 const PUSH_ANLAESSE: { key: keyof PushEinstellungen; name: string; text: string }[] = [
@@ -23,17 +23,30 @@ function PushBereich({ admin }: { admin: boolean }) {
   const [st, setSt] = useState(pushStatus);
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState('');
+  const [test, setTest] = useState('');
   const moeglich = pushMoeglich();
+  const erlaubnis = moeglich.ok ? pushErlaubnis() : 'fehlt';
+  const aktiv = !!st.token && erlaubnis === 'granted';
+
+  // Abo beim Öffnen prüfen (neues Token nach iOS-Update, Erlaubnis entzogen …)
+  useEffect(() => { void pushAuffrischen().then(() => setSt(pushStatus())).catch(() => undefined); }, []);
 
   async function an() {
-    setLaedt(true); setFehler('');
+    setLaedt(true); setFehler(''); setTest('');
     try { await pushEinschalten(st.einstellungen); setSt(pushStatus()); } catch (e) { setFehler((e as Error).message); } finally { setLaedt(false); }
   }
   async function aus() {
-    setLaedt(true);
+    setLaedt(true); setTest('');
     await pushAusschalten();
     setSt(pushStatus());
     setLaedt(false);
+  }
+  async function testen() {
+    setLaedt(true); setFehler(''); setTest('');
+    try {
+      const n = await pushTesten();
+      setTest(n ? `Test-Nachricht an ${n} ${n === 1 ? 'Gerät' : 'Geräte'} gesendet – sie sollte in wenigen Sekunden erscheinen.` : 'Für dich ist kein Gerät registriert. Bitte Push aus- und wieder einschalten.');
+    } catch (e) { setFehler((e as Error).message); } finally { setLaedt(false); }
   }
   async function setze(k: keyof PushEinstellungen, v: boolean) {
     const e = { ...st.einstellungen, [k]: v };
@@ -46,10 +59,20 @@ function PushBereich({ admin }: { admin: boolean }) {
       <div className="flex items-center gap-3 p-4">
         <Icon name="glocke" className="h-6 w-6 text-himmel-600" />
         <h2 className="flex-1 font-bold">Push-Nachrichten</h2>
-        {st.token && <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">an</span>}
+        <span className={klassen('rounded-full px-2.5 py-0.5 text-xs font-bold', aktiv ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200')}>
+          {aktiv ? 'an' : 'aus'}
+        </span>
       </div>
       {!moeglich.ok ? (
         <div className="px-4 pb-4"><Hinweis>{moeglich.grund}</Hinweis></div>
+      ) : !aktiv ? (
+        <div className="space-y-3 px-4 pb-4">
+          {erlaubnis === 'denied'
+            ? <Hinweis art="warnung">{erlaubnisHilfe()}</Hinweis>
+            : <Hinweis>Push ist auf diesem Gerät noch <b>aus</b>. Tippe auf „Push einschalten“ und erlaube in der Abfrage „Mitteilungen“.</Hinweis>}
+          {fehler && <Fehler fehler={fehler} />}
+          <Knopf className="w-full" onClick={an} laedt={laedt}><Icon name="glocke" className="h-5 w-5" /> Push einschalten</Knopf>
+        </div>
       ) : (
         <>
           <div className="divide-y divide-himmel-100 border-t border-himmel-100 dark:divide-slate-700 dark:border-slate-700">
@@ -58,11 +81,11 @@ function PushBereich({ admin }: { admin: boolean }) {
               <Schalter key={a.key} an={st.einstellungen[a.key] ?? STANDARD_PUSH[a.key] ?? false} onChange={(v) => setze(a.key, v)} label={a.name} text={a.text} />
             ))}
           </div>
-          <div className="p-4">
-            {fehler && <div className="mb-3"><Fehler fehler={fehler} /></div>}
-            {st.token
-              ? <Knopf art="sekundaer" className="w-full" onClick={aus} laedt={laedt}>Push auf diesem Gerät ausschalten</Knopf>
-              : <Knopf className="w-full" onClick={an} laedt={laedt}><Icon name="glocke" className="h-5 w-5" /> Push einschalten</Knopf>}
+          <div className="space-y-2 p-4">
+            {fehler && <Fehler fehler={fehler} />}
+            {test && <Hinweis art="ok">{test}</Hinweis>}
+            <Knopf art="sekundaer" className="w-full" onClick={testen} laedt={laedt}><Icon name="glocke" className="h-5 w-5" /> Test-Nachricht senden</Knopf>
+            <Knopf art="leise" className="w-full" onClick={aus} laedt={laedt}>Push auf diesem Gerät ausschalten</Knopf>
           </div>
         </>
       )}

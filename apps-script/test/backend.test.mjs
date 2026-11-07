@@ -366,6 +366,34 @@ assert.equal(rufe('rabenschreck_status', {}, klaus.token).status, 403, 'nur Admi
 assert.deepEqual(ok(rufe('rabenschreck_status', {}, admin.token)), { eingerichtet: false, erreichbar: false, aktiv: null });
 console.log('Rabenschreck OK');
 
+// Push: Test-Nachricht, Nachricht mit "notification" für Safari/iPhone, Abo nur bei unbekanntem Gerät löschen
+{
+  props.FCM_SERVICE_ACCOUNT = JSON.stringify({ project_id: 'p', client_email: 'x@y' });
+  props.APP_URL = 'https://beispiel.de/app/';
+  cache.fcm_token = 'zugriff';
+  const gesendet = [];
+  let antwort = { code: 200, text: '{}' };
+  ctx.UrlFetchApp.fetch = (url, opt) => { gesendet.push(JSON.parse(opt.payload)); return { getResponseCode: () => antwort.code, getContentText: () => antwort.text }; };
+  ok(rufe('push_abo', { fcmToken: 'tokKlaus', einstellungen: { mitteilungen: true } }, klaus.token));
+  assert.equal(rufe('push_test', {}).ok, false, 'nur angemeldet');
+  assert.deepEqual(ok(rufe('push_test', {}, klaus.token)), { gesendet: 1 });
+  const m = gesendet[0].message;
+  assert.equal(m.token, 'tokKlaus');
+  assert.equal(m.data.titel, 'MGI – Test');
+  assert.deepEqual(m.webpush.notification, { title: 'MGI – Test', body: 'Push-Nachrichten funktionieren auf diesem Gerät.' });
+  assert.equal(m.webpush.fcm_options.link, 'https://beispiel.de/app/#/konto');
+  // Fehler in der Nachricht (400 ohne Token-Bezug): Abo bleibt
+  antwort = { code: 400, text: '{"error":{"message":"Invalid JSON payload"}}' };
+  ok(rufe('push_test', {}, klaus.token));
+  assert.ok(ctx.zeilen_('PushAbos').some((r) => r.fcmToken === 'tokKlaus'));
+  // Gerät unbekannt (404): Abo wird gelöscht
+  antwort = { code: 404, text: '{"error":{"status":"NOT_FOUND","details":[{"errorCode":"UNREGISTERED"}]}}' };
+  ok(rufe('push_test', {}, klaus.token));
+  assert.ok(!ctx.zeilen_('PushAbos').some((r) => r.fcmToken === 'tokKlaus'));
+  delete props.FCM_SERVICE_ACCOUNT; delete props.APP_URL; delete cache.fcm_token;
+  console.log('Push OK');
+}
+
 // Foto-Upload: direkt in den Homepage-Ordner, Dateiname mit Datum und Ersteller
 {
   const dateien = [];
