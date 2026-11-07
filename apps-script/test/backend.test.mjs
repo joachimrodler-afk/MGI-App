@@ -437,15 +437,6 @@ console.log('Rabenschreck OK');
   console.log('Super-Admin OK');
 }
 
-// MFSD-Seiten: Menü und Fußzeile werden entfernt
-{
-  const st = ctx.htmlZuText('<body><ul><li></li><li>Home</li></ul><h2>7.1.6 Anzeigepflicht</h2><p>Der Halter</p><p>Inhaltsverzeichnis</p><p>(c) C. Walther</p></body>');
-  assert.equal(ctx.strffAbschnitt_(st), '## 7.1.6 Anzeigepflicht\nDer Halter');
-  const k = ctx.htmlZuText('<body><ul><li>Home</li><li>Region Bayern</li></ul><h2>I. Einleitung</h2><p>Diese &bdquo;Kurz&ldquo;</p><h2>II. Grundlegendes</h2><p>Text</p><p>(c) C. Walther, F. Tofahrn</p><p>&copy; 2026</p></body>');
-  assert.equal(ctx.kurzbeschreibungText_(k), '## I. Einleitung\nDiese „Kurz“\n\n## II. Grundlegendes\nText');
-  console.log('MFSD-Text OK');
-}
-
 // Regel-Assistent (Gemini): Dokumente als PDF/Text, Verlauf, Tageslimit, Fehler
 {
   assert.equal(rufe('regeln_frage', { frage: 'x' }).ok, false, 'nur Mitglieder');

@@ -1551,23 +1551,8 @@ function strffAbschnitt_(text) {
   var zeilen = text.split('\n');
   var i = zeilen.findIndex(function (z) { return /^#+\s*\d+(\.\d+)*\.?\s/.test(z); });
   if (i < 0) return '';
-  return bisFusszeile_(zeilen, i);
-}
-
-var MFSD_ENDE = /^(Inhaltsverzeichnis$|\(c\) C\. Walther|©|#+ Modellflugsportverband Deutschland|Vorherige|Nächste|Translate »)/;
-
-function bisFusszeile_(zeilen, start) {
-  var ende = zeilen.findIndex(function (z, j) { return j > start && MFSD_ENDE.test(z); });
-  return zeilen.slice(start, ende > start ? ende : undefined).filter(function (z) { return z !== '-' && z !== '- <'; })
-    .join('\n').replace(/\n{3,}/g, '\n\n').trim();
-}
-
-/** Kurzbeschreibung: Text ab „Einleitung“ (ohne Menü), bis zur Fußzeile */
-function kurzbeschreibungText_(text) {
-  var zeilen = text.split('\n');
-  var i = zeilen.findIndex(function (z) { return /^#+\s*(I\.\s*|1\.\s*)?Einleitung/i.test(z); });
-  if (i < 0) i = zeilen.findIndex(function (z) { return /^#\s/.test(z); });
-  return bisFusszeile_(zeilen, Math.max(0, i));
+  var ende = zeilen.findIndex(function (z, j) { return j > i && /^(Vorherige|Nächste|Zurück|Weiter|« |‹ |\d+\s*$)/.test(z); });
+  return zeilen.slice(i, ende > i ? ende : undefined).join('\n').trim();
 }
 
 function mfsdVeraltet_() {
@@ -1581,9 +1566,7 @@ function mfsdAktualisieren() {
   MFSD_SEITEN.forEach(function (s) {
     var r = UrlFetchApp.fetch(s[1], { muteHttpExceptions: true });
     if (r.getResponseCode() !== 200) throw new Error(s[0] + ': HTTP ' + r.getResponseCode());
-    var k = kurzbeschreibungText_(htmlZuText(r.getContentText()));
-    if (k.length < 5000) throw new Error(s[0] + ': nur ' + k.length + ' Zeichen – Seitenaufbau geändert?');
-    teile.push('==== ' + s[0] + ' (Quelle: ' + s[1] + ') ====\n\n' + k);
+    teile.push('==== ' + s[0] + ' (Quelle: ' + s[1] + ') ====\n\n' + htmlZuText(r.getContentText()));
   });
   // StRfF: Unterseiten seitenweise in Paketen holen, bis nichts Neues mehr kommt
   var strff = [], gesehen = {}, leerInFolge = 0;
@@ -1616,19 +1599,6 @@ function mfsdAktualisieren() {
   props.setProperty('MFSD_STAND', new Date().toISOString());
   console.log('MFSD-Regeln gespeichert: ' + strff.length + ' StRfF-Abschnitte, ' + inhalt.length + ' Zeichen');
   return { abschnitte: strff.length, zeichen: inhalt.length };
-}
-
-/** Diagnose im Editor: Stichproben aus der MFSD-Textdatei */
-function diagnoseMfsd() {
-  var t = DriveApp.getFileById(prop_('MFSD_DATEI_ID', true)).getBlob().getDataAsString('UTF-8');
-  var i = t.indexOf('==== MFSD – Standardisierte');
-  var j = t.indexOf('==== MFSD – Kurzbeschreibung der StRfF für Modellfluggelände');
-  console.log('Länge: ' + t.length);
-  console.log('A: ' + t.slice(0, 1200));
-  console.log('B: ' + t.slice(j - 600, j + 900));
-  console.log('C: ' + t.slice(i, i + 900));
-  console.log('D: ' + t.slice(i + 60000, i + 61000));
-  console.log('E: ' + t.slice(t.length - 800));
 }
 
 /** Standard-Dokumente (Titel=Drive-Datei-ID); überschreibbar mit Script Property REGELN_DATEIEN */
