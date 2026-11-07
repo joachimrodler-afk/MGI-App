@@ -121,6 +121,7 @@ var AKTIONEN = {
   einstellungen_speichern: { recht: 'admin', fn: einstellungenSpeichern_ },
   // Fotos
   foto_hochladen: { recht: 'mitglied', fn: fotoHochladen_ },
+  galerie: { recht: 'offen', fn: function (d) { return galerie_(d); } },
   // Am Platz
   anwesende: { recht: 'offen', fn: anwesende_ },
   // Arbeitsdienst
@@ -822,7 +823,32 @@ function fotoHochladen_(d, s) {
   var blob = Utilities.newBlob(Utilities.base64Decode(d.base64), d.mimeType || 'image/jpeg', name);
   var datei = ordner.createFile(blob);
   datei.setDescription((titel ? titel + ' – ' : '') + kat + ' – Foto: ' + s.name);
+  CacheService.getScriptCache().remove('galerie');
   return { id: datei.getId(), name: name };
+}
+
+/**
+ * Öffentliche Foto-Galerie für die Homepage: Bilder aus „Fotos Homepage“, neueste zuerst.
+ * Die Bilder selbst sind ohnehin per Link öffentlich (Homepage), hier nur Name, Beschreibung, Datum.
+ */
+function galerie_(d) {
+  var cache = CacheService.getScriptCache();
+  var c = cache.get('galerie');
+  var liste;
+  if (c) liste = JSON.parse(c);
+  else {
+    liste = [];
+    var it = DriveApp.getFolderById(prop_('FOTO_ORDNER_ID', true)).getFiles();
+    while (it.hasNext() && liste.length < 1000) {
+      var f = it.next();
+      if (String(f.getMimeType()).indexOf('image/') !== 0) continue;
+      liste.push({ id: f.getId(), name: f.getName(), beschreibung: f.getDescription() || '', datum: f.getDateCreated().toISOString() });
+    }
+    liste.sort(function (a, b) { return b.datum.localeCompare(a.datum); });
+    try { cache.put('galerie', JSON.stringify(liste), 120); } catch (e) { /* zu groß */ }
+  }
+  var max = Math.min(Math.max(Number(d && d.max) || 200, 1), 1000);
+  return liste.slice(0, max);
 }
 
 function unterordner_(eltern, name) {

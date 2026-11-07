@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fotos – Modellbau-Gemeinschaft Ismaning</title>
+<meta name="robots" content="noindex" />
+<style>
+  :root { --rot: #c8102e; --tinte: #14213d; --grau: #5b6573; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: transparent; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--tinte); }
+  .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; padding: 4px; }
+  .bild { position: relative; margin: 0; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 12px; background: #e8eef6; cursor: zoom-in; border: 0; padding: 0; }
+  .bild img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
+  .bild:hover img { transform: scale(1.04); }
+  .bild figcaption { position: absolute; inset: auto 0 0 0; padding: 18px 10px 7px; font-size: 13px; color: #fff; text-align: left;
+    background: linear-gradient(transparent, rgba(0,0,0,.65)); }
+  .hinweis { padding: 24px; text-align: center; color: var(--grau); }
+  .mehr { display: block; margin: 14px auto; padding: 10px 18px; border: 0; border-radius: 10px; background: var(--rot); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .gross { position: fixed; inset: 0; z-index: 10; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.9); }
+  .gross.offen { display: flex; }
+  .gross img { max-width: 94vw; max-height: 84vh; border-radius: 8px; }
+  .gross .text { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; color: #fff; font-size: 15px; }
+  .gross button { position: absolute; border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 28px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; }
+  .gross .zu { top: 12px; right: 12px; }
+  .gross .zur { left: 12px; top: 50%; transform: translateY(-50%); }
+  .gross .vor { right: 12px; top: 50%; transform: translateY(-50%); }
+</style>
+</head>
+<body>
+<div id="raster" class="raster" aria-live="polite"></div>
+<p id="hinweis" class="hinweis">Fotos werden geladen …</p>
+<button id="mehr" class="mehr" hidden>Weitere Fotos anzeigen</button>
+
+<div id="gross" class="gross" role="dialog" aria-modal="true" aria-label="Foto groß">
+  <img id="grossBild" alt="" />
+  <div id="grossText" class="text"></div>
+  <button class="zu" aria-label="Schließen">×</button>
+  <button class="zur" aria-label="Vorheriges Foto">‹</button>
+  <button class="vor" aria-label="Nächstes Foto">›</button>
+</div>
+
+<script>
+/*
+ * Foto-Galerie der MGI für die Google-Sites-Homepage.
+ * Zeigt alle Bilder aus dem Drive-Ordner „Fotos Homepage“ (neueste zuerst) und aktualisiert sich selbst.
+ * Einbetten in Google Sites: Einfügen → Einbetten → „Nach URL“ → https://joachimrodler-afk.github.io/MGI-App/galerie.html
+ * Optionen in der Adresse: ?max=12 (Anzahl), ?spalten=3 (feste Spaltenzahl)
+ */
+const API = 'https://script.google.com/macros/s/AKfycbwYpvHj7fK74ioY2YbiPidO2uFnxhsYZVR5ks-9u9pVMIARDS_NMVcm-62gOzls-GdAMg/exec';
+const p = new URLSearchParams(location.search);
+const MAX = Math.max(0, Number(p.get('max')) || 0);
+const SPALTEN = Number(p.get('spalten')) || 0;
+const SEITE = MAX || 24;
+let fotos = [], sichtbar = SEITE, aktuell = 0;
+
+const $ = (id) => document.getElementById(id);
+if (SPALTEN) $('raster').style.gridTemplateColumns = `repeat(${SPALTEN}, 1fr)`;
+
+const bildUrl = (id, w) => `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}`;
+
+/** „2026-11-07_Joachim-R_2.jpg“ → „07.11.2026 · Joachim R.“, Titel aus der Beschreibung */
+function beschriftung(f) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:_[\d-]+)?_(.+?)(?:_\d+)?\.\w+$/.exec(f.name);
+  const titel = (f.beschreibung || '').split(' – ')[0];
+  const istTitel = titel && !/^Foto:|^(Flugtag|Wettbewerb|Arbeitsdienst|Vereinsleben|Sonstiges)$/.test(titel);
+  let text = '';
+  if (m) {
+    const wer = m[4].replace(/-([A-ZÄÖÜ])$/, ' $1.').replace(/-/g, ' ');
+    text = `${m[3]}.${m[2]}.${m[1]} · ${wer}`;
+  } else {
+    text = new Date(f.datum).toLocaleDateString('de-DE');
+  }
+  return istTitel ? `${titel} · ${text}` : text;
+}
+
+function zeigen() {
+  const r = $('raster');
+  r.innerHTML = '';
+  const liste = MAX ? fotos.slice(0, MAX) : fotos.slice(0, sichtbar);
+  liste.forEach((f, i) => {
+    const b = document.createElement('button');
+    b.className = 'bild';
+    b.setAttribute('aria-label', 'Foto groß anzeigen: ' + beschriftung(f));
+    b.innerHTML = `<img loading="lazy" alt="" src="${bildUrl(f.id, 800)}"><figcaption></figcaption>`;
+    b.querySelector('figcaption').textContent = beschriftung(f);
+    b.addEventListener('click', () => oeffnen(i));
+    r.appendChild(b);
+  });
+  $('hinweis').hidden = fotos.length > 0;
+  $('hinweis').textContent = 'Noch keine Fotos vorhanden.';
+  $('mehr').hidden = !!MAX || sichtbar >= fotos.length;
+}
+
+function oeffnen(i) {
+  aktuell = (i + fotos.length) % fotos.length;
+  const f = fotos[aktuell];
+  $('grossBild').src = bildUrl(f.id, 2000);
+  $('grossText').textContent = beschriftung(f);
+  $('gross').classList.add('offen');
+}
+function schliessen() { $('gross').classList.remove('offen'); }
+
+document.querySelector('.zu').onclick = schliessen;
+document.querySelector('.zur').onclick = (e) => { e.stopPropagation(); oeffnen(aktuell - 1); };
+document.querySelector('.vor').onclick = (e) => { e.stopPropagation(); oeffnen(aktuell + 1); };
+$('gross').addEventListener('click', (e) => { if (e.target.id === 'gross') schliessen(); });
+document.addEventListener('keydown', (e) => {
+  if (!$('gross').classList.contains('offen')) return;
+  if (e.key === 'Escape') schliessen();
+  if (e.key === 'ArrowLeft') oeffnen(aktuell - 1);
+  if (e.key === 'ArrowRight') oeffnen(aktuell + 1);
+});
+$('mehr').onclick = () => { sichtbar += SEITE; zeigen(); };
+
+async function laden() {
+  try {
+    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ aktion: 'galerie', daten: { max: 1000 } }) });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.fehler);
+    const neu = JSON.stringify(j.daten.map((f) => f.id));
+    if (neu !== JSON.stringify(fotos.map((f) => f.id))) { fotos = j.daten; zeigen(); }
+  } catch (e) {
+    if (!fotos.length) $('hinweis').textContent = 'Fotos konnten gerade nicht geladen werden.';
+  }
+}
+laden();
+setInterval(() => { if (!document.hidden) laden(); }, 5 * 60 * 1000); // alle 5 Minuten nach neuen Fotos schauen
+</script>
+</body>
+</html>

@@ -15,7 +15,7 @@ cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
 // App-Shell auch offline öffnen (wichtig für den Notfall-Bereich)
-registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')));
+registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html'), { denylist: [/galerie\.html/] }));
 
 // Wetter: Netz zuerst, sonst letzter Stand
 registerRoute(({ url }) => url.hostname === 'api.open-meteo.com', new NetworkFirst({ cacheName: 'wetter', networkTimeoutSeconds: 6 }));

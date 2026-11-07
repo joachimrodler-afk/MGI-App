@@ -358,6 +358,12 @@ console.log('Rabenschreck OK');
   assert.equal(r.name, '2026-11-07_Klaus-B.jpg');
   const r2 = ok(rufe('foto_hochladen', { base64: 'AA==', aufgenommen: '2026-11-07T10:00:00' }, klaus.token));
   assert.equal(r2.name, '2026-11-07_Klaus-B_2.jpg');
+  // öffentliche Galerie, neueste zuerst
+  let n = 0;
+  ctx.DriveApp.getFolderById = () => ({ getFiles: () => { const fs = [['a.jpg', '2026-11-01'], ['b.jpg', '2026-11-07'], ['x.txt', '2026-11-08']]; let i = 0; return { hasNext: () => i < fs.length, next: () => { const [nm, dt] = fs[i++]; n++; return { getId: () => nm, getName: () => nm, getMimeType: () => (nm.endsWith('.jpg') ? 'image/jpeg' : 'text/plain'), getDescription: () => '', getDateCreated: () => new Date(dt) }; } }; } });
+  delete cache.galerie;
+  const g = ok(rufe('galerie', {}));
+  assert.deepEqual(g.map((x) => x.name), ['b.jpg', 'a.jpg']);
   assert.equal(dateien[0].desc, 'Erstflug – Flugtag – Foto: Klaus Butz');
   console.log('Foto-Upload OK');
 }
