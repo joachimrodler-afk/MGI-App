@@ -1,38 +1,250 @@
-# MGI-App – Kurzanleitung für Mitglieder
+# MGI-App – Anleitung für Mitglieder
 
-**Installieren:** Öffne den Link zur App, den du vom Vorstand bekommen hast.
-- **Android:** Menü (⋮) → **„App installieren“**
-- **iPhone:** Teilen-Symbol → **„Zum Home-Bildschirm“**
+Die Vereins-App der **Modellbau-Gemeinschaft Ismaning e.V.**: Flugbuch, Fotos für die Homepage, Arbeitsdienst, Wetter, Notfall-Infos und mehr – alles auf dem Handy.
 
-**Noch kein Zugang?** Tippe oben auf das Schloss → **„Zugang anfragen“** und gib deinen Namen ein. Der Vorstand gibt dich frei und schickt dir deinen PIN.
+**App öffnen:** https://joachimrodler-afk.github.io/MGI-App/
 
-**Anmelden:** Tippe oben auf das Schloss und gib deinen **Vor- und Nachnamen** und deinen **persönlichen PIN** ein. Das ist nur **einmal** nötig – danach bleibst du auf diesem Handy dauerhaft angemeldet (bis du dich abmeldest oder der Vorstand einen neuen PIN vergibt). Auf dem iPhone bitte in der installierten App anmelden, nicht in Safari. Ändere den PIN nach der ersten Anmeldung unter **Mehr → Mein Konto → PIN ändern**. Wenn du den PIN vergessen hast, kann der Vorstand ihn zurücksetzen.
+> Die Bilder in dieser Anleitung stammen aus dem Demo-Modus der App und zeigen Beispieldaten.
 
-**Die wichtigsten Funktionen**
-- 🚨 **Notfall** (roter Button oben): Notruf 112, Koordinaten für den Rettungsdienst und die Platzordnung. Funktioniert auch ohne Netz.
-- 📷 **Foto** (roter Button unten in der Mitte): Foto aufnehmen, Kategorie wählen und hochladen. Es erscheint automatisch auf der Vereins-Homepage. Bitte nur Fotos hochladen, mit denen alle abgebildeten Personen einverstanden sind. Ohne Netz wird das Foto gespeichert und später automatisch gesendet.
-- ✈️ **Flugbuch:** Beim Ankommen auf der Startseite die rote Karte **„Flugbuch“** antippen, Antriebsart und Gewichtsklasse wählen, die Betriebsregeln bestätigen und auf **„Im Flugbuch anmelden“** tippen – die Uhrzeit wird automatisch eingetragen. Beim Gehen **„Abmelden“** tippen. Vergessen? Nach 6 Stunden wirst du automatisch abgemeldet. Gäste trägst du über **„Gast eintragen“** ein. Wer die Flugleitung übernimmt, schaltet „Ich übernehme die Flugleitung“ ein und gibt Fangnetz, Rasen, Wetter und Wind an (Wind wird aus dem aktuellen Wetter vorgeschlagen). Unter „Flugbuch heute“ siehst du, wer gerade am Platz ist.
-- 🌬️ **Wetter:** Die Ampel zeigt, ob der Wind zum Fliegen passt. Darunter steht die Vorhersage für die nächsten Stunden.
-- 🔋 **Strom:** Akkustand und Solarleistung der Bluetti am Platz.
-- 🏆 **Wertung:** Ranglisten aller Wettbewerbe. Laufende Wettbewerbe aktualisieren sich von selbst.
-- 📌 **Schwarzes Brett:** Biete, Suche und Info. Du kannst deine eigenen Beiträge bearbeiten und löschen.
-- 🪪 **Meine Nachweise** (unter Mehr): Trag die Ablaufdaten von Kenntnisnachweis, e-ID und Versicherung ein. Die App erinnert dich 30 und 7 Tage vor Ablauf.
-- 🔔 **Push-Nachrichten** (Mehr → Mein Konto): Du schaltest selbst ein, worüber du informiert werden willst.
+---
 
-## Arbeitsdienst
+## Inhalt
 
-Die Kachel **Arbeitsdienst** auf der Startseite zeigt alle Wochen der Arbeitsliste mit ihren Einsätzen (Platzpflege, Walzen, Düngen …) und den freien Plätzen. Tippe bei einem freien Einsatz auf **Mich eintragen** und bestätige mit **Ja, eintragen**. Dein Name wird automatisch richtig in die Liste geschrieben.
+1. [Installieren](#1-installieren)
+2. [Anmelden](#2-anmelden)
+3. [Die Startseite](#3-die-startseite)
+4. [Flugbuch](#4-flugbuch)
+5. [Fotos für die Homepage](#5-fotos-für-die-homepage)
+6. [Arbeitsdienst](#6-arbeitsdienst)
+7. [Notfall & Platzordnung](#7-notfall--platzordnung)
+8. [Technik am Platz](#8-technik-am-platz)
+9. [Weitere Funktionen](#9-weitere-funktionen)
+10. [Mein Konto & Push-Nachrichten](#10-mein-konto--push-nachrichten)
+11. [Hilfe bei Problemen](#11-hilfe-bei-problemen)
 
-Das Eintragen ist **verbindlich**: Austragen kannst du dich nicht selbst, nur der Vorstand (Admins) kann einen Eintrag wieder entfernen.
+---
 
-Die App erinnert dich dann automatisch:
-- auf der Startseite ab zwei Wochen vorher mit einem gelben Hinweis,
-- per Push-Nachricht am Montag der Woche davor und am Montag deiner Woche (abschaltbar unter Konto → Push-Nachrichten).
+## 1. Installieren
 
-## Besondere Vorkommnisse im Flugbuch
+Öffne den Link zur App (siehe oben oder aus der Einladung des Vorstands) und lege sie auf den Startbildschirm:
 
-Solange du im Flugbuch angemeldet bist, gibt es unter deiner Anmeldung das Feld **„Besondere Vorkommnisse“**. Dort kannst du frei hineinschreiben, was passiert ist, z. B. einen Absturz, einen Schaden am Platz oder eine Störung. Tippe auf **Speichern**. Was beim Abmelden noch nicht gespeichert war, wird automatisch übernommen. Nach dem Abmelden können nur noch Admins den Text ändern.
+| Handy | So geht's |
+|---|---|
+| **Android** (Chrome) | Menü **⋮** → **„App installieren“** |
+| **iPhone** (Safari) | Teilen-Symbol **⬆︎** → **„Zum Home-Bildschirm“** |
 
-## Technik am Platz
+Danach startet die App wie eine normale App über ihr Symbol. Auf dem iPhone bitte **immer über das Symbol** öffnen, nicht in Safari – sonst funktionieren Anmeldung und Push-Nachrichten nicht dauerhaft.
 
-Unter **Technik am Platz** (Startseite oder „Mehr“) stehen Infos zur Wetterstation (mit Blockschaltbild), zur Walze, zu den Ladesteckdosen und mehr. Die Zahlenkombination der Dixi-Toilette siehst du nur, wenn du in der App angemeldet bist.
+---
+
+## 2. Anmelden
+
+<img src="bilder/01-anmelden.jpg" width="260" align="right" alt="Anmelden">
+
+1. Oben auf das **Schloss** tippen.
+2. **Vor- und Nachname** und deinen **persönlichen PIN** eingeben.
+3. **Anmelden** tippen.
+
+Das ist nur **einmal** nötig – danach bleibst du auf diesem Handy angemeldet.
+
+**Noch kein Zugang?** Auf **„Zugang anfragen“** tippen und deinen Namen eingeben. Der Vorstand gibt dich frei und schickt dir deinen PIN.
+
+**PIN vergessen?** Beim Vorstand melden – er vergibt einen neuen.
+
+**Tipp:** Ändere deinen PIN nach der ersten Anmeldung unter **Konto → PIN ändern**.
+
+<br clear="right">
+
+---
+
+## 3. Die Startseite
+
+<img src="bilder/02-start.jpg" width="260" align="right" alt="Startseite">
+
+**Kopfzeile (immer sichtbar):**
+
+| Symbol | Bedeutung |
+|---|---|
+| 🌐 Globus | Vereins-Homepage www.mgi-ismaning.de |
+| 👤 Person / 🔒 Schloss | Mein Konto bzw. Anmelden |
+| 🚨 **Notfall** | Notruf, Standort, Platzordnung |
+
+**Auf der Startseite:**
+- **Wind & Anwesenheit** – aktueller Wind und wie viele Piloten am Platz sind
+- **Gelber Hinweis** – wenn dein Arbeitsdienst bald ansteht
+- **Flugbuch** (rote Karte) – mit einem Tipp anmelden
+- **Nächster Termin** aus dem Vereinskalender
+- **Kacheln** für alle weiteren Bereiche
+
+**Leiste unten:** Start · Termine · **Foto** (roter Knopf) · Wertung · Mehr
+
+<br clear="right">
+
+---
+
+## 4. Flugbuch
+
+Das Flugbuch ersetzt den Papiervordruck. **Jeder Pilot meldet sich beim Ankommen an und beim Gehen ab.**
+
+### Anmelden
+
+<img src="bilder/03-flugbuch-anmelden.jpg" width="260" align="right" alt="Im Flugbuch anmelden">
+
+1. Auf der Startseite die rote Karte **Flugbuch** antippen.
+2. **Schulungsnachweis** einschalten, falls vorhanden.
+3. **Antriebsart** wählen (auch mehrere möglich).
+4. **Gewichtsklasse** wählen.
+5. Die **Betriebsregeln bestätigen** (Häkchen).
+6. **„Im Flugbuch anmelden“** tippen – Datum und Uhrzeit trägt die App selbst ein.
+
+**Flugleitung übernehmen:** Schalter **„Ich übernehme die Flugleitung“** einschalten und Fangnetz, Rasen, Wetter und Wind angeben (der Wind wird aus dem aktuellen Wetter vorgeschlagen).
+
+**Gäste:** Oben auf **„Gast eintragen“** wechseln, Vor- und Nachname des Gastes eingeben – Rest wie oben.
+
+<br clear="right">
+
+### Während du am Platz bist
+
+<img src="bilder/04-flugbuch-angemeldet.jpg" width="260" align="right" alt="Im Flugbuch angemeldet">
+
+- Oben steht grün **„Seit … Uhr im Flugbuch angemeldet“**.
+- **Besondere Vorkommnisse:** Hier kannst du frei eintragen, was passiert ist – z. B. Absturz, Beinahe-Zusammenstoß, Schaden am Platz, Störung. **Speichern** tippen. Was beim Abmelden noch nicht gespeichert war, wird automatisch übernommen.
+- Darunter: wer heute die **Flugleitung** hat und wer gerade **am Platz** ist.
+
+### Abmelden
+
+**„Abmelden · Ende … Uhr“** tippen, wenn du gehst.
+Vergessen? Nach **6 Stunden** meldet dich die App automatisch ab.
+
+<br clear="right">
+
+---
+
+## 5. Fotos für die Homepage
+
+<img src="bilder/05-foto.jpg" width="260" align="right" alt="Foto aufnehmen">
+
+1. Unten auf den **roten Kamera-Knopf** tippen.
+2. **„Foto aufnehmen“** oder **„Aus Galerie“** wählen (mehrere Bilder möglich).
+3. **Kategorie** wählen: Flugtag, Wettbewerb, Schiffsmodell, Arbeitsdienst, Sonstiges.
+4. Optional einen **Titel** eingeben, z. B. „Erstflug Segler“.
+5. **Hochladen** tippen.
+
+Die Fotos erscheinen automatisch in der **Bildergalerie auf der Homepage** (Seite „Bilder“). Der Dateiname enthält Datum, Uhrzeit, Titel und deinen Namen, z. B. `2026-11-07_10-15_Erstflug-Segler_Max-M.jpg`.
+
+**Ohne Netz** werden die Fotos gespeichert und später automatisch gesendet.
+
+⚠️ Bitte nur Fotos hochladen, mit denen **alle abgebildeten Personen einverstanden** sind.
+
+<br clear="right">
+
+---
+
+## 6. Arbeitsdienst
+
+<img src="bilder/06-arbeitsdienst.jpg" width="260" align="right" alt="Arbeitsdienst">
+
+Die Kachel **Arbeitsdienst** zeigt alle Wochen der Arbeitsliste (April bis Oktober) mit den Einsätzen – Platzpflege, Walzen, Düngen … – und den freien Plätzen.
+
+**Eintragen:**
+1. Bei einem freien Platz auf **„Mich eintragen“** tippen.
+2. Mit **„Ja, eintragen“** bestätigen.
+
+⚠️ Das Eintragen ist **verbindlich**. Austragen kann nur der Vorstand.
+
+**Die App erinnert dich:**
+- auf der Startseite ab zwei Wochen vorher (gelber Hinweis),
+- per Push-Nachricht eine Woche vorher und am Montag deiner Woche.
+
+<br clear="right">
+
+---
+
+## 7. Notfall & Platzordnung
+
+<img src="bilder/07-notfall.jpg" width="260" align="right" alt="Notfall">
+
+Der rote **Notfall**-Knopf oben ist auf jeder Seite erreichbar und funktioniert **auch ohne Netz**.
+
+**Reiter „Notfall“:**
+- **Notruf 112** – direkt anrufen
+- **Koordinaten** zum Vorlesen für den Rettungsdienst, zum Kopieren oder für die Navigation
+- **Anfahrt** über B388 oder Moosstraße (mit Karte)
+- **Erste-Hilfe-Kasten:** außen am Gartenhaus
+- **Feuerlöscher:** im Gartenhaus
+
+**Reiter „Platzordnung“:** die wichtigsten Punkte der Flugbetriebsordnung kompakt, mit Bild des **zulässigen Flugraums**.
+
+<br clear="right">
+
+---
+
+## 8. Technik am Platz
+
+<img src="bilder/09-technik.jpg" width="260" align="right" alt="Technik am Platz">
+
+Infos zur Ausstattung am Platz:
+
+- **Wetterstation** – mit Blockschaltbild
+- **Stromversorgung** – Bluetti mit Solar, Blockschaltbild
+- **Walze** – Bedienung
+- **Dixi-Toilette** – Zahlenkombination (nur für angemeldete Mitglieder sichtbar)
+- **Ladesteckdosen** – Absicherung 15 A und Tabelle mit dem maximalen Ladestrom je Akku (3S bis 8S)
+
+<br clear="right">
+
+---
+
+## 9. Weitere Funktionen
+
+<img src="bilder/10-mehr.jpg" width="260" align="right" alt="Mehr">
+
+Alles weitere findest du unten unter **Mehr**:
+
+| Bereich | Was du dort findest |
+|---|---|
+| 🌬️ **Wetter** | Wind und Böen von der Vereins-Wetterstation, Vorhersage. Die **Ampel** zeigt, ob der Wind zum Fliegen passt. |
+| 📹 **Webcam** | Öffnet das Live-Video vom Platz. |
+| 🔋 **Strom** | Akkustand und Solarleistung der Bluetti. |
+| 📅 **Termine** | Alle Vereinstermine. |
+| 🏆 **Wertung** | Ranglisten der Wettbewerbe – aktualisieren sich live. |
+| 📌 **Schwarzes Brett** | Biete · Suche · Info. Eigene Beiträge kannst du bearbeiten und löschen. |
+| 🪪 **Meine Nachweise** | Ablaufdaten von Kenntnisnachweis, e-ID und Versicherung eintragen – die App erinnert dich 30 und 7 Tage vor Ablauf. |
+
+<br clear="right">
+
+---
+
+## 10. Mein Konto & Push-Nachrichten
+
+<img src="bilder/08-konto.jpg" width="260" align="right" alt="Mein Konto">
+
+Oben auf das **Personen-Symbol** tippen.
+
+**Push-Nachrichten:** Schalte selbst ein, worüber du informiert werden willst:
+- Wichtige Mitteilungen (z. B. Platzsperrung)
+- Termine
+- Wettbewerbsergebnisse
+- Schwarzes Brett
+- Nachweis-Erinnerungen
+- Arbeitsdienst
+
+Auf dem iPhone funktionieren Push-Nachrichten nur in der **installierten** App.
+
+**Außerdem:** PIN ändern, Abmelden, Darstellung (Hell / Dunkel / Automatisch).
+
+<br clear="right">
+
+---
+
+## 11. Hilfe bei Problemen
+
+| Problem | Lösung |
+|---|---|
+| Neue Funktion fehlt / alte Ansicht | App **ganz schließen und neu öffnen** – sie aktualisiert sich dann selbst. |
+| Gelber Balken „Offline“ | Kein Netz. Angezeigt wird der letzte bekannte Stand; Fotos werden später gesendet. |
+| Keine Push-Nachrichten | Unter **Konto** einschalten. iPhone: App über das Symbol auf dem Startbildschirm öffnen. |
+| PIN vergessen | Beim Vorstand melden. |
+| Falsch im Arbeitsdienst eingetragen | Beim Vorstand melden – nur Admins können austragen. |
+
+**Fragen oder Ideen zur App?** Einfach beim Vorstand melden.
