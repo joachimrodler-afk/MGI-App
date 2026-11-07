@@ -67,7 +67,12 @@ export default function Webcam() {
         <div ref={rahmen} className="relative aspect-video w-full bg-slate-900 [&:fullscreen]:aspect-auto [&:fullscreen]:h-full">
           {bild && <img src={bild} alt="Webcam Flugplatz, laufend aktualisiert" className="h-full w-full object-contain" onDoubleClick={vollbild} />}
           {!bild && !fehler && <span className="absolute inset-0 flex items-center justify-center text-slate-300">Bild lädt …</span>}
-          {fehler && !bild && <span className="absolute inset-0 flex items-center justify-center text-slate-300">Webcam gerade nicht erreichbar</span>}
+          {fehler && !bild && (
+            <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 p-4 text-center text-slate-300">
+              <span className="font-semibold">Gerade kein Standbild</span>
+              <span className="text-xs">IPCamLive liefert Standbilder nur, während der Live-Stream läuft. Unten „Echtes Video“ öffnen.</span>
+            </span>
+          )}
           <span className={klassen('absolute left-2 top-2 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white',
             laeuft && sichtbar && !fehler ? 'bg-mgi-rot' : 'bg-black/60')}>
             {laeuft && sichtbar && !fehler && <span className="h-2 w-2 animate-pulse rounded-full bg-white" />}
