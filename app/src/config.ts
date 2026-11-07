@@ -60,10 +60,8 @@ export const config = {
     koordinatenGeprueft: true,
     /** Google-Maps-Eintrag des Platzes */
     mapsUrl: 'https://maps.app.goo.gl/B5yAokCeZMDLbDLC6',
-    /** Zufahrt zum Vorlesen am Telefon (nach dem Anfahrts-Flyer) */
-    zufahrt:
-      'Über die B388 (Erdinger Straße) oder die Moosstraße von Ismaning bis zur Kreuzung mit der Wiesstraße, '
-      + 'dann dem Feldweg nach Osten folgen, der Platz liegt links. Nur von Süden anfahren – nördlich des Platzes ist die Flugzone.',
+    /** Zufahrt zum Vorlesen am Telefon – leer = nicht anzeigen */
+    zufahrt: '',
     adresse: 'MGI Modellflugplatz, 85737 Ismaning',
   },
 
