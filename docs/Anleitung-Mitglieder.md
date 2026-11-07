@@ -18,9 +18,10 @@ Die Vereins-App der **Modellbau-Gemeinschaft Ismaning e.V.**: Flugbuch, Fotos f�
 6. [Arbeitsdienst](#6-arbeitsdienst)
 7. [Notfall & Platzordnung](#7-notfall--platzordnung)
 8. [Technik am Platz](#8-technik-am-platz)
-9. [Weitere Funktionen](#9-weitere-funktionen)
-10. [Mein Konto & Push-Nachrichten](#10-mein-konto--push-nachrichten)
-11. [Hilfe bei Problemen](#11-hilfe-bei-problemen)
+9. [Regel-Assistent (KI)](#9-regel-assistent-ki)
+10. [Weitere Funktionen](#10-weitere-funktionen)
+11. [Mein Konto & Push-Nachrichten](#11-mein-konto--push-nachrichten)
+12. [Hilfe bei Problemen](#12-hilfe-bei-problemen)
 
 ---
 
@@ -69,8 +70,8 @@ Das ist nur **einmal** nötig – danach bleibst du auf diesem Handy angemeldet.
 - **Wind & Anwesenheit** – aktueller Wind und wie viele Piloten am Platz sind
 - **Gelber Hinweis** – wenn dein Arbeitsdienst bald ansteht
 - **Flugbuch** (rote Karte) – mit einem Tipp anmelden
-- **Nächster Termin** aus dem Vereinskalender
-- **Kacheln** für alle weiteren Bereiche
+- **Nächste Termine** – die nächsten 3 Termine aus dem Vereinskalender
+- **Kacheln** für alle weiteren Bereiche, darunter der **Regel-Assistent (KI)**
 
 **Leiste unten:** Start · Termine · **Foto** (roter Knopf) · Wertung · Mehr
 
@@ -179,7 +180,23 @@ Infos zur Ausstattung am Platz:
 
 ---
 
-## 9. Weitere Funktionen
+## 9. Regel-Assistent (KI)
+
+Fragen zur **Vereinssatzung** und zur **Flugbetriebsordnung** stellst du am einfachsten dem Regel-Assistenten – auf der Startseite oder unter **Mehr → Regel-Assistent (KI)**.
+
+1. Eine Beispielfrage antippen oder selbst eine Frage eintippen, z. B. „Wann muss ein Flugleiter anwesend sein?“
+2. Nach ein paar Sekunden kommt die Antwort – mit **Fundstelle**, z. B. „(Flugbetriebsordnung 6.2)“.
+3. Nachfragen sind möglich; **Neues Gespräch** fängt von vorne an.
+
+- Die Antworten kommen von einer KI (Google Gemini) und **nur** aus Satzung und Flugbetriebsordnung. Steht etwas nicht drin, verweist sie an den Vorstand.
+- **Ohne Gewähr:** Maßgeblich ist immer der Originaltext, im Zweifel entscheidet der Vorstand.
+- Nur für angemeldete Mitglieder, bis zu 30 Fragen pro Tag. Dein Name wird nicht an Google übermittelt.
+
+<p align="center"><img src="bilder/11-regeln.jpg" width="240" alt="Regel-Assistent"></p>
+
+---
+
+## 10. Weitere Funktionen
 
 Alles weitere findest du unten unter **Mehr**:
 
@@ -197,11 +214,14 @@ Alles weitere findest du unten unter **Mehr**:
 
 ---
 
-## 10. Mein Konto & Push-Nachrichten
+## 11. Mein Konto & Push-Nachrichten
 
 Oben auf das **Personen-Symbol** tippen.
 
-**Push-Nachrichten:** Schalte selbst ein, worüber du informiert werden willst:
+**Push-Nachrichten:** Neben der Überschrift steht **an** oder **aus**.
+1. Steht dort „aus“: **Push einschalten** tippen und in der Abfrage **Erlauben** wählen.
+2. Mit **Test-Nachricht senden** prüfen, ob die Nachrichten ankommen.
+3. Dann selbst auswählen, worüber du informiert werden willst:
 - Wichtige Mitteilungen (z. B. Platzsperrung)
 - Termine
 - Wettbewerbsergebnisse
@@ -209,7 +229,7 @@ Oben auf das **Personen-Symbol** tippen.
 - Nachweis-Erinnerungen
 - Arbeitsdienst
 
-Auf dem iPhone funktionieren Push-Nachrichten nur in der **installierten** App.
+Auf dem iPhone funktionieren Push-Nachrichten nur in der **installierten** App (iOS 16.4 oder neuer) – Schritt für Schritt: [Kurzanleitung iPhone (PDF)](MGI-App_iPhone.pdf).
 
 **Außerdem:** PIN ändern, Abmelden, Darstellung (Hell / Dunkel / Automatisch).
 
@@ -217,13 +237,13 @@ Auf dem iPhone funktionieren Push-Nachrichten nur in der **installierten** App.
 
 ---
 
-## 11. Hilfe bei Problemen
+## 12. Hilfe bei Problemen
 
 | Problem | Lösung |
 |---|---|
-| Neue Funktion fehlt / alte Ansicht | App **ganz schließen und neu öffnen** – sie aktualisiert sich dann selbst. |
+| Neue Funktion fehlt / alte Ansicht | Die App aktualisiert sich normalerweise selbst. Sonst **ganz schließen und neu öffnen** (iPhone: von unten wischen, App nach oben wegschieben). Die Version steht unten auf der Seite **Mehr**. |
 | Gelber Balken „Offline“ | Kein Netz. Angezeigt wird der letzte bekannte Stand; Fotos werden später gesendet. |
-| Keine Push-Nachrichten | Unter **Konto** einschalten. iPhone: App über das Symbol auf dem Startbildschirm öffnen. |
+| Keine Push-Nachrichten | Unter **Konto** prüfen, ob „an“ steht, dann **Test-Nachricht senden**. iPhone: App über das Symbol auf dem Home-Bildschirm öffnen; abgelehnt? Einstellungen → Mitteilungen → MGI. |
 | PIN vergessen | Beim Vorstand melden. |
 | Falsch im Arbeitsdienst eingetragen | Beim Vorstand melden – nur Admins können austragen. |
 

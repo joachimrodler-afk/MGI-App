@@ -184,6 +184,7 @@ export default function Start() {
         <Kachel zu="/brett" icon="pinnwand" titel="Schwarzes Brett">Biete · Suche · Info</Kachel>
         <Kachel zu="/arbeitsdienst" icon="schaufel" titel="Arbeitsdienst">Termine & Eintragen</Kachel>
         <Kachel zu="/technik" icon="zahnrad" titel="Technik am Platz">Wetterstation, Walze, Strom …</Kachel>
+        <Kachel zu="/regeln" icon="sprechblase" titel="Regel-Assistent (KI)" breit>Fragen zu Satzung & Flugbetriebsordnung</Kachel>
         <Kachel zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" farbe="rot" breit>Notruf 112, Anfahrt, Regeln</Kachel>
       </div>
     </div>

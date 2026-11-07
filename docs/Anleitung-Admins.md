@@ -62,15 +62,30 @@ Die Formel-Engine führt keinen fremden Code aus. Erlaubt sind nur Zahlen, Varia
 ## Flugbuch
 - Jede An- und Abmeldung landet mit Uhrzeit in der Google-Tabelle (Blätter **Flugbuch** und **Flugleiter**).
 - **Verwaltung → Flugbuch-Übersicht:** Einträge nach Zeitraum, nach Tagen gruppiert, CSV-Export und Link zur Tabelle.
-- Admins können vergessene Einträge anderer unter „Flugbuch heute“ abmelden. Sonst beendet die App offene Einträge automatisch nach der eingestellten Zeit (Standard 6 Std., spätestens am Tagesende) – markiert mit „automatisch“.
+- Admins können vergessene Einträge anderer unter „Flugbuch heute“ abmelden. Sonst beendet die App offene Einträge automatisch **um 23:59 Uhr** am Tag der Anmeldung – markiert mit „automatisch“. Optional lässt sich unter Einstellungen zusätzlich eine Stundengrenze setzen (0 = keine).
+- Der **CSV-Export** enthält zwei Blöcke: Piloten und Flugleiter (mit Fangnetz, Rasen, Wetter, Wind).
+- Das elektronische Flugbuch ist in der **Flugbetriebsordnung (Fassung 07.11.2026), Abschnitt 6.2** geregelt.
 
 ## Einstellungen
 Unter **Verwaltung → Einstellungen** pflegst du:
 - Platzordnung und Notfall-Infos (Markdown, mit Vorschau)
 - Notfall-Kontakte
 - Grenzwerte der Wind-Ampel
-- Zeit bis zum automatischen Auschecken
+- Stundengrenze für das automatische Abmelden im Flugbuch (0 = erst um 23:59 Uhr)
 - Datenschutzhinweis beim Foto-Upload
+
+## Push-Nachrichten
+- Jedes Mitglied schaltet Push unter **Konto → Push-Nachrichten** selbst ein. Neben der Überschrift steht deutlich **an** oder **aus**; die Schalter für die Anlässe erscheinen erst, wenn Push an ist.
+- **Test-Nachricht senden** schickt sofort eine Nachricht an die eigenen Geräte – gut zum Prüfen, gerade auf dem iPhone.
+- Als Admin bekommst du bei jeder **Zugangsanfrage** eine Push-Nachricht (Schalter „Zugangsanfragen“, nur für Admins sichtbar).
+- iPhone: Push nur in der App vom Home-Bildschirm (iOS 16.4+). Kurzanleitung für Mitglieder: [MGI-App_iPhone.pdf](MGI-App_iPhone.pdf).
+
+## Regel-Assistent (KI)
+- Mitglieder stellen unter **Regel-Assistent (KI)** (Startseite und *Mehr*) Fragen zur **Satzung** und **Flugbetriebsordnung**. Die Antworten kommen von **Google Gemini** und dürfen nur aus diesen Dokumenten stammen, mit Fundstelle; sonst Verweis an den Vorstand.
+- Grenze: 30 Fragen pro Mitglied und Tag. Namen werden nicht an Google übermittelt.
+- Einrichtung (Script Properties): `GEMINI_API_KEY` = Schlüssel aus [aistudio.google.com/apikey](https://aistudio.google.com/apikey). Optional `GEMINI_MODELL` (Standard `gemini-3.1-flash-lite`).
+- **Neue Fassung eines Dokuments:** PDF in den Drive legen und in den Script Properties `REGELN_DATEIEN` setzen, Format `Titel=Drive-Datei-ID,Titel=Drive-Datei-ID`, z. B. `Vereinssatzung (Stand 23.09.2024)=1mnr…,Flugbetriebsordnung (Stand 07.11.2026)=1NDT…`. Ohne diese Property nimmt das Backend Satzung 23.09.2024 und Flugbetriebsordnung 07.11.2026.
+- Im kostenlosen Gemini-Tarif darf Google Eingaben zur Verbesserung nutzen; mit hinterlegter Abrechnung nicht.
 
 ## Mitteilung senden
 Unter **Verwaltung → Mitteilung senden** geht eine Push-Nachricht an alle, die „Wichtige Mitteilungen“ eingeschaltet haben, z. B. „Platz heute gesperrt“.
@@ -92,4 +107,9 @@ Was Piloten unter „Besondere Vorkommnisse“ eintragen, steht im Blatt „Flug
 - Abschnitt antippen → **Bearbeiten**: Titel, Symbol, Text (einfaches Markdown), Fotos (max. 6) und optional das Blockschaltbild der Wetterstation.
 - **Nur für angemeldete Mitglieder** einschalten bei allem, was nicht öffentlich sein soll (z. B. Zahlenkombination Dixi-Schloss). Solche Abschnitte schickt das Backend ohne Anmeldung gar nicht erst aus.
 - Mit ↑ ↓ die Reihenfolge ändern, unten **Neuer Abschnitt** für weitere Geräte.
+- Ladesteckdosen: **jeder Tisch** hat eine eigene Sicherung 15 A (Blockschaltbild und Texte entsprechend).
 - Die Texte stehen im Blatt „Technik“ der Tabelle MGI-Flugbuch, Fotos im Drive-Ordner „Technik (App)“ (wird beim ersten Foto automatisch neben der Tabelle angelegt).
+
+## Updates der App
+- Neue Versionen gehen automatisch live, sobald sie auf GitHub sind. Die App sucht beim Öffnen und jedes Mal beim Zurückkehren in die App nach einer neuen Version und lädt sich dann selbst neu.
+- Welche Version läuft, steht unten auf der Seite **Mehr** (z. B. „Version 1.1.0“). Hängt ein Gerät noch auf einer alten Version: App ganz schließen (iPhone: von unten wischen und die App nach oben wegschieben) und neu öffnen.
