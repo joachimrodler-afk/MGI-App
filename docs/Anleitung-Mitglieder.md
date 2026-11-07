@@ -190,7 +190,7 @@ Fragen zur **Vereinssatzung** und zur **Flugbetriebsordnung** stellst du am einf
 
 - Die Antworten kommen von einer KI (Google Gemini) und **nur** aus Satzung und Flugbetriebsordnung. Steht etwas nicht drin, verweist sie an den Vorstand.
 - **Ohne Gewähr:** Maßgeblich ist immer der Originaltext, im Zweifel entscheidet der Vorstand.
-- Nur für angemeldete Mitglieder, bis zu 30 Fragen pro Tag. Dein Name wird nicht an Google übermittelt.
+- Nur für angemeldete Mitglieder, bis zu 30 Fragen pro Tag. Die KI kennt die aktuelle Lage am Platz (Uhrzeit, Sonnenuntergang, Wind, Anwesende) und weiß, ob du im Flugbuch angemeldet bist – dein Name wird nicht an Google übermittelt.
 
 <p align="center"><img src="bilder/11-regeln.jpg" width="240" alt="Regel-Assistent"></p>
 

@@ -461,6 +461,17 @@ console.log('Rabenschreck OK');
   assert.equal(erste.at(-1).text, 'Vorfrage');
   assert.equal(body.contents.at(-1).parts[0].text, 'Wie hoch ist der Beitrag?');
   assert.match(body.system_instruction.parts[0].text, /AUSSCHLIESSLICH/);
+  const sys = body.system_instruction.parts[0].text;
+  assert.match(sys, /Aktuelle Lage laut MGI-App/);
+  assert.match(sys, /Sonnenuntergang am Platz heute: \d\d:\d\d Uhr/);
+  assert.match(sys, /Der Fragende ist Mitglied der MGI/);
+  assert.match(sys, /NICHT im Flugbuch angemeldet|gerade im Flugbuch angemeldet/);
+  assert.ok(!/Klaus|Butz/.test(sys), 'keine Namen an Gemini');
+  // Sonnenuntergang Ismaning am 07.11.2026 ≈ 16:40 MEZ (15:40 UTC)
+  const su = ctx.sonnenuntergang_(new Date('2026-11-07T12:00:00Z'), 48.2552913, 11.7225233);
+  assert.ok(Math.abs(su.getTime() - Date.parse('2026-11-07T15:40:00Z')) < 6 * 60000, 'Sonnenuntergang ' + su.toISOString());
+  const su2 = ctx.sonnenuntergang_(new Date('2026-06-21T12:00:00Z'), 48.2552913, 11.7225233);
+  assert.ok(Math.abs(su2.getTime() - Date.parse('2026-06-21T19:17:00Z')) < 6 * 60000, 'Sonnenuntergang Juni ' + su2.toISOString());
   assert.match(rufe('regeln_frage', { frage: 'x'.repeat(601) }, klaus.token).fehler, /zu lang/);
   antwort = { code: 429, text: '{}' };
   assert.equal(rufe('regeln_frage', { frage: 'a' }, klaus.token).status, 503);

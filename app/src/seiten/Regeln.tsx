@@ -58,7 +58,7 @@ function Inhalt() {
     <div className="space-y-4">
       <Hinweis>
         Stell eine Frage zur <b>Vereinssatzung</b> oder zur <b>Flugbetriebsordnung</b>. Die Antwort kommt von einer KI (Google Gemini) und nur aus diesen beiden Dokumenten –
-        <b> ohne Gewähr</b>. Maßgeblich ist immer der Originaltext; im Zweifel entscheidet der Vorstand.
+        <b> ohne Gewähr</b>. Damit sie konkret antworten kann, kennt sie die aktuelle Lage am Platz (Uhrzeit, Sonnenuntergang, Wind, Anwesende) und ob du im Flugbuch angemeldet bist – aber nicht deinen Namen. Maßgeblich ist immer der Originaltext; im Zweifel entscheidet der Vorstand.
       </Hinweis>
 
       {verlauf.length === 0 && (
@@ -92,12 +92,11 @@ function Inhalt() {
             <div className="karte px-4 py-3 text-slate-500"><span className="inline-block animate-pulse">Ich schaue in Satzung und Flugbetriebsordnung …</span></div>
           </div>
         )}
-        <div ref={ende} />
       </div>
 
       {fehler && <Fehler fehler={fehler} />}
 
-      <form className="karte sticky bottom-24 flex items-end gap-2 p-2" onSubmit={(e) => { e.preventDefault(); void senden(frage); }}>
+      <form className="karte flex items-end gap-2 p-2" onSubmit={(e) => { e.preventDefault(); void senden(frage); }}>
         <textarea
           value={frage}
           onChange={(e) => setFrage(e.target.value)}
@@ -111,7 +110,7 @@ function Inhalt() {
         <Knopf type="submit" laedt={laedt} disabled={!frage.trim()} aria-label="Frage senden"><Icon name="rechts" className="h-5 w-5" /></Knopf>
       </form>
 
-      <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+      <div ref={ende} className="flex items-center justify-between gap-3 text-xs text-slate-500">
         <span>{info ? `Quellen: ${info.dokumente.join(', ')} · heute noch ${info.uebrig} Fragen` : 'Bis zu 30 Fragen pro Tag'}</span>
         {verlauf.length > 0 && (
           <button type="button" className="underline" onClick={() => { setVerlauf([]); setInfo(null); setFehler(''); }}>Neues Gespräch</button>

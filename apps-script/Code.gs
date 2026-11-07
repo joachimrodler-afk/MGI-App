@@ -1527,7 +1527,69 @@ function regelnDokumente_() {
   }).filter(function (d) { return d.id; });
 }
 
-function regelnSystem_(titel) {
+/** Sonnenuntergang (lokale Zeit als Date) für einen Tag – NOAA-Näherung, genau auf ±2 Minuten */
+function sonnenuntergang_(tag, lat, lon) {
+  var rad = Math.PI / 180;
+  var start = Date.UTC(tag.getUTCFullYear(), 0, 0);
+  var mitternacht = Date.UTC(tag.getUTCFullYear(), tag.getUTCMonth(), tag.getUTCDate());
+  var n = Math.round((mitternacht - start) / 86400000);
+  var lngStd = lon / 15;
+  var t = n + (18 - lngStd) / 24;
+  var M = 0.9856 * t - 3.289;
+  var L = (M + 1.916 * Math.sin(M * rad) + 0.020 * Math.sin(2 * M * rad) + 282.634 + 360) % 360;
+  var RA = (Math.atan(0.91764 * Math.tan(L * rad)) / rad + 360) % 360;
+  RA = (RA + Math.floor(L / 90) * 90 - Math.floor(RA / 90) * 90) / 15;
+  var sinDec = 0.39782 * Math.sin(L * rad);
+  var cosDec = Math.cos(Math.asin(sinDec));
+  var cosH = (Math.cos(90.833 * rad) - sinDec * Math.sin(lat * rad)) / (cosDec * Math.cos(lat * rad));
+  if (cosH > 1 || cosH < -1) return null;
+  var H = Math.acos(cosH) / rad / 15;
+  var T = H + RA - 0.06571 * t - 6.622;
+  var UT = ((T - lngStd) % 24 + 24) % 24;
+  return new Date(mitternacht + UT * 3600000);
+}
+
+var PLATZ_LAT = 48.2552913, PLATZ_LON = 11.7225233;
+var WOCHENTAG_DE = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+
+/** Aktuelle Lage für den Regel-Assistenten (ohne Namen) */
+function regelnKontext_(s) {
+  var z = [];
+  var jetzt = new Date();
+  var hm = function (d) { return Utilities.formatDate(d, TZ, 'HH:mm'); };
+  var wt = WOCHENTAG_DE[Number(Utilities.formatDate(jetzt, TZ, 'u')) % 7];
+  z.push('Jetzt: ' + wt + ', ' + Utilities.formatDate(jetzt, TZ, 'dd.MM.yyyy') + ', ' + hm(jetzt) + ' Uhr');
+  try {
+    var su = sonnenuntergang_(new Date(Utilities.formatDate(jetzt, TZ, "yyyy-MM-dd'T'12:00:00'Z'")), PLATZ_LAT, PLATZ_LON);
+    if (su) z.push('Sonnenuntergang am Platz heute: ' + hm(su) + ' Uhr (½ Stunde vorher: ' + hm(new Date(su.getTime() - 1800000)) + ' Uhr)');
+  } catch (e) { /* egal */ }
+  try {
+    var w = wetterstation_();
+    var e = einstellungenLesen_();
+    if (w && w.daten && w.daten.wind !== null && w.daten.wind !== undefined) {
+      var wind = Number(w.daten.wind);
+      var ampel = wind >= Number(e.windRot) ? 'rot (zu viel Wind)' : wind >= Number(e.windGelb) ? 'gelb (Wind beachten)' : 'grün';
+      z.push('Wind an der Vereins-Wetterstation: ' + wind + ' km/h' + (w.daten.richtung ? ' aus ' + w.daten.richtung : '') +
+        (w.erreichbar ? '' : ' (letzter bekannter Wert, Station gerade nicht erreichbar)') + ' – Wind-Ampel der App: ' + ampel +
+        ' (gelb ab ' + e.windGelb + ', rot ab ' + e.windRot + ' km/h)');
+    } else {
+      z.push('Wind: unbekannt (Wetterstation liefert gerade nichts)');
+    }
+  } catch (e2) { /* egal */ }
+  try {
+    var piloten = offenePiloten_();
+    var fl = offeneFlugleiter_();
+    z.push('Im Flugbuch angemeldet: ' + piloten.length + ' Pilot(en); Flugleiter anwesend: ' + (fl.length ? 'ja' : 'nein'));
+    if (s) {
+      z.push('Der Fragende ist ' + (s.rolle === 'admin' ? 'Mitglied und Admin (Vorstand/Wertungsrichter)' : 'Mitglied') + ' der MGI und in der App angemeldet');
+      z.push('Der Fragende ist gerade ' + (piloten.some(function (p) { return p.mitgliedId === s.mitgliedId; }) ? '' : 'NICHT ') + 'im Flugbuch angemeldet' +
+        (fl.some(function (f) { return f.mitgliedId === s.mitgliedId; }) ? ' und hat die Flugleitung übernommen' : ''));
+    }
+  } catch (e3) { /* egal */ }
+  return z;
+}
+
+function regelnSystem_(titel, lage) {
   return [
     'Du bist der Regel-Assistent der Modellbau-Gemeinschaft Ismaning e.V. (MGI) in der Vereins-App.',
     'Beantworte Fragen von Mitgliedern AUSSCHLIESSLICH anhand der beigefügten Dokumente: ' + titel.join(' und ') + '.',
@@ -1538,7 +1600,10 @@ function regelnSystem_(titel) {
     '- Bei Widersprüchen oder Auslegungsfragen weise darauf hin, dass der Vorstand entscheidet.',
     '- Keine Rechtsberatung. Fragen ohne Bezug zum Verein oder zu den Dokumenten höflich ablehnen.',
     '- Formatierung: einfaches Markdown (**fett**, Listen mit -), keine Überschriften.',
-  ].join('\n');
+    '',
+    'Aktuelle Lage laut MGI-App (nutze sie, um konkret und persönlich zu antworten; frage nichts ab, was hier schon steht;',
+    'was die App nicht weiß – z. B. Versicherung, Kenntnisnachweis, Zustand des Sicherheitsnetzes, Platzsperren – nur kurz als selbst zu prüfen nennen):',
+  ].concat((lage || []).map(function (x) { return '- ' + x; })).join('\n');
 }
 
 /** daten: { frage, verlauf?: [{ rolle: 'ich'|'ki', text }] } */
@@ -1580,7 +1645,7 @@ function regelnFrage_(d, s) {
     contentType: 'application/json',
     headers: { 'x-goog-api-key': key },
     payload: JSON.stringify({
-      system_instruction: { parts: [{ text: regelnSystem_(doks.map(function (x) { return x.titel; })) }] },
+      system_instruction: { parts: [{ text: regelnSystem_(doks.map(function (x) { return x.titel; }), regelnKontext_(s)) }] },
       contents: nachrichten,
       generationConfig: { maxOutputTokens: 1024 },
     }),
