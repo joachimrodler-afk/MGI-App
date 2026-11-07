@@ -1490,6 +1490,22 @@ function rabenschreckParsen(html) {
 }
 
 /** Im Editor ausführen, um die Verbindung zur Fernsteuerung zu prüfen (gibt kein Passwort aus). */
+/** Diagnose im Editor ausführen: welche Termine liefert der Kalender-Feed? (gibt den Link nicht aus) */
+function diagnoseKalender() {
+  var res = UrlFetchApp.fetch(prop_('KALENDER_ICS_URL', true), { muteHttpExceptions: true });
+  var text = res.getContentText();
+  console.log('HTTP ' + res.getResponseCode() + ', ' + text.length + ' Zeichen, VEVENTs: ' + (text.match(/BEGIN:VEVENT/g) || []).length);
+  var bloecke = text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '').split('BEGIN:VEVENT').slice(1);
+  bloecke.slice(0, 40).forEach(function (b, i) {
+    var z = b.split(/\r?\n/).filter(function (l) { return /^(SUMMARY|DTSTART|DTEND|RRULE|RECURRENCE-ID|STATUS|EXDATE)/.test(l); });
+    console.log('#' + i + ' ' + z.join(' | ').slice(0, 300));
+  });
+  var heute = Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd'T'00:00:00");
+  var liste = icsParsen(text, heute, 400);
+  console.log('geparst: ' + liste.length + ', davon ab heute: ' + liste.filter(function (t) { return t.ende >= heute; }).length);
+  liste.filter(function (t) { return t.ende >= heute; }).slice(0, 10).forEach(function (t) { console.log(t.beginn + ' – ' + t.titel); });
+}
+
 function diagnoseRabenschreck() {
   var basis = (prop_('RABENSCHRECK_URL') || 'http://mgi-ism.ddns.net/').replace(/\/+$/, '');
   var user = prop_('RABENSCHRECK_USER') || '';
