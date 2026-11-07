@@ -1445,6 +1445,23 @@ function rabenschreckParsen(html) {
   return /aktiv|an|ein/i.test(m[1]) && !/^aus$/i.test(m[1]);
 }
 
+/** Im Editor ausführen, um die Verbindung zur Fernsteuerung zu prüfen (gibt kein Passwort aus). */
+function diagnoseRabenschreck() {
+  var basis = (prop_('RABENSCHRECK_URL') || 'http://mgi-ism.ddns.net/').replace(/\/+$/, '');
+  var user = prop_('RABENSCHRECK_USER') || '';
+  console.log('URL: ' + basis + '/ · Benutzer gesetzt: ' + (user ? 'ja (' + user.length + ' Zeichen)' : 'nein') + ' · Passwort gesetzt: ' + (prop_('RABENSCHRECK_PASS') ? 'ja' : 'nein'));
+  try {
+    var res = UrlFetchApp.fetch(basis + '/', {
+      muteHttpExceptions: true, followRedirects: false,
+      headers: { Authorization: 'Basic ' + Utilities.base64Encode(user + ':' + (prop_('RABENSCHRECK_PASS') || '')) },
+    });
+    console.log('HTTP ' + res.getResponseCode() + ' · ' + res.getContentText().replace(/\s+/g, ' ').slice(0, 300));
+  } catch (e) {
+    console.log('Fehler: ' + e.message);
+  }
+  console.log('Ergebnis App: ' + JSON.stringify(rabenschreck_('')));
+}
+
 /** pfad '' = nur Status lesen, 'led1on'/'led1off' = schalten */
 function rabenschreck_(pfad) {
   var basis = (prop_('RABENSCHRECK_URL') || 'http://mgi-ism.ddns.net/').replace(/\/+$/, '');
@@ -1464,6 +1481,7 @@ function rabenschreck_(pfad) {
     if (pfad && aktiv !== (pfad === 'led1on')) return { eingerichtet: true, erreichbar: true, aktiv: aktiv, fehler: 'Schalten nicht bestätigt' };
     return { eingerichtet: true, erreichbar: true, aktiv: aktiv, zeit: new Date().toISOString() };
   } catch (e) {
+    console.warn('Rabenschreck: ' + e.message);
     return { eingerichtet: true, erreichbar: false, aktiv: null, fehler: 'Fernsteuerung nicht erreichbar' };
   }
 }
