@@ -182,13 +182,13 @@ Infos zur Ausstattung am Platz:
 
 ## 9. Regel-Assistent (KI)
 
-Fragen zur **Vereinssatzung** und zur **Flugbetriebsordnung** stellst du am einfachsten dem Regel-Assistenten – auf der Startseite oder unter **Mehr → Regel-Assistent (KI)**.
+Fragen zur **Vereinssatzung**, zur **Flugbetriebsordnung** und zu den **MFSD-Regeln (StRfF)** stellst du am einfachsten dem Regel-Assistenten – auf der Startseite oder unter **Mehr → Regel-Assistent (KI)**.
 
 1. Eine Beispielfrage antippen oder selbst eine Frage eintippen, z. B. „Wann muss ein Flugleiter anwesend sein?“
 2. Nach ein paar Sekunden kommt die Antwort – mit **Fundstelle**, z. B. „(Flugbetriebsordnung 6.2)“.
 3. Nachfragen sind möglich; **Neues Gespräch** fängt von vorne an.
 
-- Die Antworten kommen von einer KI (Google Gemini) und **nur** aus Satzung und Flugbetriebsordnung. Steht etwas nicht drin, verweist sie an den Vorstand.
+- Die Antworten kommen von einer KI (Google Gemini) und **nur** aus Satzung, Flugbetriebsordnung und den MFSD-Regeln (StRfF und Kurzbeschreibungen von mfsd.de). Regelt die Flugbetriebsordnung etwas strenger, gilt die Vereinsregel. Steht etwas nicht drin, verweist sie an den Vorstand.
 - **Ohne Gewähr:** Maßgeblich ist immer der Originaltext, im Zweifel entscheidet der Vorstand.
 - Nur für angemeldete Mitglieder, bis zu 30 Fragen pro Tag. Die KI kennt die aktuelle Lage am Platz (Uhrzeit, Sonnenuntergang, Wind, Anwesende) und weiß, ob du im Flugbuch angemeldet bist – dein Name wird nicht an Google übermittelt.
 

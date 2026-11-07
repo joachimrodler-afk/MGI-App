@@ -16,6 +16,7 @@ const BEISPIELE = [
   'Wie hoch darf ich fliegen?',
   'Wann muss ein Flugleiter anwesend sein?',
   'Wie kann ich aus dem Verein austreten?',
+  'Was muss ein Gastpilot vor dem Fliegen tun?',
 ];
 
 function Inhalt() {
@@ -57,7 +58,7 @@ function Inhalt() {
   return (
     <div className="space-y-4">
       <Hinweis>
-        Stell eine Frage zur <b>Vereinssatzung</b> oder zur <b>Flugbetriebsordnung</b>. Die Antwort kommt von einer KI (Google Gemini) und nur aus diesen beiden Dokumenten –
+        Stell eine Frage zur <b>Vereinssatzung</b>, zur <b>Flugbetriebsordnung</b> oder zu den <b>MFSD-Regeln (StRfF)</b>. Die Antwort kommt von einer KI (Google Gemini) und nur aus diesen Regelwerken –
         <b> ohne Gewähr</b>. Damit sie konkret antworten kann, kennt sie die aktuelle Lage am Platz (Uhrzeit, Sonnenuntergang, Wind, Anwesende) und ob du im Flugbuch angemeldet bist – aber nicht deinen Namen. Maßgeblich ist immer der Originaltext; im Zweifel entscheidet der Vorstand.
       </Hinweis>
 
@@ -89,7 +90,7 @@ function Inhalt() {
         ))}
         {laedt && (
           <div className="flex justify-start">
-            <div className="karte px-4 py-3 text-slate-500"><span className="inline-block animate-pulse">Ich schaue in Satzung und Flugbetriebsordnung …</span></div>
+            <div className="karte px-4 py-3 text-slate-500"><span className="inline-block animate-pulse">Ich schaue in Satzung, Flugbetriebsordnung und StRfF …</span></div>
           </div>
         )}
       </div>
