@@ -85,7 +85,7 @@ export function BlockschaltbildStrom() {
   return (
     <figure className="my-2">
       <svg viewBox="0 0 360 590" className="h-auto w-full" role="img" aria-labelledby="bss-titel">
-        <title id="bss-titel">Blockschaltbild der Stromversorgung: zwei Solarmodule über DC-Trennschalter an das Bluetti; 12 V für Wetterstation, WLAN-Router und DC-DC-Wandler zur Pufferbatterie an den Tischen mit Ladesteckdosen (15 A); 230 V für Mähroboter, RTK-Antenne und Kühlschrank</title>
+        <title id="bss-titel">Blockschaltbild der Stromversorgung: zwei Solarmodule über DC-Trennschalter an das Bluetti; 12 V für Wetterstation, WLAN-Router und DC-DC-Wandler zur Pufferbatterie an den Tischen mit Ladesteckdosen (je Tisch eine Sicherung 15 A); 230 V für Mähroboter, RTK-Antenne und Kühlschrank</title>
         <defs>
           <marker id="mgi-pfeil-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="fill-slate-500 dark:fill-slate-400" />
@@ -134,10 +134,13 @@ export function BlockschaltbildStrom() {
         <path d="M107,418 V458" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} markerEnd="url(#mgi-pfeil-s)" />
         <Rahmen x={4} y={436} w={352} h={148} titel="Vorne bei den Tischen" rechts />
         <Box x={42} y={458} w={276} h={42} titel="Pufferbatterie" unter="LiFePO₄ · 12,8 V · 100 Ah (≈ 1.280 Wh)" />
-        <path d="M180,500 V512" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
-        <rect x={136} y={512} width={88} height={22} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
-        <text x={180} y={527} textAnchor="middle" fontSize={11} fontWeight={700} className="fill-mgi-rot">Sicherung 15 A</text>
-        <path d="M180,534 V544 H95 V548 M180,544 H265 V548" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
+        {/* je Tisch eine eigene Sicherung 15 A */}
+        <path d="M180,500 V508 H95 V514 M180,508 H265 V514" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
+        <rect x={51} y={514} width={88} height={22} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
+        <text x={95} y={529} textAnchor="middle" fontSize={11} fontWeight={700} className="fill-mgi-rot">Sicherung 15 A</text>
+        <rect x={221} y={514} width={88} height={22} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
+        <text x={265} y={529} textAnchor="middle" fontSize={11} fontWeight={700} className="fill-mgi-rot">Sicherung 15 A</text>
+        <path d="M95,536 V548 M265,536 V548" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
         <Box x={20} y={550} w={150} h={30} titel="Ladesteckdosen Tisch 1" />
         <Box x={190} y={550} w={150} h={30} titel="Ladesteckdosen Tisch 2" />
       </svg>

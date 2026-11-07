@@ -1286,7 +1286,7 @@ function technikStrom_() {
       '- Kühlschrank',
       '## An den Tischen',
       '- **Pufferbatterie:** LiFePO₄, 12,8 V, 100 Ah (rund 1.280 Wh), wird über den DC-DC-Wandler vom Bluetti nachgeladen',
-      '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)',
+      '- versorgt die Ladesteckdosen an zwei Tischen, **jeder Tisch** mit eigener Sicherung **15 A** (je Tisch bei 12,8 V rund 190 W)',
       '## Hinweise',
       '- Die Module haben zusammen 1.000 Wp, das Bluetti nimmt höchstens 900 W auf. An sehr sonnigen Tagen wird die Spitze abgeschnitten – das ist normal.',
       '- Vor Arbeiten an den Solarleitungen den DC-Trennschalter ausschalten.',
@@ -1297,12 +1297,12 @@ function technikStrom_() {
 
 function technikLadeText_() {
   return [
-    'Die Ladesteckdosen an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen und sind mit **15 Ampere** abgesichert.',
+    'Die Ladesteckdosen an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen. **Jeder Tisch** hat eine eigene Sicherung mit **15 Ampere**.',
     '- Die Pufferbatterie wird über einen DC-DC-Wandler vom Bluetti im Gartenhaus nachgeladen (siehe **Stromversorgung**).',
-    '- Alle gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.',
-    '- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.',
+    '- Alle an **einem Tisch** gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.',
+    '- Löst die Sicherung eines Tisches aus: Ladegeräte an diesem Tisch abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.',
     '## Erlaubter Ladestrom',
-    'Die 12-V-Ladesteckdosen sind mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung. Je mehr Zellen der Akku hat, desto kleiner muss der Ladestrom sein:',
+    'Jeder Tisch ist mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung je Tisch. Je mehr Zellen der Akku hat, desto kleiner muss der Ladestrom sein:',
     '| Akku | Ladeschluss | max. Ladestrom |',
     '|---|---|---:|',
     '| 3S | 12,6 V | 15 A |',
@@ -1311,7 +1311,7 @@ function technikLadeText_() {
     '| 6S | 25,2 V | 7,5 A |',
     '| 7S | 29,4 V | 6,4 A |',
     '| 8S | 33,6 V | 5,6 A |',
-    '_Faustregel: max. Ladestrom = 45 ÷ Zellenzahl (für LiPo mit 4,2 V je Zelle). Die Werte gelten für alle Ladegeräte an einer Sicherung zusammen._',
+    '_Faustregel: max. Ladestrom = 45 ÷ Zellenzahl (für LiPo mit 4,2 V je Zelle). Die Werte gelten für alle Ladegeräte an einem Tisch zusammen._',
   ].join('\n');
 }
 
@@ -1324,6 +1324,14 @@ var TECHNIK_ERSETZUNGEN = {
   ],
   TECHNIK_LADETABELLE: [
     ['- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.', '- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.\n## Erlaubter Ladestrom\nDie 12-V-Ladesteckdosen sind mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung. Je mehr Zellen der Akku hat, desto kleiner muss der Ladestrom sein:\n| Akku | Ladeschluss | max. Ladestrom |\n|---|---|---:|\n| 3S | 12,6 V | 15 A |\n| 4S | 16,8 V | 11,2 A |\n| 5S | 21,0 V | 9,0 A |\n| 6S | 25,2 V | 7,5 A |\n| 7S | 29,4 V | 6,4 A |\n| 8S | 33,6 V | 5,6 A |\n_Faustregel: max. Ladestrom = 45 ÷ Zellenzahl (für LiPo mit 4,2 V je Zelle). Die Werte gelten für alle Ladegeräte an einer Sicherung zusammen._'],
+  ],
+  TECHNIK_SICHERUNG: [
+    ['- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)', '- versorgt die Ladesteckdosen an zwei Tischen, **jeder Tisch** mit eigener Sicherung **15 A** (je Tisch bei 12,8 V rund 190 W)'],
+    ['hängen an der **Pufferbatterie** vorne bei den Tischen und sind mit **15 Ampere** abgesichert.', 'hängen an der **Pufferbatterie** vorne bei den Tischen. **Jeder Tisch** hat eine eigene Sicherung mit **15 Ampere**.'],
+    ['- Alle gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.', '- Alle an **einem Tisch** gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.'],
+    ['- Löst die Sicherung aus: Ladegeräte abstecken,', '- Löst die Sicherung eines Tisches aus: Ladegeräte an diesem Tisch abstecken,'],
+    ['Die 12-V-Ladesteckdosen sind mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung.', 'Jeder Tisch ist mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung je Tisch.'],
+    ['Die Werte gelten für alle Ladegeräte an einer Sicherung zusammen._', 'Die Werte gelten für alle Ladegeräte an einem Tisch zusammen._'],
   ],
   TECHNIK_KUEHLSCHRANK: [
     ['- RTK-Antenne\n## An den Tischen', '- RTK-Antenne\n- Kühlschrank\n## An den Tischen'],

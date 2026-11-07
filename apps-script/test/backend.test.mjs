@@ -324,6 +324,15 @@ console.log('Arbeitsdienst-Parser OK');
   const st3 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung').text;
   assert.match(st3, /LiFePO₄, 12,8 V, 100 Ah/);
   assert.match(st3, /rund 190 W/);
+  // je Tisch eine Sicherung: alte Formulierung wird ersetzt
+  {
+    const st5 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung');
+    ok(rufe('technik_speichern', { ...st5, text: '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)\n' }, admin.token));
+    delete props.TECHNIK_SICHERUNG;
+    const t5 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung').text;
+    assert.match(t5, /jeder Tisch\*\* mit eigener Sicherung/);
+    assert.match(ctx.technikLadeText_(), /Jeder Tisch\*\* hat eine eigene Sicherung/);
+  }
   // Kühlschrank-Ergänzung
   const st4 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung');
   assert.match(ctx.technikStrom_().text, /- Kühlschrank/, 'Standardtext enthält Kühlschrank');
