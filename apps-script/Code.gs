@@ -31,6 +31,8 @@
  *   APP_URL               Adresse der App (für Links in Push-Nachrichten)
  *   ARBEITSLISTE_ID       Google-Tabelle der Arbeitsdienst-Liste (optional, Standard siehe unten)
  *   TECHNIK_ORDNER_ID     Drive-Ordner für Fotos im Bereich Technik (wird sonst automatisch angelegt)
+ *   RABENSCHRECK_URL      Fernsteuerung der Wetterstation, Standard http://mgi-ism.ddns.net/
+ *   RABENSCHRECK_USER/_PASS  Web-Login der Fernsteuerung (Passwort nur hier, nie im Code!)
  */
 
 var TZ = 'Europe/Berlin';
@@ -148,6 +150,8 @@ var AKTIONEN = {
   technik_speichern: { recht: 'admin', fn: technikSpeichern_ },
   technik_loeschen: { recht: 'admin', fn: technikLoeschen_ },
   technik_sortieren: { recht: 'admin', fn: technikSortieren_ },
+  rabenschreck_status: { recht: 'admin', fn: function () { return rabenschreck_(''); } },
+  rabenschreck_schalten: { recht: 'admin', fn: function (d) { return rabenschreck_(d.an === true ? 'led1on' : d.an === false ? 'led1off' : ''); } },
   // Nachweise
   nachweise: { recht: 'mitglied', fn: nachweiseLesen_ },
   nachweise_speichern: { recht: 'mitglied', fn: nachweiseSpeichern_ },
@@ -1428,6 +1432,40 @@ function technikSortieren_(d, s) {
     });
   });
   return technikListe_(d, s);
+}
+
+// =====================================================================
+// Rabenschreck (Schaltausgang der Wetterstation, nur Admins)
+// =====================================================================
+
+/** Status aus der Fernsteuerungsseite lesen: true = aktiv, false = aus, null = unbekannt */
+function rabenschreckParsen(html) {
+  var m = String(html || '').match(/Status Rabenschreck:\s*<strong>\s*([^<]+?)\s*<\/strong>/i);
+  if (!m) return null;
+  return /aktiv|an|ein/i.test(m[1]) && !/^aus$/i.test(m[1]);
+}
+
+/** pfad '' = nur Status lesen, 'led1on'/'led1off' = schalten */
+function rabenschreck_(pfad) {
+  var basis = (prop_('RABENSCHRECK_URL') || 'http://mgi-ism.ddns.net/').replace(/\/+$/, '');
+  var user = prop_('RABENSCHRECK_USER');
+  var pass = prop_('RABENSCHRECK_PASS');
+  if (!user || !pass) return { eingerichtet: false, erreichbar: false, aktiv: null };
+  var opts = {
+    muteHttpExceptions: true, followRedirects: false,
+    headers: { Authorization: 'Basic ' + Utilities.base64Encode(user + ':' + pass) },
+  };
+  try {
+    var res = UrlFetchApp.fetch(basis + '/' + pfad, opts);
+    var code = res.getResponseCode();
+    if (code === 401) return { eingerichtet: true, erreichbar: true, aktiv: null, fehler: 'Benutzername oder Passwort der Fernsteuerung falsch' };
+    if (code !== 200) return { eingerichtet: true, erreichbar: false, aktiv: null, fehler: 'Antwort ' + code };
+    var aktiv = rabenschreckParsen(res.getContentText());
+    if (pfad && aktiv !== (pfad === 'led1on')) return { eingerichtet: true, erreichbar: true, aktiv: aktiv, fehler: 'Schalten nicht bestätigt' };
+    return { eingerichtet: true, erreichbar: true, aktiv: aktiv, zeit: new Date().toISOString() };
+  } catch (e) {
+    return { eingerichtet: true, erreichbar: false, aktiv: null, fehler: 'Fernsteuerung nicht erreichbar' };
+  }
 }
 
 // =====================================================================

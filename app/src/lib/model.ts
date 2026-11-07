@@ -100,6 +100,15 @@ export interface PushEinstellungen {
   arbeitsdienst?: boolean;
 }
 
+/** Rabenschreck an der Wetterstation (nur Admins) */
+export interface RabenschreckStatus {
+  eingerichtet: boolean;
+  erreichbar: boolean;
+  aktiv: boolean | null;
+  fehler?: string;
+  zeit?: string;
+}
+
 /** Abschnitt im Bereich „Technik am Platz“ */
 export interface TechnikAbschnitt {
   id: string;

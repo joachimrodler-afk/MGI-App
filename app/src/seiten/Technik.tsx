@@ -9,7 +9,7 @@ import { Icon } from '../components/Icon';
 import { Feld, Fehler, Hinweis, Knopf, Laden, Leer, Schalter, Seite, useLaden } from '../components/ui';
 import { api, erinnere, merke } from '../lib/api';
 import { bildVerkleinern, klassen, markdown } from '../lib/helfer';
-import type { TechnikAbschnitt } from '../lib/model';
+import type { RabenschreckStatus, TechnikAbschnitt } from '../lib/model';
 import { useSitzung } from '../lib/sitzung';
 
 const ICONS: { k: string; n: string }[] = [
@@ -168,6 +168,49 @@ function AbschnittKarte({ a, offen, umschalten, admin, bearbeiten, hoch, runter 
   );
 }
 
+/** Schalter für den Rabenschreck – nur für Admins sichtbar, das Backend prüft die Rolle zusätzlich */
+function Rabenschreck() {
+  const { daten, setDaten, laedt, neu } = useLaden(() => api<RabenschreckStatus>('rabenschreck_status'), []);
+  const [schaltet, setSchaltet] = useState(false);
+  const [fehler, setFehler] = useState('');
+  async function schalten(an: boolean) {
+    setSchaltet(true); setFehler('');
+    try { setDaten(await api<RabenschreckStatus>('rabenschreck_schalten', { an })); } catch (e) { setFehler((e as Error).message); } finally { setSchaltet(false); }
+  }
+  const st = daten;
+  const aktiv = st?.aktiv;
+  return (
+    <div className="karte overflow-hidden border-2 border-amber-300 dark:border-amber-700">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <span className={klassen('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+          aktiv ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300')}>
+          <Icon name="flieger" />
+        </span>
+        <span className="flex-1">
+          <span className="block font-bold">Rabenschreck</span>
+          <span className="text-xs text-slate-500"><Icon name="schloss" className="mr-0.5 inline h-3.5 w-3.5" />nur für Admins</span>
+        </span>
+        <span className={klassen('rounded-full px-2.5 py-0.5 text-xs font-bold',
+          aktiv === true ? 'bg-emerald-100 text-emerald-800' : aktiv === false ? 'bg-slate-200 text-slate-700' : 'bg-amber-100 text-amber-800')}>
+          {laedt && !st ? '…' : aktiv === true ? 'AKTIV' : aktiv === false ? 'AUS' : 'unbekannt'}
+        </span>
+      </div>
+      <div className="space-y-2 px-4 pb-4">
+        {st && !st.eingerichtet && <Hinweis art="warnung">Die Zugangsdaten der Fernsteuerung fehlen im Backend (Skripteigenschaften RABENSCHRECK_USER und RABENSCHRECK_PASS).</Hinweis>}
+        {st?.fehler && <Hinweis art="warnung">{st.fehler}</Hinweis>}
+        {fehler && <Fehler fehler={fehler} />}
+        <div className="grid grid-cols-3 gap-2">
+          <Knopf className="col-span-2" art={aktiv ? 'gefahr' : 'primaer'} laedt={schaltet} disabled={!st?.eingerichtet || schaltet}
+            onClick={() => void schalten(!aktiv)}>
+            {aktiv ? 'Ausschalten' : 'Einschalten'}
+          </Knopf>
+          <Knopf art="sekundaer" onClick={() => void neu()} disabled={laedt || schaltet} aria-label="Status neu laden"><Icon name="aktualisieren" className="h-5 w-5" /></Knopf>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Inhalt() {
   const s = useSitzung();
   const admin = s?.rolle === 'admin';
@@ -199,6 +242,7 @@ function Inhalt() {
       {!s && <Hinweis>Einige Infos (z. B. Zahlenschloss) sehen nur angemeldete Mitglieder.</Hinweis>}
       {fehler && daten === null && <Hinweis art="warnung">Offline – letzter bekannter Stand.</Hinweis>}
       {fehler2 && <Fehler fehler={fehler2} />}
+      {admin && <Rabenschreck />}
       {liste.length === 0 && <Leer>Noch keine Technik-Infos eingetragen.</Leer>}
       {liste.map((a, i) => bearbeite === a.id ? (
         <Editor key={a.id} alt={a} fertig={fertig} abbrechen={() => setBearbeite('')} />

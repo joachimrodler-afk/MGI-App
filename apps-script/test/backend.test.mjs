@@ -338,3 +338,11 @@ console.log('Arbeitsdienst-Parser OK');
   assert.equal(rufe('ich', {}, weg.token).ok, false, 'Anmeldung weg');
   console.log('Mitglied löschen OK');
 }
+
+// Rabenschreck-Status aus der Fernsteuerungsseite
+assert.equal(ctx.rabenschreckParsen('<p>Status Rabenschreck: <strong>AKTIV</strong></p>'), true);
+assert.equal(ctx.rabenschreckParsen('<p>Status Rabenschreck: <strong>AUS</strong></p>'), false);
+assert.equal(ctx.rabenschreckParsen('<p>irgendwas</p>'), null);
+assert.equal(rufe('rabenschreck_status', {}, klaus.token).status, 403, 'nur Admins');
+assert.deepEqual(ok(rufe('rabenschreck_status', {}, admin.token)), { eingerichtet: false, erreichbar: false, aktiv: null });
+console.log('Rabenschreck OK');

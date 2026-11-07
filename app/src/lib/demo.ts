@@ -28,6 +28,7 @@ interface DemoDaten {
   flugleiter?: FlugleiterEintrag[];
   arbeitsliste?: DemoAWoche[];
   technik?: TechnikAbschnitt[];
+  rabenschreck?: boolean;
 }
 
 const KEY = 'mgi.demo.v2';
@@ -366,6 +367,8 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       if (typeof d.vorkommnisse === 'string') p.vorkommnisse = d.vorkommnisse.trim().slice(0, 1000);
       return fertig(flugbuchStatus());
     }
+    case 'rabenschreck_status': admin(); return fertig({ eingerichtet: true, erreichbar: true, aktiv: !!db.rabenschreck, zeit: new Date().toISOString() });
+    case 'rabenschreck_schalten': admin(); db.rabenschreck = d.an === true; return fertig({ eingerichtet: true, erreichbar: true, aktiv: db.rabenschreck, zeit: new Date().toISOString() });
     case 'technik_liste': return fertig(tech().filter((a) => s || !a.nurMitglieder));
     case 'technik_speichern': {
       const x = admin();
