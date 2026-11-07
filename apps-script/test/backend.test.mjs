@@ -244,6 +244,25 @@ console.log('Arbeitsdienst-Parser OK');
   console.log('Spalten-Update OK');
 }
 
+// Flugbuch: Blatt mit anderer Spaltenreihenfolge (z. B. „kanal“ später hinten ergänzt) – Werte landen trotzdem richtig
+{
+  const fb = tabelle.blaetter.Flugbuch || tabelle.insertSheet('Flugbuch');
+  const kopf = ctx.BLAETTER.Flugbuch.filter((k) => k !== 'kanal').concat('kanal');
+  fb.rows.splice(0, fb.rows.length, kopf);
+  const r = ok(rufe('flugbuch_anmelden', { eintrag: { art: 'mitglied', antrieb: ['elektro'], masse: ctx.MASSEN[0], kanal: '7', schulungsnachweis: true, regelnBestaetigt: true } }, klaus.token));
+  const zeile = fb.rows[1];
+  const wert = (k) => zeile[kopf.indexOf(k)];
+  assert.equal(wert('elektro'), 'x');
+  assert.equal(wert('kolben'), '');
+  assert.equal(wert('kanal'), '7');
+  assert.equal(wert('ende_ts'), '');
+  assert.ok(wert('beginn_ts'));
+  assert.deepEqual(r.piloten[0].antrieb, ['elektro']);
+  assert.equal(r.anwesend.anzahl, 1);
+  ok(rufe('flugbuch_abmelden', { id: r.piloten[0].id }, klaus.token));
+  console.log('Flugbuch Spaltenreihenfolge OK');
+}
+
 // Arbeitsdienst in der App: eintragen (verbindlich), austragen nur Admin
 {
   let l = ok(rufe('arbeitsdienst_liste', {}, klaus.token));

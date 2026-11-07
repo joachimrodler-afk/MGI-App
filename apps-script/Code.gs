@@ -260,7 +260,7 @@ function login_(d) {
   cache.remove(key);
   var token = Utilities.getUuid() + Utilities.getUuid().replace(/-/g, '');
   var ablauf = SITZUNG_UNBEGRENZT;
-  blatt_('Sitzungen').appendRow([token, m.id, ablauf]);
+  zeileAnhaengen_('Sitzungen', [token, m.id, ablauf]);
   return sitzungObjekt_(token, m, ablauf);
 }
 
@@ -349,7 +349,7 @@ function mitgliederListe_() {
 function mitgliedSchreiben_(vorname, nachname, rolle, sparte, pin) {
   var salt = Utilities.getUuid();
   var id = 'm' + Utilities.getUuid().slice(0, 8);
-  blatt_('Mitglieder').appendRow([id, vorname, nachname, rolle, sparte, salt, pinHash_(pin, salt), 'true', new Date().toISOString()]);
+  zeileAnhaengen_('Mitglieder', [id, vorname, nachname, rolle, sparte, salt, pinHash_(pin, salt), 'true', new Date().toISOString()]);
   return id;
 }
 
@@ -793,7 +793,7 @@ function einstellungenSpeichern_(d) {
       if (d[k] === undefined) return;
       var wert = JSON.stringify(d[k]);
       var gefunden = aktualisiereZeile_('Einstellungen', 'schluessel', k, function (r) { r.wert = wert; return r; });
-      if (!gefunden) blatt_('Einstellungen').appendRow([k, wert]);
+      if (!gefunden) zeileAnhaengen_('Einstellungen', [k, wert]);
     });
   });
   return einstellungenLesen_();
@@ -980,7 +980,7 @@ function flugbuchAnmelden_(d, s) {
       var offen = zeilen_('Flugbuch').some(function (r) { return !r.ende_ts && r.mitgliedId === s.mitgliedId && r.verein_gast !== 'Gast'; });
       if (offen) throw fehler_('Du bist bereits im Flugbuch angemeldet', 400);
     }
-    blatt_('Flugbuch').appendRow([
+    zeileAnhaengen_('Flugbuch', [
       id, txt_(heute_()), name, vorname, gast ? 'Gast' : 'Verein', txt_(String(e.kanal || '').slice(0, 20)), jaNein_(e.schulungsnachweis),
       antrieb.indexOf('segler') >= 0 ? 'x' : '', antrieb.indexOf('elektro') >= 0 ? 'x' : '',
       antrieb.indexOf('kolben') >= 0 ? 'x' : '', antrieb.indexOf('turbine') >= 0 ? 'x' : '',
@@ -1040,7 +1040,7 @@ function flugleiterAnmelden_(d, s) {
   mitSperre_(function () {
     var offen = zeilen_('Flugleiter').some(function (r) { return !r.ende_ts && r.mitgliedId === s.mitgliedId; });
     if (offen) throw fehler_('Du bist bereits als Flugleiter angemeldet', 400);
-    blatt_('Flugleiter').appendRow([
+    zeileAnhaengen_('Flugleiter', [
       'l' + Utilities.getUuid().slice(0, 8), txt_(heute_()), m ? m.nachname : teileName_(s.name).nachname, m ? m.vorname : teileName_(s.name).vorname,
       jaNein_(b.fangnetz), jaNein_(b.rasenGemaeht), b.wetter, b.windrichtung, b.windstaerke,
       txt_(uhr_(jetzt)), '', s.mitgliedId, txt_(jetzt.toISOString()), '', '',
@@ -1121,7 +1121,7 @@ function zugangAnfragen_(d) {
   var offen = zeilen_('Anfragen').some(function (a) { return a.status === 'offen' && (a.vorname + ' ' + a.nachname).toLowerCase() === voll; });
   if (!offen) {
     mitSperre_(function () {
-      blatt_('Anfragen').appendRow(['a' + Utilities.getUuid().slice(0, 8), vorname, nachname, String(d.nachricht || '').slice(0, 200), txt_(new Date().toISOString()), 'offen', '']);
+      zeileAnhaengen_('Anfragen', ['a' + Utilities.getUuid().slice(0, 8), vorname, nachname, String(d.nachricht || '').slice(0, 200), txt_(new Date().toISOString()), 'offen', '']);
     });
     pushAnAdmins_('Neue Zugangsanfrage', vorname + ' ' + nachname + ' möchte in die MGI-App.', '#/verwaltung/mitglieder');
   }
@@ -1192,7 +1192,7 @@ function brettSpeichern_(d, s) {
   };
   mitSperre_(function () {
     if (alt) aktualisiereZeile_('Brett', 'id', b.id, function (r) { r.json = JSON.stringify(b); r.ablauf = b.ablauf; return r; });
-    else blatt_('Brett').appendRow([b.id, b.ablauf, JSON.stringify(b)]);
+    else zeileAnhaengen_('Brett', [b.id, b.ablauf, JSON.stringify(b)]);
   });
   if (!alt) pushSenden_('brett', 'Schwarzes Brett: ' + ({ biete: 'Biete', suche: 'Suche', info: 'Info' }[b.kategorie]), b.titel, '#/brett', s.mitgliedId);
   return b;
@@ -1364,7 +1364,7 @@ function technikMigrieren_(liste) {
     a.id = 't' + Utilities.getUuid().slice(0, 8);
     a.bilder = [];
     a.geaendert = new Date().toISOString();
-    blatt_('Technik').appendRow([a.id, wetter ? wetter.reihenfolge + 0.5 : 0.5, JSON.stringify(a)]);
+    zeileAnhaengen_('Technik', [a.id, wetter ? wetter.reihenfolge + 0.5 : 0.5, JSON.stringify(a)]);
     liste.forEach(function (x) {
       if (x.titel === 'Ladesteckdosen' && String(x.text).indexOf(TECHNIK_LADE_ALT) === 0) {
         aktualisiereZeile_('Technik', 'id', x.id, function (r) {
@@ -1389,7 +1389,7 @@ function technikAlle_() {
         a.id = 't' + Utilities.getUuid().slice(0, 8);
         a.bilder = [];
         a.geaendert = new Date().toISOString();
-        blatt_('Technik').appendRow([a.id, i + 1, JSON.stringify(a)]);
+        zeileAnhaengen_('Technik', [a.id, i + 1, JSON.stringify(a)]);
       });
       PropertiesService.getScriptProperties().setProperty('TECHNIK_ANGELEGT', 'true');
       PropertiesService.getScriptProperties().setProperty('TECHNIK_STROM', 'true');
@@ -1448,7 +1448,7 @@ function technikSpeichern_(d, s) {
   var reihenfolge = alt ? alt.reihenfolge : alle.reduce(function (m, x) { return Math.max(m, x.reihenfolge); }, 0) + 1;
   mitSperre_(function () {
     if (alt) aktualisiereZeile_('Technik', 'id', a.id, function (r) { r.json = JSON.stringify(a); return r; });
-    else blatt_('Technik').appendRow([a.id, reihenfolge, JSON.stringify(a)]);
+    else zeileAnhaengen_('Technik', [a.id, reihenfolge, JSON.stringify(a)]);
   });
   return technikListe_(d, s);
 }
@@ -1543,7 +1543,7 @@ function nachweiseSpeichern_(d, s) {
       r.name = s.name; r.kenntnisnachweis = ok(d.kenntnisnachweis); r.eid = ok(d.eid); r.versicherung = ok(d.versicherung); r.gemeldet = '';
       return r;
     });
-    if (!gef) blatt_('Nachweise').appendRow([s.mitgliedId, s.name, ok(d.kenntnisnachweis), ok(d.eid), ok(d.versicherung), '']);
+    if (!gef) zeileAnhaengen_('Nachweise', [s.mitgliedId, s.name, ok(d.kenntnisnachweis), ok(d.eid), ok(d.versicherung), '']);
   });
   return nachweiseLesen_(d, s);
 }
@@ -1807,7 +1807,7 @@ function pushAbo_(d, s) {
   var einst = JSON.stringify(d.einstellungen || {});
   mitSperre_(function () {
     var gef = aktualisiereZeile_('PushAbos', 'fcmToken', d.fcmToken, function (r) { r.mitgliedId = s.mitgliedId; r.einstellungen = einst; return r; });
-    if (!gef) blatt_('PushAbos').appendRow([d.fcmToken, s.mitgliedId, einst, new Date().toISOString()]);
+    if (!gef) zeileAnhaengen_('PushAbos', [d.fcmToken, s.mitgliedId, einst, new Date().toISOString()]);
   });
   return true;
 }
@@ -1914,7 +1914,7 @@ function wertungsartSpeichern_(d) {
     erg.version = version;
     erg.geaendert = new Date().toISOString();
     if (alt) aktualisiereZeile_('Wertungsarten', 'id', d.id, function (r) { r.json = JSON.stringify(erg); return r; });
-    else blatt_('Wertungsarten').appendRow([d.id, JSON.stringify(erg)]);
+    else zeileAnhaengen_('Wertungsarten', [d.id, JSON.stringify(erg)]);
   });
   return erg;
 }
@@ -1954,7 +1954,7 @@ function wettbewerbSpeichern_(d) {
     w.teilnehmer = (w.teilnehmer || []).map(function (t) { return { id: t.id || 't' + Utilities.getUuid().slice(0, 6), name: t.name, klasse: t.klasse || '' }; });
     abgeschlossen = altW && altW.status !== 'abgeschlossen' && w.status === 'abgeschlossen';
     if (alt) aktualisiereZeile_('Wettbewerbe', 'id', w.id, function (r) { r.json = JSON.stringify(w); return r; });
-    else blatt_('Wettbewerbe').appendRow([w.id, JSON.stringify(w)]);
+    else zeileAnhaengen_('Wettbewerbe', [w.id, JSON.stringify(w)]);
   });
   if (abgeschlossen) pushSenden_('ergebnisse', 'Ergebnisse: ' + w.name, 'Die Rangliste ist fertig.', '#/wettbewerbe/' + w.id);
   return w;
@@ -1981,7 +1981,7 @@ function wertungSpeichern_(d, s) {
   };
   mitSperre_(function () {
     var gef = aktualisiereZeile_('Wertungen', 'id', w.id, function (r) { r.json = JSON.stringify(w); return r; });
-    if (!gef) blatt_('Wertungen').appendRow([w.id, w.wettbewerbId, JSON.stringify(w)]);
+    if (!gef) zeileAnhaengen_('Wertungen', [w.id, w.wettbewerbId, JSON.stringify(w)]);
   });
   return w;
 }
@@ -2025,6 +2025,25 @@ function spaltenErgaenzen_(sh, name) {
       sh.getRange(1, kopf.length).setFontWeight('bold');
     }
   });
+}
+
+/**
+ * Hängt eine Zeile an. Die Werte kommen in der Reihenfolge von BLAETTER[name],
+ * geschrieben wird aber nach den tatsächlichen Spaltenüberschriften im Blatt –
+ * so passt es auch, wenn Spalten später ergänzt oder in der Tabelle verschoben wurden.
+ */
+function zeileAnhaengen_(name, werte) {
+  var sh = blatt_(name);
+  var soll = BLAETTER[name];
+  if (!soll) { sh.appendRow(werte); return; }
+  var breite = sh.getLastColumn();
+  var kopf = breite ? sh.getRange(1, 1, 1, breite).getValues()[0].map(String) : soll;
+  var zeile = kopf.map(function () { return ''; });
+  soll.forEach(function (k, i) {
+    var j = kopf.indexOf(k);
+    if (j >= 0 && i < werte.length) zeile[j] = werte[i] === undefined || werte[i] === null ? '' : werte[i];
+  });
+  sh.appendRow(zeile);
 }
 
 function zeilen_(name) {
