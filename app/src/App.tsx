@@ -75,7 +75,7 @@ function Fuss() {
     { zu: '/mehr', icon: 'mehr', text: 'Mehr' },
   ];
   return (
-    <nav className="sicher-unten nicht-drucken fixed inset-x-0 bottom-0 z-30 border-t border-himmel-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95" aria-label="Hauptnavigation">
+    <nav className="fussleiste sicher-unten nicht-drucken z-30 border-t border-himmel-200 bg-white dark:border-slate-700 dark:bg-slate-900" aria-label="Hauptnavigation">
       <div className="mx-auto grid max-w-2xl grid-cols-5">
         {punkte.map((p) => (
           <NavLink key={p.zu} to={p.zu} end={p.ende}

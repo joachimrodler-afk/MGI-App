@@ -8,7 +8,7 @@ import type { FlugbuchEintrag, FlugleiterEintrag } from '../../lib/model';
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-function csv(piloten: FlugbuchEintrag[]) {
+function csv(piloten: FlugbuchEintrag[], flugleiter: FlugleiterEintrag[]) {
   const kopf = ['Datum', 'Name', 'Vorname', 'Verein/Gast', 'Schulungsnachweis', 'Segler', 'Elektro', 'Kolben', 'Turbine', 'max. Masse', 'Beginn', 'Ende', 'automatisch beendet', 'eingetragen von', 'Besondere Vorkommnisse'];
   const x = (b: boolean) => (b ? 'x' : '');
   const zeilen = piloten.map((p) => [
@@ -17,7 +17,16 @@ function csv(piloten: FlugbuchEintrag[]) {
     p.masse, p.beginn, p.ende, p.autoBeendet ? 'ja' : '', p.eingetragenVon, p.vorkommnisse ?? '',
   ]);
   const esc = (s: string) => (/[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
-  return [kopf, ...zeilen].map((z) => z.map((v) => esc(String(v ?? ''))).join(';')).join('\r\n');
+  const flKopf = ['Datum', 'Name', 'Vorname', 'Beginn', 'Ende', 'automatisch beendet', 'Fangnetz aufgebaut', 'Rasen gemäht', 'Wetter', 'Windrichtung', 'Windstärke'];
+  const flZeilen = flugleiter.map((f) => [
+    f.datum, f.name, f.vorname, f.beginn, f.ende, f.autoBeendet ? 'ja' : '',
+    f.fangnetz ? 'ja' : 'nein', f.rasenGemaeht ? 'ja' : 'nein', f.wetter, f.windrichtung, f.windstaerke,
+  ]);
+  const block = (z: unknown[][]) => z.map((r) => r.map((v) => esc(String(v ?? ''))).join(';'));
+  return [
+    'Piloten', ...block([kopf, ...zeilen]),
+    '', 'Flugleiter', ...block([flKopf, ...flZeilen]),
+  ].join('\r\n');
 }
 
 function Inhalt() {
@@ -42,7 +51,7 @@ function Inhalt() {
       {daten && (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <Knopf art="sekundaer" onClick={() => herunterladen(`Flugbuch_${von}_${bis}.csv`, '﻿' + csv(daten.piloten), 'text/csv;charset=utf-8')}>
+            <Knopf art="sekundaer" onClick={() => herunterladen(`Flugbuch_${von}_${bis}.csv`, '﻿' + csv(daten.piloten, daten.flugleiter), 'text/csv;charset=utf-8')}>
               <Icon name="download" className="h-5 w-5" /> CSV
             </Knopf>
             <a href={daten.tabelle} target="_blank" rel="noopener noreferrer" className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white font-semibold text-himmel-700 ring-1 ring-himmel-300 dark:bg-slate-800 dark:text-himmel-200">

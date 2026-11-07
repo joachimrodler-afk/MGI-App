@@ -23,11 +23,24 @@
 html {
   -webkit-tap-highlight-color: transparent;
   text-size-adjust: 100%;
+  /* iPhone/iPad: kein „Nachfedern“ über den Seitenrand – sonst wandern Kopf- und Fußleiste mit */
+  overscroll-behavior-y: none;
 }
 
 body {
   @apply bg-himmel-50 text-tinte antialiased dark:bg-[#0a1424] dark:text-slate-100;
   min-height: 100dvh;
+  overscroll-behavior-y: none;
+}
+
+/* Fußleiste fest am unteren Rand (eigene Ebene, damit Safari sie beim Scrollen nicht mitzieht) */
+.fussleiste {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 /* Dezente Wolken im Hintergrund der Kopfzeile */
