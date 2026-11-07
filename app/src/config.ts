@@ -74,12 +74,12 @@ export const config = {
    * Diese Werte sind öffentlich und dürfen im Frontend stehen.
    */
   firebase: {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    messagingSenderId: '',
-    appId: '',
-    vapidKey: '',
+    apiKey: 'AIzaSyAemTfRQegqwtVCrRS7dMDI6fSKWKP12R4',
+    authDomain: 'mgi-app-7eabc.firebaseapp.com',
+    projectId: 'mgi-app-7eabc',
+    messagingSenderId: '441937746135',
+    appId: '1:441937746135:web:76cb64d91b54a4bc807892',
+    vapidKey: 'BIEfsHrCa_P5WuQuMj2779X_AUKG38ZLRtpJglfqiSIQbQnWzdfpAGBw8RwrUETKXDfs3WyKH6STPkyc_8LdQnY',
   },
 
   impressumUrl: 'TODO',
