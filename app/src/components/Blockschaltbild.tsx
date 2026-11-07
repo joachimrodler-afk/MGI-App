@@ -85,7 +85,7 @@ export function BlockschaltbildStrom() {
   return (
     <figure className="my-2">
       <svg viewBox="0 0 360 590" className="h-auto w-full" role="img" aria-labelledby="bss-titel">
-        <title id="bss-titel">Blockschaltbild der Stromversorgung: zwei Solarmodule über DC-Trennschalter an das Bluetti; 12 V für Wetterstation, WLAN-Router und DC-DC-Wandler zur Pufferbatterie an den Tischen mit Ladesteckdosen (15 A); 230 V für Mähroboter und RTK-Antenne</title>
+        <title id="bss-titel">Blockschaltbild der Stromversorgung: zwei Solarmodule über DC-Trennschalter an das Bluetti; 12 V für Wetterstation, WLAN-Router und DC-DC-Wandler zur Pufferbatterie an den Tischen mit Ladesteckdosen (15 A); 230 V für Mähroboter, RTK-Antenne und Kühlschrank</title>
         <defs>
           <marker id="mgi-pfeil-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="fill-slate-500 dark:fill-slate-400" />
@@ -121,13 +121,14 @@ export function BlockschaltbildStrom() {
         <Box x={42} y={384} w={130} h={34} titel="DC-DC-Wandler" art="aus" />
 
         {/* 230 V */}
-        <path d="M260,250 V278 H200 V364" fill="none" className="stroke-amber-600 dark:stroke-amber-400" strokeWidth={2.2} />
+        <path d="M260,250 V278 H200 V408" fill="none" className="stroke-amber-600 dark:stroke-amber-400" strokeWidth={2.2} />
         <text x={206} y={292} fontSize={11} fontWeight={700} className="fill-amber-700 dark:fill-amber-300">230 V AC</text>
-        {[312, 356].map((y) => (
+        {[312, 356, 400].map((y) => (
           <path key={y} d={`M200,${y} H216`} fill="none" className="stroke-amber-600 dark:stroke-amber-400" strokeWidth={2.2} markerEnd="url(#mgi-pfeil-s)" />
         ))}
         <Box x={218} y={296} w={134} h={34} titel="Mähroboter" />
         <Box x={218} y={340} w={134} h={34} titel="RTK-Antenne" />
+        <Box x={218} y={384} w={134} h={34} titel="Kühlschrank" />
 
         {/* Tische */}
         <path d="M107,418 V458" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} markerEnd="url(#mgi-pfeil-s)" />

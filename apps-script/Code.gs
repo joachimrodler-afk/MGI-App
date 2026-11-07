@@ -1243,6 +1243,7 @@ function technikStrom_() {
       '## 230-V-Ausgang',
       '- Mähroboter',
       '- RTK-Antenne',
+      '- Kühlschrank',
       '## An den Tischen',
       '- **Pufferbatterie:** LiFePO₄, 12,8 V, 100 Ah (rund 1.280 Wh), wird über den DC-DC-Wandler vom Bluetti nachgeladen',
       '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)',
@@ -1269,6 +1270,9 @@ var TECHNIK_ERSETZUNGEN = {
     ['- Pufferbatterie, wird über den DC-DC-Wandler vom Bluetti nachgeladen', '- **Pufferbatterie:** LiFePO₄, 12,8 V, 100 Ah (rund 1.280 Wh), wird über den DC-DC-Wandler vom Bluetti nachgeladen'],
     ['- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A**\n', '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)\n'],
     ['- _Bitte ergänzen: Typ und Kapazität der Pufferbatterie, Typ des DC-DC-Wandlers._', '- _Bitte ergänzen: Typ des DC-DC-Wandlers._'],
+  ],
+  TECHNIK_KUEHLSCHRANK: [
+    ['- RTK-Antenne\n## An den Tischen', '- RTK-Antenne\n- Kühlschrank\n## An den Tischen'],
   ],
 };
 

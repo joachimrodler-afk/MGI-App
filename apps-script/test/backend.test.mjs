@@ -305,6 +305,13 @@ console.log('Arbeitsdienst-Parser OK');
   const st3 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung').text;
   assert.match(st3, /LiFePO₄, 12,8 V, 100 Ah/);
   assert.match(st3, /rund 190 W/);
+  // Kühlschrank-Ergänzung
+  const st4 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung');
+  assert.match(ctx.technikStrom_().text, /- Kühlschrank/, 'Standardtext enthält Kühlschrank');
+  ok(rufe('technik_speichern', { ...st4, text: '## 230-V-Ausgang\n- Mähroboter\n- RTK-Antenne\n## An den Tischen\n- x' }, admin.token));
+  delete props.TECHNIK_KUEHLSCHRANK;
+  const st5 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung').text;
+  assert.match(st5, /- RTK-Antenne\n- Kühlschrank\n## An den Tischen/);
   // nach Löschen aller Abschnitte keine erneute Vorbelegung
   console.log('Technik OK');
 }
