@@ -30,7 +30,6 @@
  *   FCM_SERVICE_ACCOUNT   JSON des Firebase-Service-Accounts (optional, für Push)
  *   GEMINI_API_KEY        API-Schlüssel für den Regel-Assistenten (Google AI Studio)
  *   GEMINI_MODELL         optional, Standard gemini-3.1-flash-lite
- *   MFSD_DATEI_ID/STAND   automatisch: Textdatei mit den MFSD-Regeln (StRfF), wöchentlich aktualisiert
  *   REGELN_DATEIEN        optional: Drive-Datei-IDs (PDF/Text), kommagetrennt, Format Titel=ID
  *   SUPER_ADMIN           Mitglieds-ID des Super-Admins (kann von anderen Admins nicht geändert werden)
  *   APP_URL               Adresse der App (für Links in Push-Nachrichten)
@@ -215,7 +214,6 @@ function taeglich() {
   try { terminErinnerungen_(); } catch (e) { console.error(e); }
   try { nachweisErinnerungen_(); } catch (e) { console.error(e); }
   try { arbeitsdienstErinnerungen_(); } catch (e) { console.error(e); }
-  try { if (mfsdVeraltet_()) mfsdAktualisieren(); } catch (e) { console.error(e); }
   aufraeumen_();
 }
 
@@ -1518,101 +1516,15 @@ function rabenschreckParsen(html) {
 // Regel-Assistent (KI-Chatbot zu Satzung und Flugbetriebsordnung, Google Gemini)
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// MFSD-Regeln (StRfF + Kurzbeschreibungen) für den Regel-Assistenten
-// Wöchentlich von mfsd.de geholt und als Textdatei neben der App-Tabelle abgelegt.
-// ---------------------------------------------------------------------------
-
-var MFSD_BASIS = 'https://www.mfsd.de/flugbetrieb-im-verbandsrahmen-des-mfsd/';
-var MFSD_SEITEN = [
-  ['MFSD – Kurzbeschreibung der StRfF für Modellflieger', MFSD_BASIS + 'kurzbeschreibung-modellflieger/'],
-  ['MFSD – Kurzbeschreibung der StRfF für Modellfluggelände', MFSD_BASIS + 'kurzbeschreibung-modellfluggelaende/'],
-];
-var MFSD_STRFF = MFSD_BASIS + 'strff-inhalt/strff/';
-
-/** HTML einer Seite → lesbarer Text (nur Hauptinhalt, ohne Menüs) */
-function htmlZuText(html) {
-  var h = String(html || '');
-  var m = h.match(/<main[\s\S]*?<\/main>/i) || h.match(/<article[\s\S]*?<\/article>/i);
-  if (m) h = m[0];
-  h = h.replace(/<(script|style|nav|header|footer|form|noscript|svg)[\s\S]*?<\/\1>/gi, ' ');
-  h = h.replace(/<h([1-6])[^>]*>/gi, function (x, n) { return '\n\n' + '#'.repeat(Number(n)) + ' '; });
-  h = h.replace(/<li[^>]*>/gi, '\n- ').replace(/<(br|\/p|\/div|\/h[1-6]|\/li|\/tr|\/table|\/ul|\/ol)[^>]*>/gi, '\n');
-  h = h.replace(/<\/t[dh]>/gi, ' | ').replace(/<[^>]+>/g, '');
-  h = h.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-    .replace(/&#8222;|&bdquo;/g, '„').replace(/&#8220;|&ldquo;|&#8221;|&rdquo;/g, '“').replace(/&#8211;|&ndash;/g, '–').replace(/&#8217;/g, '’')
-    .replace(/&#(\d+);/g, function (x, n) { return String.fromCharCode(Number(n)); });
-  return h.split('\n').map(function (z) { return z.replace(/[ \t]+/g, ' ').trim(); })
-    .filter(function (z, i, a) { return z || (i > 0 && a[i - 1]); }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
-}
-
-/** Text einer StRfF-Unterseite: nur der Regelblock (ab der ersten Überschrift mit Ziffer) */
-function strffAbschnitt_(text) {
-  var zeilen = text.split('\n');
-  var i = zeilen.findIndex(function (z) { return /^#+\s*\d+(\.\d+)*\.?\s/.test(z); });
-  if (i < 0) return '';
-  var ende = zeilen.findIndex(function (z, j) { return j > i && /^(Vorherige|Nächste|Zurück|Weiter|« |‹ |\d+\s*$)/.test(z); });
-  return zeilen.slice(i, ende > i ? ende : undefined).join('\n').trim();
-}
-
-function mfsdVeraltet_() {
-  var stand = prop_('MFSD_STAND');
-  return !stand || Date.now() - new Date(stand).getTime() > 7 * 86400000;
-}
-
-/** Im Editor ausführbar: MFSD-Regeln neu holen und speichern */
-function mfsdAktualisieren() {
-  var teile = [];
-  MFSD_SEITEN.forEach(function (s) {
-    var r = UrlFetchApp.fetch(s[1], { muteHttpExceptions: true });
-    if (r.getResponseCode() !== 200) throw new Error(s[0] + ': HTTP ' + r.getResponseCode());
-    teile.push('==== ' + s[0] + ' (Quelle: ' + s[1] + ') ====\n\n' + htmlZuText(r.getContentText()));
-  });
-  // StRfF: Unterseiten seitenweise in Paketen holen, bis nichts Neues mehr kommt
-  var strff = [], gesehen = {}, leerInFolge = 0;
-  for (var start = 1; start <= 240 && leerInFolge < 3; start += 20) {
-    var anfragen = [];
-    for (var n = start; n < start + 20; n++) anfragen.push({ url: n === 1 ? MFSD_STRFF : MFSD_STRFF + '?query-10-page=' + n, muteHttpExceptions: true });
-    var neu = 0;
-    UrlFetchApp.fetchAll(anfragen).forEach(function (r) {
-      if (r.getResponseCode() !== 200) return;
-      var a = strffAbschnitt_(htmlZuText(r.getContentText()));
-      if (!a || gesehen[a]) return;
-      gesehen[a] = true; strff.push(a); neu++;
-    });
-    leerInFolge = neu ? 0 : leerInFolge + 1;
-  }
-  if (strff.length < 20) throw new Error('StRfF: nur ' + strff.length + ' Abschnitte gefunden – Seitenaufbau geändert?');
-  teile.push('==== MFSD – Standardisierte Regeln für Flugmodelle (StRfF) (Quelle: ' + MFSD_BASIS + 'strff-inhalt/) ====\n\n' + strff.join('\n\n'));
-  var stand = Utilities.formatDate(new Date(), TZ, 'dd.MM.yyyy');
-  var inhalt = 'MFSD-Regeln, automatisch von mfsd.de geholt am ' + stand + '. Verbindlich sind die Originalseiten.\n\n' + teile.join('\n\n\n');
-
-  var props = PropertiesService.getScriptProperties();
-  var id = props.getProperty('MFSD_DATEI_ID');
-  var datei = null;
-  if (id) { try { datei = DriveApp.getFileById(id); datei.setContent(inhalt); } catch (e) { datei = null; } }
-  if (!datei) {
-    var ordner = DriveApp.getFileById(prop_('SHEET_ID', true)).getParents().next();
-    datei = ordner.createFile('MFSD-Regeln (automatisch von mfsd.de).txt', inhalt, 'text/plain');
-    props.setProperty('MFSD_DATEI_ID', datei.getId());
-  }
-  props.setProperty('MFSD_STAND', new Date().toISOString());
-  console.log('MFSD-Regeln gespeichert: ' + strff.length + ' StRfF-Abschnitte, ' + inhalt.length + ' Zeichen');
-  return { abschnitte: strff.length, zeichen: inhalt.length };
-}
-
 /** Standard-Dokumente (Titel=Drive-Datei-ID); überschreibbar mit Script Property REGELN_DATEIEN */
 var REGELN_STANDARD = 'Vereinssatzung (Stand 23.09.2024)=1mnrUNnEndx5AENuWJqSn2-DHT9wnLMpP,Flugbetriebsordnung (Stand 07.11.2026)=1NDTf0DIHxRkExOSY1gTs106BxZiiF0qo';
 var REGELN_TAGESLIMIT = 30;
 
 function regelnDokumente_() {
-  var liste = String(prop_('REGELN_DATEIEN') || REGELN_STANDARD).split(',').map(function (e) {
+  return String(prop_('REGELN_DATEIEN') || REGELN_STANDARD).split(',').map(function (e) {
     var i = e.lastIndexOf('=');
     return { titel: e.slice(0, i).trim(), id: e.slice(i + 1).trim() };
   }).filter(function (d) { return d.id; });
-  var mfsd = prop_('MFSD_DATEI_ID');
-  if (mfsd) liste.push({ titel: 'MFSD-Regeln: StRfF und Kurzbeschreibungen (Stand ' + Utilities.formatDate(new Date(prop_('MFSD_STAND') || Date.now()), TZ, 'dd.MM.yyyy') + ')', id: mfsd });
-  return liste;
 }
 
 /** Sonnenuntergang (lokale Zeit als Date) für einen Tag – NOAA-Näherung, genau auf ±2 Minuten */
@@ -1683,8 +1595,7 @@ function regelnSystem_(titel, lage) {
     'Beantworte Fragen von Mitgliedern AUSSCHLIESSLICH anhand der beigefügten Dokumente: ' + titel.join(' und ') + '.',
     'Regeln:',
     '- Antworte auf Deutsch, kurz und verständlich (meist 2–6 Sätze oder eine kurze Liste).',
-    '- Nenne am Ende die Fundstelle in Klammern, z. B. (Satzung § 5), (Flugbetriebsordnung 6.2) oder (StRfF 3.2.2).',
-    '- Rangfolge: Die Flugbetriebsordnung der MGI regelt den eigenen Platz und darf strenger sein als die MFSD-Regeln (StRfF) – dann gilt die strengere Vereinsregel. Die StRfF und die MFSD-Kurzbeschreibungen gelten ergänzend für alles, was die Vereinsordnung nicht regelt.',
+    '- Nenne am Ende die Fundstelle in Klammern, z. B. (Satzung § 5) oder (Flugbetriebsordnung 6.2).',
     '- Steht die Antwort nicht in den Dokumenten, sage das klar und empfiehl, beim Vorstand nachzufragen. Erfinde nichts und nutze kein Allgemeinwissen als Ersatz.',
     '- Bei Widersprüchen oder Auslegungsfragen weise darauf hin, dass der Vorstand entscheidet.',
     '- Keine Rechtsberatung. Fragen ohne Bezug zum Verein oder zu den Dokumenten höflich ablehnen.',
