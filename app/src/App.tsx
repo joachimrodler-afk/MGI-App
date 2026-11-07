@@ -24,6 +24,7 @@ const Brett = lazy(() => import('./seiten/Brett'));
 const Arbeitsdienst = lazy(() => import('./seiten/Arbeitsdienst'));
 const Technik = lazy(() => import('./seiten/Technik'));
 const Nachweise = lazy(() => import('./seiten/Nachweise'));
+const Regeln = lazy(() => import('./seiten/Regeln'));
 const Mehr = lazy(() => import('./seiten/Mehr'));
 const Konto = lazy(() => import('./seiten/Konto'));
 const Verwaltung = lazy(() => import('./seiten/verwaltung/Verwaltung'));
@@ -131,6 +132,7 @@ export default function App() {
             <Route path="/arbeitsdienst" element={<Arbeitsdienst />} />
             <Route path="/technik" element={<Technik />} />
             <Route path="/nachweise" element={<Nachweise />} />
+            <Route path="/regeln" element={<Regeln />} />
             <Route path="/mehr" element={<Mehr />} />
             <Route path="/konto" element={<Konto />} />
             <Route path="/verwaltung" element={<Verwaltung />} />

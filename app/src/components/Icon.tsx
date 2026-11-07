@@ -21,6 +21,7 @@ const PFADE: Record<string, string> = {
   telefon: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2',
   karte: 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14',
   kopieren: 'M8 8h12v12H8zM4 16V4h12',
+  sprechblase: 'M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12ZM8.5 12h.01M12 12h.01M15.5 12h.01',
   welt: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M3 12h18M12 3c2.5 2.5 3.6 5.6 3.6 9s-1.1 6.5-3.6 9c-2.5-2.5-3.6-5.6-3.6-9S9.5 5.5 12 3',
   extern: 'M14 4h6v6M20 4l-9 9M18 14v6H4V6h6',
   aktualisieren: 'M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7',

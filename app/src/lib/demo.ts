@@ -363,6 +363,14 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
     }
     case 'rabenschreck_status': admin(); return fertig({ eingerichtet: true, erreichbar: true, aktiv: !!db.rabenschreck, zeit: new Date().toISOString() });
     case 'rabenschreck_schalten': admin(); db.rabenschreck = d.an === true; return fertig({ eingerichtet: true, erreichbar: true, aktiv: db.rabenschreck, zeit: new Date().toISOString() });
+    case 'regeln_frage': {
+      mitglied();
+      const f = String(d.frage ?? '').toLowerCase();
+      const antwort = /verbrenn|kolben/.test(f)
+        ? 'Verbrennungsmotoren dürfen nur zu den in der Flugbetriebsordnung festgelegten Zeiten betrieben werden; zusätzlich gilt der Lärmpass. **(Demo-Antwort)** (Flugbetriebsordnung 4)'
+        : 'Das ist eine **Demo-Antwort**. In der echten App beantwortet die KI deine Frage anhand der Satzung und der Flugbetriebsordnung und nennt die Fundstelle.';
+      return fertig({ antwort, dokumente: ['Vereinssatzung', 'Flugbetriebsordnung'], uebrig: 29 });
+    }
     case 'technik_liste': return fertig(tech().filter((a) => s || !a.nurMitglieder));
     case 'technik_speichern': {
       const x = admin();

@@ -28,6 +28,9 @@
  *   OEFFENTLICH           "true" = Kalender/Wetter/Webcam/Ergebnisse ohne Anmeldung
  *   ERSTER_ADMIN          "Vorname;Nachname;PIN" – wird bei setup() angelegt, danach löschen!
  *   FCM_SERVICE_ACCOUNT   JSON des Firebase-Service-Accounts (optional, für Push)
+ *   GEMINI_API_KEY        API-Schlüssel für den Regel-Assistenten (Google AI Studio)
+ *   GEMINI_MODELL         optional, Standard gemini-3.1-flash-lite
+ *   REGELN_DATEIEN        optional: Drive-Datei-IDs (PDF/Text), kommagetrennt, Format Titel=ID
  *   APP_URL               Adresse der App (für Links in Push-Nachrichten)
  *   ARBEITSLISTE_ID       Google-Tabelle der Arbeitsdienst-Liste (optional, Standard siehe unten)
  *   TECHNIK_ORDNER_ID     Drive-Ordner für Fotos im Bereich Technik (wird sonst automatisch angelegt)
@@ -159,6 +162,7 @@ var AKTIONEN = {
   // Push
   push_abo: { recht: 'mitglied', fn: pushAbo_ },
   push_test: { recht: 'mitglied', fn: pushTest_ },
+  regeln_frage: { recht: 'mitglied', fn: regelnFrage_ },
   push_abo_loeschen: { recht: 'offen', fn: pushAboLoeschen_ },
   mitteilung_senden: { recht: 'admin', fn: mitteilungSenden_ },
   // Wettbewerbe
@@ -1490,6 +1494,96 @@ function rabenschreckParsen(html) {
 }
 
 /** Im Editor ausführen, um die Verbindung zur Fernsteuerung zu prüfen (gibt kein Passwort aus). */
+// ---------------------------------------------------------------------------
+// Regel-Assistent (KI-Chatbot zu Satzung und Flugbetriebsordnung, Google Gemini)
+// ---------------------------------------------------------------------------
+
+/** Standard-Dokumente (Titel=Drive-Datei-ID); überschreibbar mit Script Property REGELN_DATEIEN */
+var REGELN_STANDARD = 'Vereinssatzung (Stand 23.09.2024)=1mnrUNnEndx5AENuWJqSn2-DHT9wnLMpP,Flugbetriebsordnung (Stand 07.11.2026)=1NDTf0DIHxRkExOSY1gTs106BxZiiF0qo';
+var REGELN_TAGESLIMIT = 30;
+
+function regelnDokumente_() {
+  return String(prop_('REGELN_DATEIEN') || REGELN_STANDARD).split(',').map(function (e) {
+    var i = e.lastIndexOf('=');
+    return { titel: e.slice(0, i).trim(), id: e.slice(i + 1).trim() };
+  }).filter(function (d) { return d.id; });
+}
+
+function regelnSystem_(titel) {
+  return [
+    'Du bist der Regel-Assistent der Modellbau-Gemeinschaft Ismaning e.V. (MGI) in der Vereins-App.',
+    'Beantworte Fragen von Mitgliedern AUSSCHLIESSLICH anhand der beigefügten Dokumente: ' + titel.join(' und ') + '.',
+    'Regeln:',
+    '- Antworte auf Deutsch, kurz und verständlich (meist 2–6 Sätze oder eine kurze Liste).',
+    '- Nenne am Ende die Fundstelle in Klammern, z. B. (Satzung § 5) oder (Flugbetriebsordnung 6.2).',
+    '- Steht die Antwort nicht in den Dokumenten, sage das klar und empfiehl, beim Vorstand nachzufragen. Erfinde nichts und nutze kein Allgemeinwissen als Ersatz.',
+    '- Bei Widersprüchen oder Auslegungsfragen weise darauf hin, dass der Vorstand entscheidet.',
+    '- Keine Rechtsberatung. Fragen ohne Bezug zum Verein oder zu den Dokumenten höflich ablehnen.',
+    '- Formatierung: einfaches Markdown (**fett**, Listen mit -), keine Überschriften.',
+  ].join('\n');
+}
+
+/** daten: { frage, verlauf?: [{ rolle: 'ich'|'ki', text }] } */
+function regelnFrage_(d, s) {
+  var key = prop_('GEMINI_API_KEY');
+  if (!key) throw fehler_('Der Regel-Assistent ist noch nicht eingerichtet (GEMINI_API_KEY fehlt).', 400);
+  var frage = String(d.frage || '').trim();
+  if (!frage) throw fehler_('Bitte eine Frage eingeben', 400);
+  if (frage.length > 600) throw fehler_('Die Frage ist zu lang (max. 600 Zeichen)', 400);
+
+  // Tageslimit je Mitglied
+  var cache = CacheService.getScriptCache();
+  var zkey = 'ki_' + s.mitgliedId + '_' + Utilities.formatDate(new Date(), TZ, 'yyyyMMdd');
+  var anzahl = Number(cache.get(zkey) || 0);
+  if (anzahl >= REGELN_TAGESLIMIT) throw fehler_('Tageslimit erreicht (' + REGELN_TAGESLIMIT + ' Fragen). Morgen geht es weiter.', 429);
+
+  var doks = regelnDokumente_();
+  var teile = [];
+  doks.forEach(function (dok) {
+    var blob = DriveApp.getFileById(dok.id).getBlob();
+    var typ = blob.getContentType();
+    teile.push({ text: 'Dokument: ' + dok.titel });
+    if (typ === 'application/pdf') teile.push({ inline_data: { mime_type: 'application/pdf', data: Utilities.base64Encode(blob.getBytes()) } });
+    else teile.push({ text: blob.getDataAsString('UTF-8') });
+  });
+
+  // Verlauf (max. 6 vorherige Nachrichten), Dokumente hängen an der ersten Nutzer-Nachricht
+  var verlauf = (Array.isArray(d.verlauf) ? d.verlauf : []).slice(-6).filter(function (m) { return m && m.text; });
+  while (verlauf.length && verlauf[0].rolle !== 'ich') verlauf.shift();
+  var nachrichten = verlauf.map(function (m) {
+    return { role: m.rolle === 'ki' ? 'model' : 'user', parts: [{ text: String(m.text).slice(0, 2000) }] };
+  });
+  nachrichten.push({ role: 'user', parts: [{ text: frage }] });
+  nachrichten[0].parts = teile.concat(nachrichten[0].parts);
+
+  var modell = prop_('GEMINI_MODELL') || 'gemini-3.1-flash-lite';
+  var res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(modell) + ':generateContent', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': key },
+    payload: JSON.stringify({
+      system_instruction: { parts: [{ text: regelnSystem_(doks.map(function (x) { return x.titel; })) }] },
+      contents: nachrichten,
+      generationConfig: { maxOutputTokens: 1024 },
+    }),
+    muteHttpExceptions: true,
+  });
+  var code = res.getResponseCode();
+  if (code === 429) throw fehler_('Der KI-Dienst ist gerade ausgelastet oder das Kontingent ist aufgebraucht. Bitte später nochmal versuchen.', 503);
+  if (code !== 200) {
+    console.warn('Gemini ' + code + ': ' + res.getContentText().slice(0, 500));
+    throw fehler_('Der KI-Dienst hat nicht geantwortet (' + code + ').', 502);
+  }
+  var j = JSON.parse(res.getContentText());
+  var kand = (j.candidates || [])[0];
+  var antwort = kand && kand.content && kand.content.parts
+    ? kand.content.parts.filter(function (p) { return p.text && !p.thought; }).map(function (p) { return p.text; }).join('').trim()
+    : '';
+  if (!antwort) antwort = 'Dazu kann ich leider nichts sagen. Bitte frag beim Vorstand nach.';
+  cache.put(zkey, String(anzahl + 1), 21600);
+  return { antwort: antwort, dokumente: doks.map(function (x) { return x.titel; }), uebrig: REGELN_TAGESLIMIT - anzahl - 1 };
+}
+
 /** Diagnose im Editor ausführen: welche Termine liefert der Kalender-Feed? (gibt den Link nicht aus) */
 function diagnoseKalender() {
   var res = UrlFetchApp.fetch(prop_('KALENDER_ICS_URL', true), { muteHttpExceptions: true });

@@ -403,6 +403,41 @@ console.log('Rabenschreck OK');
   console.log('Push OK');
 }
 
+// Regel-Assistent (Gemini): Dokumente als PDF/Text, Verlauf, Tageslimit, Fehler
+{
+  assert.equal(rufe('regeln_frage', { frage: 'x' }).ok, false, 'nur Mitglieder');
+  assert.match(rufe('regeln_frage', { frage: 'x' }, klaus.token).fehler, /nicht eingerichtet/);
+  props.GEMINI_API_KEY = 'k';
+  props.REGELN_DATEIEN = 'Satzung=pdf1,Ordnung=txt1';
+  ctx.DriveApp.getFileById = (id) => ({ getBlob: () => ({ getContentType: () => (id === 'pdf1' ? 'application/pdf' : 'text/plain'), getBytes: () => [1, 2, 3], getDataAsString: () => 'Text der Ordnung' }) });
+  const gesendet = [];
+  let antwort = { code: 200, text: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Gedanke', thought: true }, { text: 'Antwort (Satzung § 5)' }] } }] }) };
+  ctx.UrlFetchApp.fetch = (url, opt) => { gesendet.push({ url, opt }); return { getResponseCode: () => antwort.code, getContentText: () => antwort.text }; };
+  const r = ok(rufe('regeln_frage', { frage: 'Wie hoch ist der Beitrag?', verlauf: [{ rolle: 'ki', text: 'Hallo' }, { rolle: 'ich', text: 'Vorfrage' }, { rolle: 'ki', text: 'Vorantwort' }] }, klaus.token));
+  assert.equal(r.antwort, 'Antwort (Satzung § 5)');
+  assert.deepEqual(r.dokumente, ['Satzung', 'Ordnung']);
+  const g = gesendet[0];
+  assert.match(g.url, /models\/gemini-3\.1-flash-lite:generateContent$/);
+  assert.equal(g.opt.headers['x-goog-api-key'], 'k');
+  const body = JSON.parse(g.opt.payload);
+  assert.deepEqual(body.contents.map((c) => c.role), ['user', 'model', 'user'], 'beginnt mit Nutzer, ohne führende KI-Nachricht');
+  const erste = body.contents[0].parts;
+  assert.equal(erste[1].inline_data.mime_type, 'application/pdf');
+  assert.equal(erste[3].text, 'Text der Ordnung');
+  assert.equal(erste.at(-1).text, 'Vorfrage');
+  assert.equal(body.contents.at(-1).parts[0].text, 'Wie hoch ist der Beitrag?');
+  assert.match(body.system_instruction.parts[0].text, /AUSSCHLIESSLICH/);
+  assert.match(rufe('regeln_frage', { frage: 'x'.repeat(601) }, klaus.token).fehler, /zu lang/);
+  antwort = { code: 429, text: '{}' };
+  assert.equal(rufe('regeln_frage', { frage: 'a' }, klaus.token).status, 503);
+  // Tageslimit
+  antwort = { code: 200, text: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }) };
+  for (let i = 0; i < 29; i++) ok(rufe('regeln_frage', { frage: 'a' }, klaus.token));
+  assert.equal(rufe('regeln_frage', { frage: 'a' }, klaus.token).status, 429);
+  delete props.GEMINI_API_KEY; delete props.REGELN_DATEIEN;
+  console.log('Regel-Assistent OK');
+}
+
 // Foto-Upload: direkt in den Homepage-Ordner, Dateiname mit Datum und Ersteller
 {
   const dateien = [];
