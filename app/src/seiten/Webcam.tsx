@@ -1,118 +1,44 @@
-import { useEffect, useRef, useState } from 'react';
-import { Icon } from '../components/Icon';
-import { Knopf, Seite } from '../components/ui';
+import { useEffect, useState } from 'react';
+import { Seite } from '../components/ui';
 import { config } from '../config';
-import { klassen } from '../lib/helfer';
 
 /**
- * Webcam: „Fast-Live“ aus Standbildern von IPCamLive, alle paar Sekunden neu geladen.
- * Das nächste Bild wird erst im Hintergrund geladen und dann getauscht – so flackert nichts.
- * Läuft nur, solange die Seite sichtbar ist (spart mobiles Datenvolumen).
- * Den echten Live-Player lässt IPCamLive im kostenlosen Paket nicht einbetten – dafür gibt es den Link.
+ * Webcam: Das Live-Video läuft auf der Seite von IPCamLive.
+ * Im kostenlosen IPCamLive-Paket lässt sich der Player nicht einbetten, und die Tapo-Kamera
+ * liefert selbst kein Standbild. Läuft der Stream gerade (weil jemand zuschaut), zeigt die App
+ * zusätzlich das aktuelle Standbild – sonst nur den Knopf zum Live-Video.
  */
-const INTERVALLE = [3, 5, 10];
-const KEY = 'mgi.webcam.intervall';
-
 export default function Webcam() {
-  const [intervall, setIntervall] = useState(() => Number(localStorage.getItem(KEY)) || 5);
-  const [laeuft, setLaeuft] = useState(true);
   const [bild, setBild] = useState('');
-  const [stand, setStand] = useState<number | null>(null);
-  const [fehler, setFehler] = useState(false);
-  const [sichtbar, setSichtbar] = useState(!document.hidden);
-  const rahmen = useRef<HTMLDivElement>(null);
-  const laedt = useRef(false);
-
-  function holen() {
-    if (laedt.current) return; // vorheriges Bild noch unterwegs – nicht stauen
-    laedt.current = true;
-    const t = Date.now();
-    const url = `${config.webcam.snapshotUrl}&t=${t}`;
-    const img = new Image();
-    img.onload = () => { laedt.current = false; setBild(url); setStand(t); setFehler(false); };
-    img.onerror = () => { laedt.current = false; setFehler(true); };
-    img.src = url;
-  }
 
   useEffect(() => {
-    const f = () => setSichtbar(!document.hidden);
-    document.addEventListener('visibilitychange', f);
-    return () => document.removeEventListener('visibilitychange', f);
-  }, []);
-
-  useEffect(() => {
-    if (!laeuft || !sichtbar) return;
+    const holen = () => {
+      const url = `${config.webcam.snapshotUrl}&t=${Date.now()}`;
+      const img = new Image();
+      img.onload = () => setBild(url);
+      img.onerror = () => setBild('');
+      img.src = url;
+    };
     holen();
-    const t = setInterval(holen, intervall * 1000);
+    const t = setInterval(() => { if (!document.hidden) holen(); }, 60000);
     return () => clearInterval(t);
-  }, [laeuft, sichtbar, intervall]);
-
-  function waehle(s: number) {
-    setIntervall(s);
-    try { localStorage.setItem(KEY, String(s)); } catch { /* egal */ }
-  }
-
-  function vollbild() {
-    const el = rahmen.current;
-    if (!el) return;
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void el.requestFullscreen?.().catch(() => undefined);
-  }
-
-  const alter = stand ? Math.max(0, Math.round((Date.now() - stand) / 1000)) : null;
+  }, []);
 
   return (
     <Seite titel="Webcam Flugplatz">
-      <div className="karte overflow-hidden">
-        <div ref={rahmen} className="relative aspect-video w-full bg-slate-900 [&:fullscreen]:aspect-auto [&:fullscreen]:h-full">
-          {bild && <img src={bild} alt="Webcam Flugplatz, laufend aktualisiert" className="h-full w-full object-contain" onDoubleClick={vollbild} />}
-          {!bild && !fehler && <span className="absolute inset-0 flex items-center justify-center text-slate-300">Bild lädt …</span>}
-          {fehler && !bild && (
-            <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 p-4 text-center text-slate-300">
-              <span className="font-semibold">Gerade kein Standbild</span>
-              <span className="text-xs">IPCamLive liefert Standbilder nur, während der Live-Stream läuft. Unten „Echtes Video“ öffnen.</span>
-            </span>
-          )}
-          <span className={klassen('absolute left-2 top-2 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white',
-            laeuft && sichtbar && !fehler ? 'bg-mgi-rot' : 'bg-black/60')}>
-            {laeuft && sichtbar && !fehler && <span className="h-2 w-2 animate-pulse rounded-full bg-white" />}
-            {laeuft ? (fehler ? 'Verbindung …' : `LIVE · alle ${intervall} s`) : 'Pause'}
+      <a href={config.webcam.seite} target="_blank" rel="noopener noreferrer"
+        className="karte relative block aspect-video w-full overflow-hidden bg-gradient-to-br from-himmel-300 to-himmel-700 active:scale-[0.99]"
+        aria-label="Live-Video der Webcam bei IPCamLive öffnen">
+        {bild && <img src={bild} alt="Aktuelles Bild der Webcam" className="absolute inset-0 h-full w-full object-cover" />}
+        <span className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/25 text-white">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-mgi-rot shadow-lg">
+            <svg viewBox="0 0 24 24" className="ml-1 h-8 w-8" fill="currentColor" aria-hidden><path d="M7 4v16l13-8z" /></svg>
           </span>
-          <button onClick={vollbild} className="absolute right-2 top-2 rounded-full bg-black/60 p-2 text-white" aria-label="Vollbild">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
-          </button>
-          {stand && (
-            <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white tabular-nums">
-              {new Date(stand).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
-          )}
-        </div>
-        <div className="space-y-3 p-3">
-          <div className="flex items-center gap-2">
-            <Knopf art={laeuft ? 'sekundaer' : 'primaer'} className="!min-h-10 flex-1 text-sm" onClick={() => setLaeuft(!laeuft)}>
-              {laeuft ? 'Pause' : 'Weiter'}
-            </Knopf>
-            <div className="flex flex-1 gap-1 rounded-xl bg-himmel-100 p-1 dark:bg-slate-800" role="radiogroup" aria-label="Aktualisieren alle">
-              {INTERVALLE.map((s) => (
-                <button key={s} role="radio" aria-checked={intervall === s} onClick={() => waehle(s)}
-                  className={klassen('min-h-8 flex-1 rounded-lg text-sm font-semibold', intervall === s ? 'bg-white shadow dark:bg-slate-700' : 'text-slate-600 dark:text-slate-300')}>
-                  {s} s
-                </button>
-              ))}
-            </div>
-          </div>
-          {alter !== null && alter > intervall * 4 && laeuft && (
-            <p className="text-xs text-amber-700 dark:text-amber-300">Letztes Bild ist {alter} s alt – die Verbindung ist gerade langsam.</p>
-          )}
-          <a href={config.webcam.seite} target="_blank" rel="noopener noreferrer"
-            className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-himmel-100 text-sm font-semibold text-himmel-700 dark:bg-slate-800 dark:text-himmel-200">
-            <Icon name="extern" className="h-4 w-4" /> Echtes Video bei IPCamLive öffnen
-          </a>
-        </div>
-      </div>
+          <span className="text-lg font-bold drop-shadow">Live-Video öffnen</span>
+        </span>
+      </a>
       <p className="mt-3 text-sm text-slate-500">
-        Die App lädt das Kamerabild alle paar Sekunden neu – ohne Ton und ohne flüssige Bewegung. Im Hintergrund pausiert es automatisch.
-        Unterwegs ohne WLAN lieber 10 s wählen, das spart Datenvolumen.
+        Das Live-Video der Kamera am Platz läuft bei IPCamLive und öffnet sich in einem neuen Fenster. Mit „Zurück“ bist du wieder in der App.
       </p>
     </Seite>
   );
