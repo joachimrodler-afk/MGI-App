@@ -36,7 +36,7 @@ export default function Mehr() {
           {istGesetzt(config.impressumUrl) && extern(config.impressumUrl, 'extern', 'Impressum', '')}
           {istGesetzt(config.datenschutzUrl) && extern(config.datenschutzUrl, 'extern', 'Datenschutz', '')}
         </div>
-        <p className="text-center text-xs text-slate-500">{config.vereinsname} · Vereins-App</p>
+        <p className="text-center text-xs text-slate-500">{config.vereinsname} · Vereins-App · Version {__APP_VERSION__}</p>
       </div>
     </Seite>
   );
