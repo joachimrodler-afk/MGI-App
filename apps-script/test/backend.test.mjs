@@ -346,3 +346,16 @@ assert.equal(ctx.rabenschreckParsen('<p>irgendwas</p>'), null);
 assert.equal(rufe('rabenschreck_status', {}, klaus.token).status, 403, 'nur Admins');
 assert.deepEqual(ok(rufe('rabenschreck_status', {}, admin.token)), { eingerichtet: false, erreichbar: false, aktiv: null });
 console.log('Rabenschreck OK');
+
+// Foto-Upload: direkt in den Homepage-Ordner, Dateiname mit Datum und Ersteller
+{
+  const dateien = [];
+  props.FOTO_ORDNER_ID = 'fotos';
+  ctx.DriveApp.getFolderById = (id) => ({ id, createFile: (b) => { const f = { name: b.name, setDescription: (x) => (f.desc = x), getId: () => 'f1' }; dateien.push(f); return f; }, createFolder: () => { throw new Error('keine Unterordner'); } });
+  ctx.Utilities.newBlob = (_bytes, _mime, name) => ({ name });
+  ctx.Utilities.base64Decode = () => [];
+  const r = ok(rufe('foto_hochladen', { base64: 'AA==', kategorie: 'Flugtag', titel: 'Erstflug', aufgenommen: '2026-11-07T09:05:30' }, klaus.token));
+  assert.equal(r.name, '2026-11-07_09-05-30_Klaus-Butz.jpg');
+  assert.equal(dateien[0].desc, 'Erstflug – Flugtag – Foto: Klaus Butz');
+  console.log('Foto-Upload OK');
+}

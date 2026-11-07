@@ -808,13 +808,13 @@ function fotoHochladen_(d, s) {
   if (!d.base64) throw fehler_('Kein Bild empfangen', 400);
   var kat = KATEGORIEN.indexOf(d.kategorie) >= 0 ? d.kategorie : 'Sonstiges';
   var jetzt = d.aufgenommen ? new Date(d.aufgenommen) : new Date();
-  var basis = DriveApp.getFolderById(prop_('FOTO_ORDNER_ID', true));
-  var ordner = unterordner_(unterordner_(basis, Utilities.formatDate(jetzt, TZ, 'yyyy')), Utilities.formatDate(jetzt, TZ, 'MM'));
+  // direkt in den Ordner „Fotos Homepage“ (keine Unterordner), Dateiname: Datum_Uhrzeit_Ersteller.jpg
+  var ordner = DriveApp.getFolderById(prop_('FOTO_ORDNER_ID', true));
   var titel = String(d.titel || '').trim().slice(0, 60);
-  var name = Utilities.formatDate(jetzt, TZ, 'yyyy-MM-dd_HHmm') + '_' + kat + (titel ? '_' + dateiname_(titel) : '') + '.jpg';
+  var name = Utilities.formatDate(jetzt, TZ, 'yyyy-MM-dd_HH-mm-ss') + '_' + (dateiname_(s.name) || 'Mitglied') + '.jpg';
   var blob = Utilities.newBlob(Utilities.base64Decode(d.base64), d.mimeType || 'image/jpeg', name);
   var datei = ordner.createFile(blob);
-  datei.setDescription((titel ? titel + ' – ' : '') + 'Foto: ' + s.name);
+  datei.setDescription((titel ? titel + ' – ' : '') + kat + ' – Foto: ' + s.name);
   return { id: datei.getId(), name: name };
 }
 
