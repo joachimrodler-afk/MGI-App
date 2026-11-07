@@ -112,7 +112,7 @@ Diese Attribute sind optional:
 ### 8. Galerie in Google Sites einbinden
 1. Die Vereins-Homepage in Google Sites öffnen und rechts **Einfügen → Drive** wählen.
 2. Den Galerieordner aus Schritt 2 auswählen und einfügen, dann auf **Veröffentlichen** klicken.
-3. Neue Fotos aus der App erscheinen danach **automatisch** auf der Homepage. Die App speichert sie direkt im Ordner „Fotos Homepage“ (ohne Unterordner), Dateiname z. B. `2026-11-07_09-05-30_Max-Muster.jpg` – Datum, Uhrzeit, Ersteller. Kategorie und Titel stehen in der Dateibeschreibung.
+3. Neue Fotos aus der App erscheinen danach **automatisch** auf der Homepage. Die App speichert sie direkt im Ordner „Fotos Homepage“ (ohne Unterordner), Dateiname z. B. `2026-11-07_Max-M.jpg` – Datum, Vorname, erster Buchstabe des Nachnamens (weitere Fotos am selben Tag: `_2`, `_3` …). Kategorie und Titel stehen in der Dateibeschreibung.
 
 ### 9. Push-Nachrichten (optional)
 1. Auf [console.firebase.google.com](https://console.firebase.google.com) ein Projekt anlegen, z. B. „mgi-app“. Google Analytics wird nicht gebraucht.
