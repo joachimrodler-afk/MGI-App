@@ -13,6 +13,9 @@ export const config = {
   vereinsname: 'Modellbau-Gemeinschaft Ismaning e.V.',
   kurzname: 'MGI',
 
+  /** Vereins-Homepage (Link oben in der Kopfzeile) */
+  homepage: 'https://www.mgi-ismaning.de/',
+
   /**
    * Adresse der Apps-Script-Web-App (endet auf /exec).
    * Leer lassen = Demo-Modus mit Beispieldaten (nur auf diesem Gerät gespeichert).

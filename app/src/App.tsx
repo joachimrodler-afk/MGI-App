@@ -2,7 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Link, NavLink, Route, Routes } from 'react-router-dom';
 import { Icon } from './components/Icon';
 import { Laden } from './components/ui';
-import { istDemo } from './config';
+import { config, istDemo } from './config';
 import { klassen } from './lib/helfer';
 import { useOnline, useSitzung } from './lib/sitzung';
 import Start from './seiten/Start';
@@ -46,6 +46,9 @@ function Kopf() {
             <span className="block text-[11px] font-medium opacity-90">Modellbau-Gemeinschaft Ismaning</span>
           </span>
         </Link>
+        <a href={config.homepage} target="_blank" rel="noopener" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 hover:bg-white/25" aria-label="Homepage www.mgi-ismaning.de" title="Homepage www.mgi-ismaning.de">
+          <Icon name="welt" />
+        </a>
         <Link to="/konto" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 hover:bg-white/25" aria-label={s ? `Konto: ${s.name}` : 'Anmelden'}>
           <Icon name={s ? 'person' : 'schloss'} />
         </Link>
