@@ -58,6 +58,12 @@ body {
 .md p { @apply mb-2; }
 .md ul { @apply mb-2 list-disc space-y-1 pl-5; }
 .md a { @apply text-himmel-700 underline dark:text-himmel-300; }
+.md .md-tabelle { @apply mb-3 overflow-x-auto rounded-xl border border-himmel-200 dark:border-slate-700; }
+.md table { @apply w-full border-collapse text-sm; }
+.md th { @apply bg-himmel-100 px-3 py-2 text-left font-bold dark:bg-slate-800; }
+.md td { @apply border-t border-himmel-100 px-3 py-2 dark:border-slate-700; }
+.md th:not(:first-child), .md td:not(:first-child) { @apply text-right tabular-nums; }
+.md td:first-child { @apply font-semibold; }
 
 @media print {
   .nicht-drucken { display: none !important; }

@@ -312,6 +312,14 @@ console.log('Arbeitsdienst-Parser OK');
   delete props.TECHNIK_KUEHLSCHRANK;
   const st5 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung').text;
   assert.match(st5, /- RTK-Antenne\n- Kühlschrank\n## An den Tischen/);
+  // Ladestrom-Tabelle an bestehende Ladesteckdosen anhängen (nur einmal)
+  const ld = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Ladesteckdosen');
+  assert.match(ctx.technikLadeText_(), /\| 6S \| 25,2 V \| 7,5 A \|/);
+  ok(rufe('technik_speichern', { ...ld, text: 'X\n- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.' }, admin.token));
+  delete props.TECHNIK_LADETABELLE;
+  const ld2 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Ladesteckdosen').text;
+  assert.match(ld2, /\| 8S \| 33,6 V \| 5,6 A \|/);
+  assert.equal(ld2.split('| 3S |').length, 2, 'Tabelle nur einmal');
   // nach Löschen aller Abschnitte keine erneute Vorbelegung
   console.log('Technik OK');
 }

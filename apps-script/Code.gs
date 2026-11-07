@@ -1261,6 +1261,17 @@ function technikLadeText_() {
     '- Die Pufferbatterie wird über einen DC-DC-Wandler vom Bluetti im Gartenhaus nachgeladen (siehe **Stromversorgung**).',
     '- Alle gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.',
     '- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.',
+    '## Erlaubter Ladestrom',
+    'Die 12-V-Ladesteckdosen sind mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung. Je mehr Zellen der Akku hat, desto kleiner muss der Ladestrom sein:',
+    '| Akku | Ladeschluss | max. Ladestrom |',
+    '|---|---|---:|',
+    '| 3S | 12,6 V | 15 A |',
+    '| 4S | 16,8 V | 11,2 A |',
+    '| 5S | 21,0 V | 9,0 A |',
+    '| 6S | 25,2 V | 7,5 A |',
+    '| 7S | 29,4 V | 6,4 A |',
+    '| 8S | 33,6 V | 5,6 A |',
+    '_Faustregel: max. Ladestrom = 45 ÷ Zellenzahl (für LiPo mit 4,2 V je Zelle). Die Werte gelten für alle Ladegeräte an einer Sicherung zusammen._',
   ].join('\n');
 }
 
@@ -1270,6 +1281,9 @@ var TECHNIK_ERSETZUNGEN = {
     ['- Pufferbatterie, wird über den DC-DC-Wandler vom Bluetti nachgeladen', '- **Pufferbatterie:** LiFePO₄, 12,8 V, 100 Ah (rund 1.280 Wh), wird über den DC-DC-Wandler vom Bluetti nachgeladen'],
     ['- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A**\n', '- versorgt die Ladesteckdosen an zwei Tischen, abgesichert mit **15 A** (bei 12,8 V rund 190 W)\n'],
     ['- _Bitte ergänzen: Typ und Kapazität der Pufferbatterie, Typ des DC-DC-Wandlers._', '- _Bitte ergänzen: Typ des DC-DC-Wandlers._'],
+  ],
+  TECHNIK_LADETABELLE: [
+    ['- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.', '- Löst die Sicherung aus: Ladegeräte abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.\n## Erlaubter Ladestrom\nDie 12-V-Ladesteckdosen sind mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung. Je mehr Zellen der Akku hat, desto kleiner muss der Ladestrom sein:\n| Akku | Ladeschluss | max. Ladestrom |\n|---|---|---:|\n| 3S | 12,6 V | 15 A |\n| 4S | 16,8 V | 11,2 A |\n| 5S | 21,0 V | 9,0 A |\n| 6S | 25,2 V | 7,5 A |\n| 7S | 29,4 V | 6,4 A |\n| 8S | 33,6 V | 5,6 A |\n_Faustregel: max. Ladestrom = 45 ÷ Zellenzahl (für LiPo mit 4,2 V je Zelle). Die Werte gelten für alle Ladegeräte an einer Sicherung zusammen._'],
   ],
   TECHNIK_KUEHLSCHRANK: [
     ['- RTK-Antenne\n## An den Tischen', '- RTK-Antenne\n- Kühlschrank\n## An den Tischen'],

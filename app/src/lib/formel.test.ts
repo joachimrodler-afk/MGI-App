@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { berechne, FormelFehler, pruefeFormel } from './formel';
 import { berechneDurchgang, formatZeit, parseZeit, rangCsv, rangliste } from './auswertung';
 import { VORLAGEN } from './vorlagen';
+import { markdown } from './helfer';
 import type { Wertung, Wettbewerb } from './model';
 
 describe('Formel-Parser', () => {
@@ -176,5 +177,17 @@ describe('Rangliste', () => {
     const csv = rangCsv(wb, r);
     expect(csv.split('\r\n')[0]).toBe('Platz;Name;Klasse;DG 1;Gesamt');
     expect(csv).toContain('1;Anna;;6,67;6,67');
+  });
+});
+
+describe('markdown', () => {
+  it('Tabelle', () => {
+    const h = markdown('Text\n| Akku | Strom |\n|---|---:|\n| 3S | 15 A |\n| <b> | x |\nEnde');
+    expect(h).toContain('<table>');
+    expect(h).toContain('<th>Akku</th>');
+    expect(h).toContain('<td>15 A</td>');
+    expect(h).toContain('&lt;b&gt;');
+    expect(h).not.toContain('---');
+    expect(h.endsWith('<p>Ende</p>')).toBe(true);
   });
 });

@@ -103,8 +103,23 @@ export function markdown(md: string): string {
       .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|tel:[+\d ]+|mailto:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   const out: string[] = [];
   let liste = false;
+  let tabelle: string[][] = [];
+  const zellen = (z: string) => z.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+  const tabelleAus = () => {
+    if (!tabelle.length) return;
+    const [kopf, ...rest] = tabelle;
+    out.push('<div class="md-tabelle"><table><thead><tr>' + kopf.map((c) => `<th>${inline(c)}</th>`).join('') + '</tr></thead><tbody>'
+      + rest.map((r) => '<tr>' + r.map((c) => `<td>${inline(c)}</td>`).join('') + '</tr>').join('') + '</tbody></table></div>');
+    tabelle = [];
+  };
   for (const zeile of md.split('\n')) {
     const z = zeile.trimEnd();
+    if (/^\s*\|.*\|\s*$/.test(z)) {
+      if (liste) { out.push('</ul>'); liste = false; }
+      if (!/^\s*\|[\s:|-]+\|\s*$/.test(z)) tabelle.push(zellen(z)); // Trennzeile |---| überspringen
+      continue;
+    }
+    tabelleAus();
     const li = /^\s*[-*]\s+(.*)$/.exec(z);
     if (li) {
       if (!liste) { out.push('<ul>'); liste = true; }
@@ -117,6 +132,7 @@ export function markdown(md: string): string {
     else if (z) out.push(`<p>${inline(z)}</p>`);
   }
   if (liste) out.push('</ul>');
+  tabelleAus();
   return out.join('');
 }
 
