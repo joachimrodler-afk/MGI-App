@@ -71,7 +71,7 @@ export default function Start() {
     ladeWetter().then((w) => { setWetter(w); merke('wetter', w); }).catch(() => undefined);
   }, [s?.token]);
 
-  const naechster = d?.termine?.[0];
+  const termine = (d?.termine ?? []).slice(0, 3);
   // Messwerte der eigenen Station am Platz haben Vorrang, Böen/Regen kommen aus der Vorhersage
   const station = d?.wetterstation?.erreichbar ? d.wetterstation.daten : undefined;
   const windJetzt = station?.wind ?? wetter?.wind;
@@ -130,21 +130,31 @@ export default function Start() {
         <span className="rounded-xl bg-white px-3 py-2 text-sm font-bold text-tinte shadow">{ichAmPlatz ? 'Abmelden' : 'Anmelden'}</span>
       </Link>
 
-      {/* Logo & nächster Termin */}
-      <div className="karte mb-4 flex items-center gap-4 overflow-hidden p-4">
-        <img src="logo-640.jpg" alt="Logo der Modellbau-Gemeinschaft Ismaning e.V." className="h-24 w-24 shrink-0 rounded-full" />
-        <div className="min-w-0 flex-1">
-          {s && <p className="text-sm text-slate-500">Hallo {s.name.split(' ')[0]}!</p>}
-          {naechster ? (
-            <Link to="/kalender" className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-mgi-rot">Nächster Termin · {tageBis(naechster.beginn)}</span>
-              <span className="block truncate text-lg font-bold">{naechster.titel}</span>
-              <span className="block text-sm text-slate-600 dark:text-slate-400">{terminDatum(naechster.beginn, naechster.ganztaegig, naechster.ende)}</span>
-            </Link>
-          ) : (
-            <p className="font-bold">{config.vereinsname}</p>
-          )}
+      {/* Logo & nächste Termine */}
+      <div className="karte mb-4 overflow-hidden">
+        <div className="flex items-center gap-4 p-4 pb-3">
+          <img src="logo-640.jpg" alt="Logo der Modellbau-Gemeinschaft Ismaning e.V." className="h-16 w-16 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1">
+            {s && <p className="text-sm text-slate-500">Hallo {s.name.split(' ')[0]}!</p>}
+            <p className="font-bold leading-tight">{config.vereinsname}</p>
+          </div>
         </div>
+        {termine.length > 0 && (
+          <Link to="/kalender" className="block border-t border-himmel-100 px-4 pb-3 pt-2 dark:border-slate-700">
+            <span className="text-xs font-bold uppercase tracking-wide text-mgi-rot">Nächste Termine</span>
+            <ul className="mt-1 divide-y divide-himmel-100 dark:divide-slate-700">
+              {termine.map((t, i) => (
+                <li key={t.beginn + i} className="flex items-baseline gap-3 py-1.5">
+                  <div className="min-w-0 flex-1">
+                    <span className="block truncate font-bold">{t.titel}</span>
+                    <span className="block text-sm text-slate-600 dark:text-slate-400">{terminDatum(t.beginn, t.ganztaegig, t.ende)}</span>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-himmel-100 px-2 py-0.5 text-xs font-semibold text-himmel-700 dark:bg-slate-800 dark:text-himmel-300">{tageBis(t.beginn)}</span>
+                </li>
+              ))}
+            </ul>
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
