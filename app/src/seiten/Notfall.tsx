@@ -98,7 +98,17 @@ export default function Notfall() {
           )}
         </div>
       ) : (
-        <div className="karte md p-4" dangerouslySetInnerHTML={{ __html: markdown(e.platzordnung || '_Die Platzordnung wurde noch nicht eingetragen._') }} />
+        <div className="space-y-4">
+          <div className="karte overflow-hidden">
+            <h2 className="px-4 pt-3 font-bold">Zulässiger Flugraum</h2>
+            <a href="flugraum.jpg" target="_blank" rel="noopener noreferrer" className="block p-3">
+              <img src="flugraum.jpg" alt="Luftbild mit dem zulässigen Flugraum: nördlich des Flugplatzes, westlich bis zur Moosstraße, 190 m nach Norden und 250 m nach Osten"
+                className="w-full rounded-xl" />
+            </a>
+            <p className="px-4 pb-3 text-sm text-slate-600 dark:text-slate-400">Nur im grünen Bereich nördlich der Bahn fliegen. Südlich des Sicherheitsnetzes ist kein Überflug erlaubt.</p>
+          </div>
+          <div className="karte md p-4" dangerouslySetInnerHTML={{ __html: markdown(e.platzordnung || '_Die Platzordnung wurde noch nicht eingetragen._') }} />
+        </div>
       )}
     </Seite>
   );
