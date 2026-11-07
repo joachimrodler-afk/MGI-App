@@ -24,7 +24,7 @@ export default function Mehr() {
           <Zeile zu="/arbeitsdienst" icon="schaufel" titel="Arbeitsdienst" text="Termine und Eintragen" />
           <Zeile zu="/technik" icon="zahnrad" titel="Technik am Platz" text="Wetterstation, Walze, Dixi, Ladesteckdosen" />
           <Zeile zu="/notfall" icon="notfall" titel="Platzordnung & Notfall" />
-          <Zeile zu="/regeln" icon="sprechblase" titel="Regel-Assistent (KI)" text="Fragen zu Satzung, Flugbetriebsordnung und StRfF" />
+          <Zeile zu="/regeln" icon="sprechblase" titel="Regel-Assistent (KI)" text="Fragen zu Satzung und Flugbetriebsordnung" />
         </div>
         <div className="karte divide-y divide-himmel-100 overflow-hidden dark:divide-slate-700">
           <Zeile zu="/konto" icon="person" titel={s ? s.name : 'Anmelden'} text={s ? 'Konto, PIN, Push-Nachrichten' : 'Mit Name und PIN'} />

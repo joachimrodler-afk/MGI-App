@@ -83,8 +83,7 @@ Unter **Verwaltung → Einstellungen** pflegst du:
 - iPhone: Push nur in der App vom Home-Bildschirm (iOS 16.4+). Kurzanleitung für Mitglieder: [MGI-App_iPhone.pdf](MGI-App_iPhone.pdf).
 
 ## Regel-Assistent (KI)
-- Mitglieder stellen unter **Regel-Assistent (KI)** (Startseite und *Mehr*) Fragen zur **Satzung**, **Flugbetriebsordnung** und zu den **MFSD-Regeln**. Die Antworten kommen von **Google Gemini** und dürfen nur aus diesen Dokumenten stammen, mit Fundstelle; sonst Verweis an den Vorstand.
-- **MFSD-Regeln:** Das Backend holt einmal pro Woche (im Tagesjob `taeglich`) die StRfF (alle Ziffern) und die beiden Kurzbeschreibungen „Modellflieger“ und „Modellfluggelände“ von mfsd.de und speichert sie als `MFSD-Regeln (automatisch von mfsd.de).txt` neben der App-Tabelle. Sofort aktualisieren: im Apps-Script-Editor `mfsdAktualisieren` ausführen; prüfen mit `diagnoseMfsd`. Ändert der MFSD seine Webseite grundlegend, bricht der Abgleich mit einer Fehlermeldung ab und die letzte Fassung bleibt erhalten.
+- Mitglieder stellen unter **Regel-Assistent (KI)** (Startseite und *Mehr*) Fragen zur **Satzung** und **Flugbetriebsordnung**. Die Antworten kommen von **Google Gemini** und dürfen nur aus diesen Dokumenten stammen, mit Fundstelle; sonst Verweis an den Vorstand.
 - Grenze: 30 Fragen pro Mitglied und Tag. Namen werden nicht an Google übermittelt.
 - Mitgeschickt wird die aktuelle Lage (Uhrzeit, Sonnenuntergang, Wind und Wind-Ampel, Anzahl Piloten, ob ein Flugleiter da ist) und der Status des Fragenden (Mitglied/Admin, im Flugbuch angemeldet ja/nein).
 - Einrichtung (Script Properties): `GEMINI_API_KEY` = Schlüssel aus [aistudio.google.com/apikey](https://aistudio.google.com/apikey). Optional `GEMINI_MODELL` (Standard `gemini-3.1-flash-lite`).
