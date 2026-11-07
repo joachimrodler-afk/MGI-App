@@ -62,9 +62,8 @@ export const config = {
     mapsUrl: 'https://maps.app.goo.gl/B5yAokCeZMDLbDLC6',
     /** Zufahrt zum Vorlesen am Telefon (nach dem Anfahrts-Flyer) */
     zufahrt:
-      'Östlich von Fischerhäuser, nördlich von Ismaning. Zur Kreuzung Wiesstraße/Moosstraße fahren: von Ismaning über die Moosstraße nach Norden, '
-      + 'von Fischerhäuser über die Wiesstraße nach Osten oder von der B388 (Erdinger Straße) über den Feldweg nach Süden. '
-      + 'Ab der Kreuzung dem Feldweg nach Osten folgen, der Platz liegt links. Nördlich des Platzes ist die Flugzone – nur von Süden anfahren.',
+      'Über die B388 (Erdinger Straße) oder die Moosstraße von Ismaning bis zur Kreuzung mit der Wiesstraße, '
+      + 'dann dem Feldweg nach Osten folgen, der Platz liegt links. Nur von Süden anfahren – nördlich des Platzes ist die Flugzone.',
     adresse: 'MGI Modellflugplatz, 85737 Ismaning',
   },
 
