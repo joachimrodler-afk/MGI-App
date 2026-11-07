@@ -354,16 +354,18 @@ console.log('Rabenschreck OK');
   ctx.DriveApp.getFolderById = (id) => ({ id, getFilesByName: (nm) => ({ hasNext: () => dateien.some((f) => f.name === nm) }), createFile: (b) => { const f = { name: b.name, setDescription: (x) => (f.desc = x), getId: () => 'f1' }; dateien.push(f); return f; }, createFolder: () => { throw new Error('keine Unterordner'); } });
   ctx.Utilities.newBlob = (_bytes, _mime, name) => ({ name });
   ctx.Utilities.base64Decode = () => [];
-  const r = ok(rufe('foto_hochladen', { base64: 'AA==', kategorie: 'Flugtag', titel: 'Erstflug', aufgenommen: '2026-11-07T09:05:30' }, klaus.token));
-  assert.equal(r.name, '2026-11-07_Klaus-B.jpg');
+  const r = ok(rufe('foto_hochladen', { base64: 'AA==', kategorie: 'Flugtag', titel: 'Erstflug Ü-Segler!', aufgenommen: '2026-11-07T09:05:30' }, klaus.token));
+  assert.equal(r.name, '2026-11-07_09-05_Erstflug-Ue-Segler_Klaus-B.jpg');
+  const r1 = ok(rufe('foto_hochladen', { base64: 'AA==', titel: 'Erstflug Ü-Segler!', aufgenommen: '2026-11-07T09:05:50' }, klaus.token));
+  assert.equal(r1.name, '2026-11-07_09-05_Erstflug-Ue-Segler_Klaus-B_2.jpg');
   const r2 = ok(rufe('foto_hochladen', { base64: 'AA==', aufgenommen: '2026-11-07T10:00:00' }, klaus.token));
-  assert.equal(r2.name, '2026-11-07_Klaus-B_2.jpg');
+  assert.equal(r2.name, '2026-11-07_10-00_Klaus-B.jpg');
   // öffentliche Galerie, neueste zuerst
   let n = 0;
   ctx.DriveApp.getFolderById = () => ({ getFiles: () => { const fs = [['a.jpg', '2026-11-01'], ['b.jpg', '2026-11-07'], ['x.txt', '2026-11-08']]; let i = 0; return { hasNext: () => i < fs.length, next: () => { const [nm, dt] = fs[i++]; n++; return { getId: () => nm, getName: () => nm, getMimeType: () => (nm.endsWith('.jpg') ? 'image/jpeg' : 'text/plain'), getDescription: () => '', getDateCreated: () => new Date(dt) }; } }; } });
   delete cache.galerie;
   const g = ok(rufe('galerie', {}));
   assert.deepEqual(g.map((x) => x.name), ['b.jpg', 'a.jpg']);
-  assert.equal(dateien[0].desc, 'Erstflug – Flugtag – Foto: Klaus Butz');
+  assert.equal(dateien[0].desc, 'Erstflug Ü-Segler! – Flugtag – Foto: Klaus Butz');
   console.log('Foto-Upload OK');
 }

@@ -810,14 +810,15 @@ function fotoHochladen_(d, s) {
   var kat = KATEGORIEN.indexOf(d.kategorie) >= 0 ? d.kategorie : 'Sonstiges';
   var jetzt = d.aufgenommen ? new Date(d.aufgenommen) : new Date();
   // direkt in den Ordner „Fotos Homepage“ (keine Unterordner)
-  // Dateiname: Datum_Vorname-N.jpg, bei mehreren Fotos am selben Tag _2, _3 …
+  // Dateiname: Datum_Uhrzeit_Titel_Vorname-N.jpg (Titel optional), bei Doppelten _2, _3 …
   var ordner = DriveApp.getFolderById(prop_('FOTO_ORDNER_ID', true));
   var titel = String(d.titel || '').trim().slice(0, 60);
   var m = mitgliedNachId_(s.mitgliedId);
   var vor = m ? m.vorname : teileName_(s.name).vorname;
   var nach = m ? m.nachname : teileName_(s.name).nachname;
   var kurz = (dateiname_(vor) || 'Mitglied') + (nach ? '-' + dateiname_(nach).charAt(0).toUpperCase() : '');
-  var stamm = Utilities.formatDate(jetzt, TZ, 'yyyy-MM-dd') + '_' + kurz;
+  var titelTeil = dateiname_(titel).slice(0, 30).replace(/-+$/, '');
+  var stamm = Utilities.formatDate(jetzt, TZ, 'yyyy-MM-dd_HH-mm') + '_' + (titelTeil ? titelTeil + '_' : '') + kurz;
   var name = stamm + '.jpg';
   for (var n = 2; ordner.getFilesByName(name).hasNext() && n < 500; n++) name = stamm + '_' + n + '.jpg';
   var blob = Utilities.newBlob(Utilities.base64Decode(d.base64), d.mimeType || 'image/jpeg', name);
