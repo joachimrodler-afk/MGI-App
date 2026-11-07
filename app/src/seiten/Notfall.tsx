@@ -13,7 +13,8 @@ export default function Notfall() {
   const { einstellungen: e } = useEinstellungen();
   const [tab, setTab] = useState<'notfall' | 'ordnung'>('notfall');
   const [kopiert, setKopiert] = useState(false);
-  const { lat, lon, koordinatenGeprueft, zufahrt, adresse } = config.platz;
+  const { lat, lon, koordinatenGeprueft, adresse } = config.platz;
+  const zufahrt = (e.zufahrt ?? '').trim() || config.platz.zufahrt;
   const koord = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
   const nord = `${Math.abs(lat).toFixed(5)}° ${lat >= 0 ? 'Nord' : 'Süd'}, ${Math.abs(lon).toFixed(5)}° ${lon >= 0 ? 'Ost' : 'West'}`;
 

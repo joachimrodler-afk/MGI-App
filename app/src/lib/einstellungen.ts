@@ -6,6 +6,7 @@ const LEER: Einstellungen = {
   platzordnung: '',
   notfallInfo: '',
   notfallKontakte: [],
+  zufahrt: '',
   windGelb: 25,
   windRot: 40,
   datenschutzFoto: '',

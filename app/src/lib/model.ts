@@ -150,6 +150,8 @@ export interface Einstellungen {
   platzordnung: string; // Markdown
   notfallInfo: string; // Markdown: Erste-Hilfe-Kasten, Feuerlöscher, Kontakte
   notfallKontakte: { name: string; rolle: string; telefon: string }[];
+  /** Zufahrt für den Rettungsdienst (zum Vorlesen am Telefon), leer = nicht anzeigen */
+  zufahrt?: string;
   windGelb: number; // km/h Böen
   windRot: number;
   datenschutzFoto: string;

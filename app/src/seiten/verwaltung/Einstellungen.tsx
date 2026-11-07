@@ -40,6 +40,12 @@ function Inhalt() {
   return (
     <div className="space-y-4">
       {mdFeld('platzordnung', 'Platzordnung')}
+      <div className="karte space-y-2 p-4">
+        <Feld label="Zufahrt für den Rettungsdienst" hilfe="Steht auf der Notfall-Seite unter der Adresse – so formulieren, dass man es am Telefon vorlesen kann. Leer lassen = wird nicht angezeigt.">
+          <textarea className="eingabe min-h-24" value={e.zufahrt ?? ''} onChange={(x) => setE({ ...e, zufahrt: x.target.value })}
+            placeholder="z. B. Über die Moosstraße von Ismaning bis zur Kreuzung mit der Wiesstraße, dann Feldweg nach Osten …" />
+        </Feld>
+      </div>
       {mdFeld('notfallInfo', 'Notfall-Infos (Erste-Hilfe-Kasten, Feuerlöscher …)')}
 
       <div className="karte space-y-2 p-4">
