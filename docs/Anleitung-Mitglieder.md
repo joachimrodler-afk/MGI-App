@@ -39,8 +39,6 @@ Danach startet die App wie eine normale App über ihr Symbol. Auf dem iPhone bit
 
 ## 2. Anmelden
 
-<img src="bilder/01-anmelden.jpg" width="260" align="right" alt="Anmelden">
-
 1. Oben auf das **Schloss** tippen.
 2. **Vor- und Nachname** und deinen **persönlichen PIN** eingeben.
 3. **Anmelden** tippen.
@@ -53,13 +51,11 @@ Das ist nur **einmal** nötig – danach bleibst du auf diesem Handy angemeldet.
 
 **Tipp:** Ändere deinen PIN nach der ersten Anmeldung unter **Konto → PIN ändern**.
 
-<br clear="right">
+<p align="center"><img src="bilder/01-anmelden.jpg" width="240" alt="Anmelden"></p>
 
 ---
 
 ## 3. Die Startseite
-
-<img src="bilder/02-start.jpg" width="260" align="right" alt="Startseite">
 
 **Kopfzeile (immer sichtbar):**
 
@@ -78,7 +74,7 @@ Das ist nur **einmal** nötig – danach bleibst du auf diesem Handy angemeldet.
 
 **Leiste unten:** Start · Termine · **Foto** (roter Knopf) · Wertung · Mehr
 
-<br clear="right">
+<p align="center"><img src="bilder/02-start.jpg" width="240" alt="Startseite"></p>
 
 ---
 
@@ -87,8 +83,6 @@ Das ist nur **einmal** nötig – danach bleibst du auf diesem Handy angemeldet.
 Das Flugbuch ersetzt den Papiervordruck. **Jeder Pilot meldet sich beim Ankommen an und beim Gehen ab.**
 
 ### Anmelden
-
-<img src="bilder/03-flugbuch-anmelden.jpg" width="260" align="right" alt="Im Flugbuch anmelden">
 
 1. Auf der Startseite die rote Karte **Flugbuch** antippen.
 2. **Schulungsnachweis** einschalten, falls vorhanden.
@@ -101,11 +95,9 @@ Das Flugbuch ersetzt den Papiervordruck. **Jeder Pilot meldet sich beim Ankommen
 
 **Gäste:** Oben auf **„Gast eintragen“** wechseln, Vor- und Nachname des Gastes eingeben – Rest wie oben.
 
-<br clear="right">
+<p align="center"><img src="bilder/03-flugbuch-anmelden.jpg" width="240" alt="Im Flugbuch anmelden"></p>
 
 ### Während du am Platz bist
-
-<img src="bilder/04-flugbuch-angemeldet.jpg" width="260" align="right" alt="Im Flugbuch angemeldet">
 
 - Oben steht grün **„Seit … Uhr im Flugbuch angemeldet“**.
 - **Besondere Vorkommnisse:** Hier kannst du frei eintragen, was passiert ist – z. B. Absturz, Beinahe-Zusammenstoß, Schaden am Platz, Störung. **Speichern** tippen. Was beim Abmelden noch nicht gespeichert war, wird automatisch übernommen.
@@ -116,13 +108,11 @@ Das Flugbuch ersetzt den Papiervordruck. **Jeder Pilot meldet sich beim Ankommen
 **„Abmelden · Ende … Uhr“** tippen, wenn du gehst.
 Vergessen? Nach **6 Stunden** meldet dich die App automatisch ab.
 
-<br clear="right">
+<p align="center"><img src="bilder/04-flugbuch-angemeldet.jpg" width="240" alt="Im Flugbuch angemeldet"></p>
 
 ---
 
 ## 5. Fotos für die Homepage
-
-<img src="bilder/05-foto.jpg" width="260" align="right" alt="Foto aufnehmen">
 
 1. Unten auf den **roten Kamera-Knopf** tippen.
 2. **„Foto aufnehmen“** oder **„Aus Galerie“** wählen (mehrere Bilder möglich).
@@ -136,13 +126,11 @@ Die Fotos erscheinen automatisch in der **Bildergalerie auf der Homepage** (Seit
 
 ⚠️ Bitte nur Fotos hochladen, mit denen **alle abgebildeten Personen einverstanden** sind.
 
-<br clear="right">
+<p align="center"><img src="bilder/05-foto.jpg" width="240" alt="Foto aufnehmen"></p>
 
 ---
 
 ## 6. Arbeitsdienst
-
-<img src="bilder/06-arbeitsdienst.jpg" width="260" align="right" alt="Arbeitsdienst">
 
 Die Kachel **Arbeitsdienst** zeigt alle Wochen der Arbeitsliste (April bis Oktober) mit den Einsätzen – Platzpflege, Walzen, Düngen … – und den freien Plätzen.
 
@@ -156,13 +144,11 @@ Die Kachel **Arbeitsdienst** zeigt alle Wochen der Arbeitsliste (April bis Oktob
 - auf der Startseite ab zwei Wochen vorher (gelber Hinweis),
 - per Push-Nachricht eine Woche vorher und am Montag deiner Woche.
 
-<br clear="right">
+<p align="center"><img src="bilder/06-arbeitsdienst.jpg" width="240" alt="Arbeitsdienst"></p>
 
 ---
 
 ## 7. Notfall & Platzordnung
-
-<img src="bilder/07-notfall.jpg" width="260" align="right" alt="Notfall">
 
 Der rote **Notfall**-Knopf oben ist auf jeder Seite erreichbar und funktioniert **auch ohne Netz**.
 
@@ -175,13 +161,11 @@ Der rote **Notfall**-Knopf oben ist auf jeder Seite erreichbar und funktioniert 
 
 **Reiter „Platzordnung“:** die wichtigsten Punkte der Flugbetriebsordnung kompakt, mit Bild des **zulässigen Flugraums**.
 
-<br clear="right">
+<p align="center"><img src="bilder/07-notfall.jpg" width="240" alt="Notfall"></p>
 
 ---
 
 ## 8. Technik am Platz
-
-<img src="bilder/09-technik.jpg" width="260" align="right" alt="Technik am Platz">
 
 Infos zur Ausstattung am Platz:
 
@@ -191,13 +175,11 @@ Infos zur Ausstattung am Platz:
 - **Dixi-Toilette** – Zahlenkombination (nur für angemeldete Mitglieder sichtbar)
 - **Ladesteckdosen** – Absicherung 15 A und Tabelle mit dem maximalen Ladestrom je Akku (3S bis 8S)
 
-<br clear="right">
+<p align="center"><img src="bilder/09-technik.jpg" width="240" alt="Technik am Platz"></p>
 
 ---
 
 ## 9. Weitere Funktionen
-
-<img src="bilder/10-mehr.jpg" width="260" align="right" alt="Mehr">
 
 Alles weitere findest du unten unter **Mehr**:
 
@@ -211,13 +193,11 @@ Alles weitere findest du unten unter **Mehr**:
 | 📌 **Schwarzes Brett** | Biete · Suche · Info. Eigene Beiträge kannst du bearbeiten und löschen. |
 | 🪪 **Meine Nachweise** | Ablaufdaten von Kenntnisnachweis, e-ID und Versicherung eintragen – die App erinnert dich 30 und 7 Tage vor Ablauf. |
 
-<br clear="right">
+<p align="center"><img src="bilder/10-mehr.jpg" width="240" alt="Mehr"></p>
 
 ---
 
 ## 10. Mein Konto & Push-Nachrichten
-
-<img src="bilder/08-konto.jpg" width="260" align="right" alt="Mein Konto">
 
 Oben auf das **Personen-Symbol** tippen.
 
@@ -233,7 +213,7 @@ Auf dem iPhone funktionieren Push-Nachrichten nur in der **installierten** App.
 
 **Außerdem:** PIN ändern, Abmelden, Darstellung (Hell / Dunkel / Automatisch).
 
-<br clear="right">
+<p align="center"><img src="bilder/08-konto.jpg" width="240" alt="Mein Konto"></p>
 
 ---
 
