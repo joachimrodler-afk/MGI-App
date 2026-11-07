@@ -1,7 +1,7 @@
 {
   "name": "mgi-app",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Vereins-App der Modellbau-Gemeinschaft Ismaning e.V. (PWA)",
   "type": "module",
   "scripts": {

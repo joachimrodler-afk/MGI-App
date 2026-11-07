@@ -15,7 +15,18 @@ thema();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', thema);
 window.addEventListener('mgi-thema', thema);
 
-registerSW({ immediate: true });
+// Updates: beim Start und jedes Mal, wenn die App wieder in den Vordergrund kommt, nach einer neuen Version suchen.
+// Auf dem iPhone bleibt die installierte App oft lange im Hintergrund „eingefroren“ – ohne diese Prüfung
+// kommt eine neue Version erst nach komplettem Schließen an. Neue Version → Seite lädt sich automatisch neu.
+registerSW({
+  immediate: true,
+  onRegisteredSW(_url, reg) {
+    if (!reg) return;
+    const pruefen = () => { if (navigator.onLine) void reg.update().catch(() => undefined); };
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pruefen(); });
+    setInterval(pruefen, 30 * 60 * 1000);
+  },
+});
 
 // Browser bitten, die Anmeldung nicht automatisch zu löschen (dauerhaft angemeldet bleiben)
 void navigator.storage?.persist?.().catch(() => undefined);
