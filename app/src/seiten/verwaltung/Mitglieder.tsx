@@ -161,10 +161,13 @@ function Inhalt() {
             <summary className={klassen('flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-2', !m.aktiv && 'opacity-60')}>
               <span className="flex-1">
                 <span className="block font-semibold">{m.vorname} {m.nachname}{m.id === s.mitgliedId && ' (du)'}</span>
-                <span className="block text-sm text-slate-500">{m.rolle === 'admin' ? 'Admin' : 'Mitglied'}{m.sparte ? ` · ${m.sparte === 'flug' ? 'Flug' : 'Schiff'}` : ''}{!m.aktiv && ' · deaktiviert'}</span>
+                <span className="block text-sm text-slate-500">{m.superAdmin ? 'Super-Admin' : m.rolle === 'admin' ? 'Admin' : 'Mitglied'}{m.sparte ? ` · ${m.sparte === 'flug' ? 'Flug' : 'Schiff'}` : ''}{!m.aktiv && ' · deaktiviert'}</span>
               </span>
               <Icon name="rechts" className="h-5 w-5 text-slate-400 transition group-open:rotate-90" />
             </summary>
+            {m.superAdmin && m.id !== s.mitgliedId ? (
+              <div className="px-4 pb-4"><Hinweis>Super-Admin – kann nur von sich selbst geändert werden.</Hinweis></div>
+            ) : (
             <div className="grid grid-cols-2 gap-2 px-4 pb-4">
               <Knopf art="sekundaer" onClick={() => zuruecksetzen(m)}>Neuer PIN</Knopf>
               <Knopf art="sekundaer" disabled={m.id === s.mitgliedId} onClick={() => aendern(m, { rolle: m.rolle === 'admin' ? 'mitglied' : 'admin' })}>
@@ -188,6 +191,7 @@ function Inhalt() {
                 </Knopf>
               ))}
             </div>
+            )}
           </details>
         ))}
       </div>

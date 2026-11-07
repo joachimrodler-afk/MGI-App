@@ -31,6 +31,7 @@
  *   GEMINI_API_KEY        API-Schlüssel für den Regel-Assistenten (Google AI Studio)
  *   GEMINI_MODELL         optional, Standard gemini-3.1-flash-lite
  *   REGELN_DATEIEN        optional: Drive-Datei-IDs (PDF/Text), kommagetrennt, Format Titel=ID
+ *   SUPER_ADMIN           Mitglieds-ID des Super-Admins (kann von anderen Admins nicht geändert werden)
  *   APP_URL               Adresse der App (für Links in Push-Nachrichten)
  *   ARBEITSLISTE_ID       Google-Tabelle der Arbeitsdienst-Liste (optional, Standard siehe unten)
  *   TECHNIK_ORDNER_ID     Drive-Ordner für Fotos im Bereich Technik (wird sonst automatisch angelegt)
@@ -342,7 +343,19 @@ function mitgliedNachId_(id) {
 }
 
 function mitgliedOeffentlich_(m) {
-  return { id: m.id, vorname: m.vorname, nachname: m.nachname, rolle: m.rolle, sparte: m.sparte || '', aktiv: String(m.aktiv) === 'true' };
+  var su = superAdmin_();
+  return { id: m.id, vorname: m.vorname, nachname: m.nachname, rolle: m.rolle, sparte: m.sparte || '', aktiv: String(m.aktiv) === 'true', superAdmin: !!su && m.id === su };
+}
+
+/** Super-Admin: Mitglieds-ID in der Script Property SUPER_ADMIN (nur im Apps-Script-Projekt änderbar) */
+function superAdmin_() {
+  return String(prop_('SUPER_ADMIN') || '').trim();
+}
+
+/** Andere Admins dürfen den Super-Admin weder ändern, deaktivieren, löschen noch seinen PIN zurücksetzen */
+function superSchutz_(zielId, s) {
+  var su = superAdmin_();
+  if (su && zielId === su && (!s || s.mitgliedId !== su)) throw fehler_('Der Super-Admin kann nur von sich selbst geändert werden', 403);
 }
 
 function mitgliederListe_() {
@@ -374,6 +387,7 @@ function mitgliedAnlegen_(d) {
 }
 
 function mitgliedAendern_(d, s) {
+  superSchutz_(d.id, s);
   if (d.id === s.mitgliedId && (d.rolle === 'mitglied' || d.aktiv === false)) {
     throw fehler_('Du kannst dir nicht selbst die Admin-Rechte entziehen oder dich deaktivieren', 400);
   }
@@ -397,6 +411,7 @@ function mitgliedAendern_(d, s) {
  * Flugbuch, Flugleiter, Arbeitsliste und Wertungen behalten den Namen als Text.
  */
 function mitgliedLoeschen_(d, s) {
+  superSchutz_(d.id, s);
   if (d.id === s.mitgliedId) throw fehler_('Du kannst dich nicht selbst löschen', 400);
   var m = mitgliedNachId_(d.id);
   if (!m) throw fehler_('Mitglied nicht gefunden', 404);
@@ -420,7 +435,8 @@ function setzePin_(id, pin) {
   });
 }
 
-function pinZuruecksetzen_(d) {
+function pinZuruecksetzen_(d, s) {
+  superSchutz_(d.id, s);
   var pin = neuerPin_();
   setzePin_(d.id, pin);
   sitzungenEntfernen_(d.id);

@@ -419,6 +419,24 @@ console.log('Rabenschreck OK');
   console.log('Push OK');
 }
 
+// Super-Admin: andere Admins dürfen ihn nicht ändern, deaktivieren, löschen oder seinen PIN zurücksetzen
+{
+  const admin2Id = ok(rufe('mitglied_anlegen', { vorname: 'Zweit', nachname: 'Admin', rolle: 'admin' }, admin.token));
+  const a2 = ok(rufe('login', { name: 'Zweit Admin', pin: admin2Id.pin }));
+  props.SUPER_ADMIN = admin.mitgliedId;
+  assert.equal(rufe('mitglied_aendern', { id: admin.mitgliedId, rolle: 'mitglied' }, a2.token).status, 403);
+  assert.equal(rufe('mitglied_aendern', { id: admin.mitgliedId, aktiv: false }, a2.token).status, 403);
+  assert.equal(rufe('pin_zuruecksetzen', { id: admin.mitgliedId }, a2.token).status, 403);
+  assert.equal(rufe('mitglied_loeschen', { id: admin.mitgliedId }, a2.token).status, 403);
+  const liste = ok(rufe('mitglieder_liste', {}, admin.token));
+  assert.equal(liste.find((m) => m.id === admin.mitgliedId).superAdmin, true);
+  assert.equal(liste.find((m) => m.id === admin2Id.id).superAdmin, false);
+  // Super-Admin selbst darf weiterhin alles bei anderen – auch dem zweiten Admin die Rechte entziehen
+  ok(rufe('mitglied_aendern', { id: admin2Id.id, rolle: 'mitglied' }, admin.token));
+  delete props.SUPER_ADMIN;
+  console.log('Super-Admin OK');
+}
+
 // Regel-Assistent (Gemini): Dokumente als PDF/Text, Verlauf, Tageslimit, Fehler
 {
   assert.equal(rufe('regeln_frage', { frage: 'x' }).ok, false, 'nur Mitglieder');

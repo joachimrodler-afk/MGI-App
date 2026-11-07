@@ -18,6 +18,8 @@ export interface Mitglied {
   rolle: Rolle;
   sparte: 'flug' | 'schiff' | '';
   aktiv: boolean;
+  /** Super-Admin: nur von sich selbst änderbar */
+  superAdmin?: boolean;
 }
 
 export interface Termin {

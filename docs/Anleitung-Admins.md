@@ -10,6 +10,8 @@ Admins sind der Vorstand und die Wertungsrichter. Der Admin-Bereich steht unter 
 - PINs werden nur verschlüsselt gespeichert (gesalzener Hash). Auch Admins können sie nicht nachschauen, nur neu vergeben.
 - Nach 5 falschen PIN-Eingaben ist der Zugang für 10 Minuten gesperrt.
 
+**Super-Admin:** Die Mitglieds-ID in der Script Property `SUPER_ADMIN` ist geschützt – andere Admins können dieses Konto weder ändern, deaktivieren, löschen noch seinen PIN zurücksetzen (gesperrt im Backend). In der Mitgliederliste steht „Super-Admin“. Ändern kann das nur, wer Zugriff auf das Apps-Script-Projekt hat.
+
 ## Wettbewerb durchführen
 1. **Wertung → Neu:** Name, Datum und Anzahl der Durchgänge eingeben, die Wertungsart wählen, optional Klassen, dann die Teilnehmer eintragen. Mehrere Namen kannst du mit Komma getrennt auf einmal eingeben.
 2. **Wertung eintragen:** Teilnehmer und Durchgang wählen und die Werte eingeben. Unten siehst du sofort die Punkte. Nach dem Speichern springt die App zum nächsten Teilnehmer, der in diesem Durchgang noch keine Wertung hat.
