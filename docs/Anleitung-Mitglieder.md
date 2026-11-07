@@ -106,7 +106,7 @@ Das Flugbuch ersetzt den Papiervordruck. **Jeder Pilot meldet sich beim Ankommen
 ### Abmelden
 
 **„Abmelden · Ende … Uhr“** tippen, wenn du gehst.
-Vergessen? Nach **6 Stunden** meldet dich die App automatisch ab.
+Vergessen? Um **23:59 Uhr** meldet dich die App automatisch ab.
 
 <p align="center"><img src="bilder/04-flugbuch-angemeldet.jpg" width="240" alt="Im Flugbuch angemeldet"></p>
 

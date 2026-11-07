@@ -45,7 +45,7 @@ const STANDARD_EINST: Einstellungen = {
   windRot: 40,
   datenschutzFoto:
     'Bitte nur Fotos hochladen, mit denen alle abgebildeten Personen einverstanden sind. Die Fotos erscheinen öffentlich auf der Vereins-Homepage.',
-  checkinStunden: 6,
+  checkinStunden: 0,
 };
 
 const demoHeute = () => new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -210,7 +210,7 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
     piloten: fb().filter((p) => p.datum === demoHeute() || !p.ende),
     flugleiter: fl().filter((f) => f.datum === demoHeute() || !f.ende),
     anwesend: anwesend(),
-    autoStunden: db.einstellungen.checkinStunden || 6,
+    autoStunden: db.einstellungen.checkinStunden || 0,
   });
   const ichMitglied = () => db.mitglieder.find((m) => m.id === mitglied().mitgliedId)!;
   const flugleiterAn = (b: Record<string, unknown>) => {

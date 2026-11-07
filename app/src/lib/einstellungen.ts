@@ -10,7 +10,7 @@ const LEER: Einstellungen = {
   windGelb: 25,
   windRot: 40,
   datenschutzFoto: '',
-  checkinStunden: 4,
+  checkinStunden: 0,
 };
 
 /** Vereinseinstellungen – werden lokal gespeichert, damit Notfall & Platzordnung offline funktionieren */

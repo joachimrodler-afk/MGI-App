@@ -269,7 +269,11 @@ function Inhalt() {
           <Knopf className="w-full text-lg" onClick={() => aktion('flugbuch_abmelden', geaendert ? { id: ich.id, vorkommnisse: entwurf } : { id: ich.id }, ich.id)} laedt={arbeitet === ich.id}>
             Abmelden · Ende {uhrzeit(new Date().toISOString())} Uhr
           </Knopf>
-          <p className="text-center text-xs text-slate-500">Vergessen? Nach {st.autoStunden} Std. wird automatisch abgemeldet.</p>
+          <p className="text-center text-xs text-slate-500">
+            {st.autoStunden > 0 && st.autoStunden < 24
+              ? `Vergessen? Nach ${st.autoStunden} Std., spätestens um 23:59 Uhr wird automatisch abgemeldet.`
+              : 'Vergessen? Um 23:59 Uhr wird automatisch abgemeldet.'}
+          </p>
           {!gastForm && <Knopf art="sekundaer" className="w-full" onClick={() => setGastForm(true)}><Icon name="plus" className="h-5 w-5" /> Gast eintragen</Knopf>}
         </div>
       ) : (

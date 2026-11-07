@@ -781,7 +781,7 @@ var STANDARD_EINSTELLUNGEN = {
   windRot: 40,
   datenschutzFoto:
     'Bitte nur Fotos hochladen, mit denen alle abgebildeten Personen einverstanden sind. Die Fotos erscheinen öffentlich auf der Vereins-Homepage.',
-  checkinStunden: 6,
+  checkinStunden: 0, // 0 = keine Stundengrenze, Abmeldung erst um 23:59 Uhr
 };
 
 function einstellungenLesen_() {
@@ -957,7 +957,7 @@ function flugbuchStatus_(d, s) {
     piloten: alle,
     flugleiter: fl,
     anwesend: anwesende_(d, s),
-    autoStunden: Number(einstellungenLesen_().checkinStunden) || 6,
+    autoStunden: Number(einstellungenLesen_().checkinStunden) || 0,
   };
 }
 
@@ -1070,7 +1070,9 @@ function flugleiterAbmelden_(d, s) {
 
 /** Vergessene Abmeldungen nach X Stunden bzw. zum Tageswechsel automatisch beenden */
 function flugbuchAutoBeenden_() {
-  var stunden = Number(einstellungenLesen_().checkinStunden) || 6;
+  // 0 (oder ≥ 24) = keine Stundengrenze: offen bis 23:59 Uhr am Tag der Anmeldung
+  var stunden = Number(einstellungenLesen_().checkinStunden) || 0;
+  if (stunden <= 0 || stunden >= 24) stunden = 48;
   var heute = heute_();
   ['Flugbuch', 'Flugleiter'].forEach(function (blatt) {
     zeilen_(blatt).filter(function (r) { return !r.ende_ts && r.beginn_ts; }).forEach(function (z) {

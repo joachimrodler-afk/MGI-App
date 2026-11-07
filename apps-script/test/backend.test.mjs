@@ -175,13 +175,29 @@ assert.equal(fb[1][11], '<12 kg');
 ok(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['kolben'], masse: '<25 kg', regelnBestaetigt: true } }, admin.token));
 const zeile = fb[fb.length - 1];
 zeile[17] = new Date(Date.now() - 7 * 3600000).toISOString(); // vor 7 Stunden angemeldet
+// Standard: keine Stundengrenze – am selben Tag bleibt die Anmeldung offen
+ctx.flugbuchAutoBeenden_();
+assert.ok(!zeile[18], 'Standard: erst um 23:59 abmelden');
+// Mit Stundengrenze aus den Einstellungen (z. B. 6 Std.) wird beendet
+const einst = ok(rufe('einstellungen', {}, admin.token));
+ok(rufe('einstellungen_speichern', { ...einst, checkinStunden: 6 }, admin.token));
 ctx.flugbuchAutoBeenden_();
 assert.ok(zeile[18], 'automatisch beendet');
 assert.equal(zeile[19], 'ja');
+ok(rufe('einstellungen_speichern', { ...einst, checkinStunden: 0 }, admin.token));
+// Anmeldung vom Vortag ohne Abmeldung: Ende 23:59 des Vortags
+ok(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['segler'], masse: '<2 kg', regelnBestaetigt: true } }, klaus.token));
+const vortag = fb[fb.length - 1];
+const gestern = new Date(Date.now() - 86400000);
+vortag[1] = ctx.Utilities.formatDate(gestern, 'Europe/Berlin', 'dd.MM.yyyy');
+vortag[17] = new Date(gestern.getTime()).toISOString();
+ctx.flugbuchAutoBeenden_();
+assert.equal(vortag[19], 'ja');
+assert.equal(String(vortag[13]), '23:59');
 
 // Admin-Übersicht
 const liste = ok(rufe('flugbuch_liste', {}, admin.token));
-assert.equal(liste.piloten.length, 3);
+assert.equal(liste.piloten.length, 4);
 assert.equal(rufe('flugbuch_liste', {}, klaus.token).ok, false);
 
 // Abgelehnte Anfrage
