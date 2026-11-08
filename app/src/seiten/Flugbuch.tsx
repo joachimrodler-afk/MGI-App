@@ -176,7 +176,7 @@ function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneF
       <label className="flex items-start gap-3 rounded-xl bg-sonne-hell p-3 text-sm dark:bg-amber-950/40">
         <input type="checkbox" className="mt-0.5 h-6 w-6 shrink-0 accent-mgi-rot" checked={e.regelnBestaetigt} onChange={(x) => setE({ ...e, regelnBestaetigt: x.target.checked })} />
         <span>
-          {gast ? 'Der Gast bestätigt' : 'Ich bestätige'}, dass {gast ? 'ihm' : 'mir'} die Betriebsregeln der StRfF, die für {gast ? 'sein' : 'mein'} Flugvorhaben relevant sind,
+          {gast ? 'Der Gast bestätigt' : 'Ich bestätige'}, dass {gast ? 'ihm' : 'mir'} die Betriebsregeln der StRfF (Standardisierte Regeln für Flugmodelle des MFSD), die für {gast ? 'sein' : 'mein'} Flugvorhaben relevant sind,
           die Flugordnung und die Geländeausweisung ggf. samt vorhandener Kontrollerlaubnis der zuständigen Landesluftfahrtbehörde bekannt sind.
         </span>
       </label>
