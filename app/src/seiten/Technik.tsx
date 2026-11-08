@@ -4,7 +4,7 @@
  * liefert das Backend nur mit Anmeldung aus.
  */
 import { useRef, useState } from 'react';
-import { BlockschaltbildStrom, BlockschaltbildWetterstation } from '../components/Blockschaltbild';
+import { BlockschaltbildLadung, BlockschaltbildStrom, BlockschaltbildWetterstation } from '../components/Blockschaltbild';
 import { Icon } from '../components/Icon';
 import { Feld, Fehler, Hinweis, Knopf, Laden, Leer, Schalter, Seite, useLaden } from '../components/ui';
 import { api, erinnere, merke } from '../lib/api';
@@ -16,7 +16,7 @@ const ICONS: { k: string; n: string }[] = [
   { k: 'zahnrad', n: 'Allgemein' }, { k: 'wind', n: 'Wetter' }, { k: 'akku', n: 'Strom' }, { k: 'schloss', n: 'Schloss' },
   { k: 'schaufel', n: 'Gerät' }, { k: 'webcam', n: 'Kamera' }, { k: 'flieger', n: 'Flug' }, { k: 'notfall', n: 'Sicherheit' },
 ];
-const GRAFIKEN: { k: TechnikAbschnitt['grafik']; n: string }[] = [{ k: '', n: 'keine' }, { k: 'wetterstation', n: 'Blockschaltbild Wetterstation' }, { k: 'strom', n: 'Blockschaltbild Stromversorgung' }];
+const GRAFIKEN: { k: TechnikAbschnitt['grafik']; n: string }[] = [{ k: '', n: 'keine' }, { k: 'wetterstation', n: 'Blockschaltbild Wetterstation' }, { k: 'strom', n: 'Blockschaltbild Stromversorgung' }, { k: 'ladung', n: 'Blockschaltbild Ladeanschlüsse' }];
 
 function Editor({ alt, fertig, abbrechen }: { alt?: TechnikAbschnitt; fertig: (l: TechnikAbschnitt[]) => void; abbrechen: () => void }) {
   const [titel, setTitel] = useState(alt?.titel ?? '');
@@ -142,6 +142,7 @@ function AbschnittKarte({ a, offen, umschalten, admin, bearbeiten, hoch, runter 
         <div className="border-t border-himmel-100 px-4 pb-4 pt-2 dark:border-slate-700">
           {a.grafik === 'wetterstation' && <BlockschaltbildWetterstation />}
           {a.grafik === 'strom' && <BlockschaltbildStrom />}
+          {a.grafik === 'ladung' && <BlockschaltbildLadung />}
           {a.text && <div className="md" dangerouslySetInnerHTML={{ __html: markdown(a.text) }} />}
           {a.bilder.length > 0 && (
             <div className="mt-3 grid grid-cols-3 gap-2">

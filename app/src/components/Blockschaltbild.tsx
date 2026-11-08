@@ -158,3 +158,54 @@ export function BlockschaltbildStrom() {
     </figure>
   );
 }
+
+/** Blockschaltbild der Ladeanschlüsse an den Tischen: Pufferbatterie → je Tisch 2 × XT60, jeder einzeln mit 15 A abgesichert */
+export function BlockschaltbildLadung() {
+  const leitung = 'stroke-sky-600 dark:stroke-sky-400';
+  return (
+    <figure className="my-2">
+      <svg viewBox="0 0 360 352" className="h-auto w-full" role="img" aria-labelledby="bsl-titel">
+        <title id="bsl-titel">Blockschaltbild der Ladeanschlüsse: Das Bluetti im Gartenhaus lädt über einen DC-DC-Wandler die Pufferbatterie an den Tischen. Daran hängen an Tisch 1 und Tisch 2 je zwei XT60-Ladeanschlüsse, jeder einzeln mit 15 Ampere abgesichert.</title>
+        <defs>
+          <marker id="mgi-pfeil-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" className="fill-slate-500 dark:fill-slate-400" />
+          </marker>
+        </defs>
+
+        <text x={180} y={14} textAnchor="middle" fontSize={10.5} className="fill-slate-600 dark:fill-slate-300">vom Bluetti im Gartenhaus · 12 V DC</text>
+        <path d="M180,20 V38" fill="none" className={leitung} strokeWidth={2.2} markerEnd="url(#mgi-pfeil-l)" />
+        <Box x={105} y={40} w={150} h={32} titel="DC-DC-Wandler" art="aus" />
+        <path d="M180,72 V92" fill="none" className={leitung} strokeWidth={2.2} markerEnd="url(#mgi-pfeil-l)" />
+        <Box x={42} y={94} w={276} h={42} titel="Pufferbatterie" unter="LiFePO₄ · 12,8 V · 100 Ah (≈ 1.280 Wh)" />
+
+        {/* Verteilung auf 4 Anschlüsse */}
+        <path d="M180,136 V146 M55,146 H305" fill="none" className={leitung} strokeWidth={2.2} />
+        {[
+          { x: 18, mitte: 95, titel: 'Tisch 1' },
+          { x: 188, mitte: 265, titel: 'Tisch 2' },
+        ].map((t) => (
+          <g key={t.titel}>
+            <rect x={t.x} y={150} width={154} height={160} rx={10} fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth={1} strokeDasharray="4 3" />
+            <text x={t.mitte} y={304} textAnchor="middle" fontSize={11.5} fontWeight={700} className="fill-slate-600 dark:fill-slate-300">{t.titel}</text>
+          </g>
+        ))}
+        {[55, 135, 225, 305].map((c) => (
+          <g key={c}>
+            <path d={`M${c},146 V158 M${c},178 V190`} fill="none" className={leitung} strokeWidth={2.2} />
+            <rect x={c - 32} y={158} width={64} height={20} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
+            <text x={c} y={172} textAnchor="middle" fontSize={10.5} fontWeight={700} className="fill-mgi-rot">15 A</text>
+            <Box x={c - 32} y={190} w={64} h={30} titel="XT60" />
+            <path d={`M${c},220 V240`} fill="none" className="stroke-slate-500 dark:stroke-slate-400" strokeWidth={1.6} strokeDasharray="3 3" markerEnd="url(#mgi-pfeil-l)" />
+            <rect x={c - 32} y={242} width={64} height={44} rx={8} fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth={1.2} strokeDasharray="4 3" />
+            <text x={c} y={260} textAnchor="middle" fontSize={10.5} fontWeight={600} className="fill-slate-600 dark:fill-slate-300">Ladegerät</text>
+            <text x={c} y={275} textAnchor="middle" fontSize={10} className="fill-slate-500 dark:fill-slate-400">→ Akku</text>
+          </g>
+        ))}
+
+        <text x={180} y={332} textAnchor="middle" fontSize={11} fontWeight={700} className="fill-tinte dark:fill-slate-100">je XT60-Anschluss max. 15 A</text>
+        <text x={180} y={346} textAnchor="middle" fontSize={10} className="fill-slate-600 dark:fill-slate-300">bei 12,8 V rund 190 W Ladeleistung je Anschluss</text>
+      </svg>
+      <figcaption className="mt-1 text-center text-xs text-slate-500">Ladeanschlüsse an den Tischen</figcaption>
+    </figure>
+  );
+}

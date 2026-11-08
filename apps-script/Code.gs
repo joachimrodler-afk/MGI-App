@@ -1235,7 +1235,7 @@ function brettLoeschen_(d, s) {
 // Abschnitte mit nurMitglieder = true (z. B. Zahlenschloss) gibt es nur mit Anmeldung.
 // =====================================================================
 
-var TECHNIK_GRAFIKEN = ['', 'wetterstation', 'strom'];
+var TECHNIK_GRAFIKEN = ['', 'wetterstation', 'strom', 'ladung'];
 
 // Erster Text der Ladesteckdosen – wird bei der Migration nur ersetzt, wenn ihn noch niemand geändert hat
 var TECHNIK_LADE_ALT = 'Die Ladesteckdosen sind mit **15 Ampere** abgesichert.';
@@ -1282,7 +1282,7 @@ function technikStandard_() {
       ].join('\n'),
     },
     {
-      titel: 'Ladesteckdosen', icon: 'akku', grafik: '', nurMitglieder: false,
+      titel: 'Ladesteckdosen', icon: 'akku', grafik: 'ladung', nurMitglieder: false,
       text: technikLadeText_(),
     },
   ];
@@ -1308,7 +1308,7 @@ function technikStrom_() {
       '- Kühlschrank',
       '## An den Tischen',
       '- **Pufferbatterie:** LiFePO₄, 12,8 V, 100 Ah (rund 1.280 Wh), wird über den DC-DC-Wandler vom Bluetti nachgeladen',
-      '- versorgt die Ladesteckdosen an zwei Tischen, **jeder Tisch** mit eigener Sicherung **15 A** (je Tisch bei 12,8 V rund 190 W)',
+      '- versorgt die Ladeanschlüsse an zwei Tischen: **je Tisch 2 × XT60**, jeder Anschluss mit eigener Sicherung **15 A** (je Anschluss bei 12,8 V rund 190 W)',
       '## Hinweise',
       '- Die Module haben zusammen 1.000 Wp, das Bluetti nimmt höchstens 900 W auf. An sehr sonnigen Tagen wird die Spitze abgeschnitten – das ist normal.',
       '- Vor Arbeiten an den Solarleitungen den DC-Trennschalter ausschalten.',
@@ -1319,12 +1319,12 @@ function technikStrom_() {
 
 function technikLadeText_() {
   return [
-    'Die Ladesteckdosen an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen. **Jeder Tisch** hat eine eigene Sicherung mit **15 Ampere**.',
+    'Die Ladeanschlüsse an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen. An jedem Tisch gibt es **2 XT60-Anschlüsse**, jeder einzeln mit **15 Ampere** abgesichert.',
     '- Die Pufferbatterie wird über einen DC-DC-Wandler vom Bluetti im Gartenhaus nachgeladen (siehe **Stromversorgung**).',
-    '- Alle an **einem Tisch** gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.',
-    '- Löst die Sicherung eines Tisches aus: Ladegeräte an diesem Tisch abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.',
+    '- An jeden XT60-Anschluss ein Ladegerät; es darf zusammen höchstens **15 A** aus dem Anschluss ziehen.',
+    '- Löst die Sicherung eines Anschlusses aus: Ladegerät an diesem Anschluss abstecken, Sicherung wieder einschalten, Gerät wieder anstecken.',
     '## Erlaubter Ladestrom',
-    'Jeder Tisch ist mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung je Tisch. Je mehr Zellen der Akku hat, desto kleiner muss der Ladestrom sein:',
+    'Jeder XT60-Anschluss ist mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung je Anschluss. Je mehr Zellen der Akku hat, desto kleiner muss der Ladestrom sein:',
     '| Akku | Ladeschluss | max. Ladestrom |',
     '|---|---|---:|',
     '| 3S | 12,6 V | 15 A |',
@@ -1333,7 +1333,7 @@ function technikLadeText_() {
     '| 6S | 25,2 V | 7,5 A |',
     '| 7S | 29,4 V | 6,4 A |',
     '| 8S | 33,6 V | 5,6 A |',
-    '_Faustregel: max. Ladestrom = 45 ÷ Zellenzahl (für LiPo mit 4,2 V je Zelle). Die Werte gelten für alle Ladegeräte an einem Tisch zusammen._',
+    '_Faustregel: max. Ladestrom = 45 ÷ Zellenzahl (für LiPo mit 4,2 V je Zelle). Die Werte gelten je XT60-Anschluss._',
   ].join('\n');
 }
 
@@ -1354,6 +1354,14 @@ var TECHNIK_ERSETZUNGEN = {
     ['- Löst die Sicherung aus: Ladegeräte abstecken,', '- Löst die Sicherung eines Tisches aus: Ladegeräte an diesem Tisch abstecken,'],
     ['Die 12-V-Ladesteckdosen sind mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung.', 'Jeder Tisch ist mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung je Tisch.'],
     ['Die Werte gelten für alle Ladegeräte an einer Sicherung zusammen._', 'Die Werte gelten für alle Ladegeräte an einem Tisch zusammen._'],
+  ],
+  TECHNIK_XT60: [
+    ['- versorgt die Ladesteckdosen an zwei Tischen, **jeder Tisch** mit eigener Sicherung **15 A** (je Tisch bei 12,8 V rund 190 W)', '- versorgt die Ladeanschlüsse an zwei Tischen: **je Tisch 2 × XT60**, jeder Anschluss mit eigener Sicherung **15 A** (je Anschluss bei 12,8 V rund 190 W)'],
+    ['Die Ladesteckdosen an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen. **Jeder Tisch** hat eine eigene Sicherung mit **15 Ampere**.', 'Die Ladeanschlüsse an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen. An jedem Tisch gibt es **2 XT60-Anschlüsse**, jeder einzeln mit **15 Ampere** abgesichert.'],
+    ['- Alle an **einem Tisch** gleichzeitig angeschlossenen Ladegeräte zusammen dürfen 15 A nicht überschreiten.', '- An jeden XT60-Anschluss ein Ladegerät; es darf zusammen höchstens **15 A** aus dem Anschluss ziehen.'],
+    ['- Löst die Sicherung eines Tisches aus: Ladegeräte an diesem Tisch abstecken, Sicherung wieder einschalten, Geräte einzeln wieder anstecken.', '- Löst die Sicherung eines Anschlusses aus: Ladegerät an diesem Anschluss abstecken, Sicherung wieder einschalten, Gerät wieder anstecken.'],
+    ['Jeder Tisch ist mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung je Tisch.', 'Jeder XT60-Anschluss ist mit 15 A abgesichert. Das reicht für rund 190 W Ladeleistung je Anschluss.'],
+    ['Die Werte gelten für alle Ladegeräte an einem Tisch zusammen._', 'Die Werte gelten je XT60-Anschluss._'],
   ],
   TECHNIK_KUEHLSCHRANK: [
     ['- RTK-Antenne\n## An den Tischen', '- RTK-Antenne\n- Kühlschrank\n## An den Tischen'],
@@ -1381,6 +1389,22 @@ function technikErsetzen_(liste) {
       props.setProperty(flag, 'true');
     });
   });
+  // Blockschaltbild der Ladeanschlüsse dem bestehenden Abschnitt „Ladesteckdosen“ zuordnen (einmalig)
+  if (!props.getProperty('TECHNIK_LADEGRAFIK')) {
+    mitSperre_(function () {
+      if (props.getProperty('TECHNIK_LADEGRAFIK')) return;
+      liste.forEach(function (x) {
+        if (x.titel === 'Ladesteckdosen' && !x.grafik) {
+          aktualisiereZeile_('Technik', 'id', x.id, function (r) {
+            var j = JSON.parse(r.json); j.grafik = 'ladung'; j.geaendert = new Date().toISOString();
+            r.json = JSON.stringify(j); return r;
+          });
+          geaendert = true;
+        }
+      });
+      props.setProperty('TECHNIK_LADEGRAFIK', 'true');
+    });
+  }
   return geaendert;
 }
 
@@ -1408,6 +1432,7 @@ function technikMigrieren_(liste) {
   });
   // neuer Abschnitt hat schon den aktuellen Text – Ersetzungen als erledigt markieren
   Object.keys(TECHNIK_ERSETZUNGEN).forEach(function (f) { props.setProperty(f, 'true'); });
+  props.setProperty('TECHNIK_LADEGRAFIK', 'true');
   return true;
 }
 
@@ -1425,6 +1450,7 @@ function technikAlle_() {
       PropertiesService.getScriptProperties().setProperty('TECHNIK_ANGELEGT', 'true');
       PropertiesService.getScriptProperties().setProperty('TECHNIK_STROM', 'true');
       Object.keys(TECHNIK_ERSETZUNGEN).forEach(function (f) { PropertiesService.getScriptProperties().setProperty(f, 'true'); });
+      PropertiesService.getScriptProperties().setProperty('TECHNIK_LADEGRAFIK', 'true');
     });
     zeilen = zeilen_('Technik');
   }

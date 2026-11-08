@@ -347,7 +347,18 @@ console.log('Arbeitsdienst-Parser OK');
     delete props.TECHNIK_SICHERUNG;
     const t5 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung').text;
     assert.match(t5, /jeder Tisch\*\* mit eigener Sicherung/);
-    assert.match(ctx.technikLadeText_(), /Jeder Tisch\*\* hat eine eigene Sicherung/);
+    assert.match(ctx.technikLadeText_(), /2 XT60-Anschlüsse/);
+  }
+  // je Tisch 2 × XT60 mit je 15 A + Blockschaltbild „Ladeanschlüsse“
+  {
+    const tl = ok(rufe('technik_liste', {}, klaus.token));
+    const lade = tl.find((x) => x.titel === 'Ladesteckdosen');
+    ok(rufe('technik_speichern', { ...lade, grafik: '', text: 'Die Ladesteckdosen an **zwei Tischen** hängen an der **Pufferbatterie** vorne bei den Tischen. **Jeder Tisch** hat eine eigene Sicherung mit **15 Ampere**.' }, admin.token));
+    delete props.TECHNIK_XT60; delete props.TECHNIK_LADEGRAFIK;
+    const neu = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Ladesteckdosen');
+    assert.equal(neu.grafik, 'ladung');
+    assert.match(neu.text, /2 XT60-Anschlüsse/);
+    assert.match(ctx.technikLadeText_(), /je XT60-Anschluss/);
   }
   // Kühlschrank-Ergänzung
   const st4 = ok(rufe('technik_liste', {}, klaus.token)).find((x) => x.titel === 'Stromversorgung');

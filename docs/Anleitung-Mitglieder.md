@@ -174,7 +174,7 @@ Infos zur Ausstattung am Platz:
 - **Stromversorgung** – Bluetti mit Solar, Blockschaltbild
 - **Walze** – Bedienung
 - **Dixi-Toilette** – Zahlenkombination (nur für angemeldete Mitglieder sichtbar)
-- **Ladesteckdosen** – je Tisch eine Sicherung 15 A, Tabelle mit dem maximalen Ladestrom je Akku (3S bis 8S)
+- **Ladesteckdosen** – je Tisch 2 XT60-Anschlüsse mit je 15 A, Blockschaltbild und Tabelle mit dem maximalen Ladestrom je Akku (3S bis 8S)
 
 <p align="center"><img src="bilder/09-technik.jpg" width="240" alt="Technik am Platz"></p>
 
