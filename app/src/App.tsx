@@ -2,6 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Link, NavLink, Route, Routes } from 'react-router-dom';
 import { Icon } from './components/Icon';
 import { Laden } from './components/ui';
+import { Fehlergrenze } from './components/Fehlergrenze';
 import { config, istDemo } from './config';
 import { klassen } from './lib/helfer';
 import { useOnline, useSitzung } from './lib/sitzung';
@@ -112,6 +113,7 @@ export default function App() {
   return (
     <HashRouter>
       <Rahmen>
+        <Fehlergrenze>
         <Suspense fallback={<Laden />}>
           <Routes>
             <Route path="/" element={<Start />} />
@@ -146,6 +148,7 @@ export default function App() {
             <Route path="*" element={<div className="p-8 text-center">Seite nicht gefunden. <Link className="underline" to="/">Zur Startseite</Link></div>} />
           </Routes>
         </Suspense>
+        </Fehlergrenze>
       </Rahmen>
     </HashRouter>
   );

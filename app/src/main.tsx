@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import App from './App';
+import { einmalNeuLaden, Fehlergrenze } from './components/Fehlergrenze';
 import { hochladen } from './lib/fotos';
 import './index.css';
 
@@ -28,6 +29,9 @@ registerSW({
   },
 });
 
+// Nach einem Update fehlen alte Programmteile: dann einmal neu laden statt weißem Bildschirm
+window.addEventListener('vite:preloadError', (e) => { e.preventDefault(); einmalNeuLaden(); });
+
 // Browser bitten, die Anmeldung nicht automatisch zu löschen (dauerhaft angemeldet bleiben)
 void navigator.storage?.persist?.().catch(() => undefined);
 
@@ -36,6 +40,8 @@ if (navigator.onLine) setTimeout(() => void hochladen(), 3000);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Fehlergrenze>
+      <App />
+    </Fehlergrenze>
   </StrictMode>,
 );
