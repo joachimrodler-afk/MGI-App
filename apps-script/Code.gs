@@ -166,6 +166,7 @@ var AKTIONEN = {
   regeln_frage: { recht: 'mitglied', fn: regelnFrage_ },
   push_abo_loeschen: { recht: 'offen', fn: pushAboLoeschen_ },
   mitteilung_senden: { recht: 'admin', fn: mitteilungSenden_ },
+  changelog: { recht: 'admin', fn: function () { return changelog_(); } },
   // Wettbewerbe
   wertungsarten: { recht: 'lesen', fn: wertungsartenListe_ },
   wertungsart_speichern: { recht: 'admin', fn: wertungsartSpeichern_ },
@@ -1476,6 +1477,46 @@ function technikOrdner_() {
   var ordner = vorhanden.hasNext() ? vorhanden.next() : basis.createFolder('Technik (App)');
   PropertiesService.getScriptProperties().setProperty('TECHNIK_ORDNER_ID', ordner.getId());
   return ordner;
+}
+
+// ---------------------------------------------------------------- Changelog
+// Einfache Textdatei im App-Ordner (neben der Google-Tabelle), Admins pflegen
+// sie direkt in Drive. Fehlt sie, wird sie mit einem Beispiel angelegt.
+var CHANGELOG_NAME = 'MGI-App_Changelog.txt';
+var CHANGELOG_START = [
+  'MGI-App – Änderungen',
+  'Neue Einträge einfach oben einfügen: Datum, dann kurze Stichpunkte.',
+  '',
+  '08.11.2026',
+  '- Changelog für Admins in der Verwaltung',
+  '',
+  '07.11.2026',
+  '- Regel-Assistent (KI) zu Satzung und Flugbetriebsordnung',
+  '- Flugbuch: automatische Abmeldung erst um 23:59',
+  '- Blockschaltbild Ladesteckdosen (2× XT60 je Tisch, je 15 A)',
+  '- Super-Admin-Schutz',
+  '- Termine: die nächsten 3 auf der Startseite',
+  ''
+].join('\n');
+
+function changelogDatei_() {
+  var id = prop_('CHANGELOG_DATEI_ID');
+  if (id) { try { return DriveApp.getFileById(id); } catch (e) { /* gelöscht -> neu suchen */ } }
+  var eltern = DriveApp.getFileById(prop_('SHEET_ID', true)).getParents();
+  var ordner = eltern.hasNext() ? eltern.next() : DriveApp.getRootFolder();
+  var vorhanden = ordner.getFilesByName(CHANGELOG_NAME);
+  var datei = vorhanden.hasNext() ? vorhanden.next() : ordner.createFile(CHANGELOG_NAME, CHANGELOG_START, MimeType.PLAIN_TEXT);
+  PropertiesService.getScriptProperties().setProperty('CHANGELOG_DATEI_ID', datei.getId());
+  return datei;
+}
+
+function changelog_() {
+  var datei = changelogDatei_();
+  return {
+    text: String(datei.getBlob().getDataAsString('UTF-8') || '').slice(0, 50000),
+    url: datei.getUrl(),
+    geaendert: datei.getLastUpdated().toISOString()
+  };
 }
 
 function technikSpeichern_(d, s) {

@@ -15,6 +15,7 @@ function Inhalt() {
       <Zeile zu="/verwaltung/wertungsarten" icon="stift" titel="Wertungsarten & Formeln" text="Kunstflug, Segelflug, Limbo, Ballonstechen …" />
       <Zeile zu="/verwaltung/einstellungen" icon="zahnrad" titel="Einstellungen" text="Platzordnung, Notfall, Windgrenzen, Auto-Abmeldung" />
       <Zeile zu="/verwaltung/mitteilung" icon="glocke" titel="Mitteilung senden" text="Push an alle, z. B. Platzsperrung" />
+      <Zeile zu="/verwaltung/changelog" icon="stift" titel="Changelog" text="Was sich an der App geändert hat" />
     </div>
   );
 }

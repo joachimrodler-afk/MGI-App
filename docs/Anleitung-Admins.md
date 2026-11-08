@@ -119,6 +119,11 @@ Was Piloten unter „Besondere Vorkommnisse“ eintragen, steht im Blatt „Flug
 - Neue Versionen gehen automatisch live, sobald sie auf GitHub sind. Die App sucht beim Öffnen und jedes Mal beim Zurückkehren in die App nach einer neuen Version und lädt sich dann selbst neu.
 - Welche Version läuft, steht unten auf der Seite **Mehr** (z. B. „Version 1.1.0“). Hängt ein Gerät noch auf einer alten Version: App ganz schließen (iPhone: von unten wischen und die App nach oben wegschieben) und neu öffnen.
 
+## Changelog
+- **Verwaltung → Changelog** zeigt, was sich an der App geändert hat (nur für Admins sichtbar).
+- Grundlage ist die Textdatei **MGI-App_Changelog.txt** in Drive (MGI → MGI-App). Sie wird beim ersten Öffnen automatisch angelegt.
+- Bearbeiten: über „In Google Drive bearbeiten“ oder direkt am PC unter `G:\Meine Ablage\MGI\MGI-App` mit einem Texteditor. Neue Einträge oben einfügen – eine Zeile mit Datum (z. B. `08.11.2026`), darunter Stichpunkte mit `- `.
+
 ## Wo liegen die Daten?
 
 Alles, was die App im Google Drive braucht, liegt in **MGI → MGI-App** (Konto joachim.rodler@googlemail.com):
@@ -130,6 +135,7 @@ Alles, was die App im Google Drive braucht, liegt in **MGI → MGI-App** (Konto 
 | **MGI-App Backend** (Apps Script) | Backend-Code, tägliche/stündliche Abläufe und die **Script Properties** (Schlüssel, Links, IDs, Super-Admin) |
 | **Fotos Homepage** | Fotos aus der App, zugleich Quelle der Homepage-Galerie |
 | **Schwarzes Brett** | Fotos zu Brett-Beiträgen |
+| **MGI-App_Changelog.txt** | Changelog für Admins (Verwaltung → Changelog) |
 | **Technik (App)** | Fotos im Bereich Technik (entsteht beim ersten Foto) |
 | Verknüpfungen **Satzung** und **Flugbetriebsordnung** | Grundlage des Regel-Assistenten; die Originale liegen in MGI → Dokumente → Mitglieder |
 

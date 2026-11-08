@@ -33,6 +33,7 @@ const Wertungsarten = lazy(() => import('./seiten/verwaltung/Wertungsarten'));
 const WertungsartEditor = lazy(() => import('./seiten/verwaltung/WertungsartEditor'));
 const EinstellungenSeite = lazy(() => import('./seiten/verwaltung/Einstellungen'));
 const Mitteilung = lazy(() => import('./seiten/verwaltung/Mitteilung'));
+const Changelog = lazy(() => import('./seiten/verwaltung/Changelog'));
 
 function Kopf() {
   const s = useSitzung();
@@ -141,6 +142,7 @@ export default function App() {
             <Route path="/verwaltung/wertungsarten/:id" element={<WertungsartEditor />} />
             <Route path="/verwaltung/einstellungen" element={<EinstellungenSeite />} />
             <Route path="/verwaltung/mitteilung" element={<Mitteilung />} />
+            <Route path="/verwaltung/changelog" element={<Changelog />} />
             <Route path="*" element={<div className="p-8 text-center">Seite nicht gefunden. <Link className="underline" to="/">Zur Startseite</Link></div>} />
           </Routes>
         </Suspense>

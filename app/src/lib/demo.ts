@@ -516,6 +516,10 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
       db.wertungen = db.wertungen.filter((x) => x.id !== d.id);
       return fertig(true);
   }
+  if (aktion === 'changelog') {
+    admin();
+    return { text: 'MGI-App – Änderungen\n\n08.11.2026\n- Changelog für Admins in der Verwaltung\n\n07.11.2026\n- Regel-Assistent (KI)\n- Flugbuch: Abmeldung erst um 23:59\n', url: 'https://drive.google.com/', geaendert: new Date().toISOString() } as unknown as T;
+  }
   throw new ApiFehler('Unbekannte Aktion: ' + aktion, 400);
 }
 

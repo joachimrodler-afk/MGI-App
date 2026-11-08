@@ -516,3 +516,24 @@ console.log('Rabenschreck OK');
   assert.equal(dateien[0].desc, 'Erstflug Ü-Segler! – Flugtag – Foto: Klaus Butz');
   console.log('Foto-Upload OK');
 }
+
+// Changelog: Textdatei im App-Ordner, nur für Admins, wird bei Bedarf angelegt
+{
+  const dateien = [];
+  ctx.MimeType = { PLAIN_TEXT: 'text/plain' };
+  const neu = (name, inhalt) => ({ getId: () => 'cl1', getUrl: () => 'https://drive.google.com/file/d/cl1', getLastUpdated: () => new Date('2026-11-08T09:00:00Z'), getBlob: () => ({ getDataAsString: () => inhalt }), name });
+  ctx.DriveApp.getFileById = (id) => {
+    if (id === 'x') return { getParents: () => { let g = false; return { hasNext: () => !g, next: () => { g = true; return { getFilesByName: (nm) => { const t = dateien.filter((f) => f.name === nm); let i = 0; return { hasNext: () => i < t.length, next: () => t[i++] }; }, createFile: (nm, inhalt) => { const f = neu(nm, inhalt); dateien.push(f); return f; } }; } }; } };
+    const f = dateien.find((d) => d.getId() === id); if (!f) throw new Error('weg'); return f;
+  };
+  assert.equal(rufe('changelog', {}, klaus.token).status, 403, 'nur Admins');
+  const c = ok(rufe('changelog', {}, admin.token));
+  assert.equal(dateien.length, 1);
+  assert.equal(dateien[0].name, 'MGI-App_Changelog.txt');
+  assert.match(c.text, /MGI-App – Änderungen/);
+  assert.equal(c.url, 'https://drive.google.com/file/d/cl1');
+  assert.equal(props.CHANGELOG_DATEI_ID, 'cl1');
+  ok(rufe('changelog', {}, admin.token));
+  assert.equal(dateien.length, 1, 'nicht doppelt angelegt');
+  console.log('Changelog OK');
+}
