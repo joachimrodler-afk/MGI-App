@@ -521,7 +521,7 @@ console.log('Rabenschreck OK');
 {
   const dateien = [];
   ctx.MimeType = { PLAIN_TEXT: 'text/plain' };
-  const neu = (name, inhalt) => ({ getId: () => 'cl1', getUrl: () => 'https://drive.google.com/file/d/cl1', getLastUpdated: () => new Date('2026-11-08T09:00:00Z'), getBlob: () => ({ getDataAsString: () => inhalt }), name });
+  const neu = (name, inhalt) => { const f = { getId: () => 'cl1', getUrl: () => 'https://drive.google.com/file/d/cl1', getLastUpdated: () => new Date('2026-11-08T09:00:00Z'), getBlob: () => ({ getDataAsString: () => f.inhalt }), setContent: (x) => { f.inhalt = x; }, name, inhalt }; return f; };
   ctx.DriveApp.getFileById = (id) => {
     if (id === 'x') return { getParents: () => { let g = false; return { hasNext: () => !g, next: () => { g = true; return { getFilesByName: (nm) => { const t = dateien.filter((f) => f.name === nm); let i = 0; return { hasNext: () => i < t.length, next: () => t[i++] }; }, createFile: (nm, inhalt) => { const f = neu(nm, inhalt); dateien.push(f); return f; } }; } }; } };
     const f = dateien.find((d) => d.getId() === id); if (!f) throw new Error('weg'); return f;
@@ -535,5 +535,16 @@ console.log('Rabenschreck OK');
   assert.equal(props.CHANGELOG_DATEI_ID, 'cl1');
   ok(rufe('changelog', {}, admin.token));
   assert.equal(dateien.length, 1, 'nicht doppelt angelegt');
+  // Eintragen: neues Datum oben, zweiter Eintrag am selben Tag darunter
+  const heute = ctx.Utilities.formatDate(new Date(), 'Europe/Berlin', 'dd.MM.yyyy');
+  assert.equal(rufe('changelog_eintragen', { text: 'x' }, klaus.token).status, 403, 'nur Admins');
+  assert.equal(rufe('changelog_eintragen', { text: '  ' }, admin.token).status, 400);
+  dateien[0].inhalt = 'Kopf\n\n01.01.2026\n- alt\n';
+  ok(rufe('changelog_eintragen', { text: 'Erster Punkt' }, admin.token));
+  const c2 = ok(rufe('changelog_eintragen', { text: '- Zweiter\nDritter' }, admin.token));
+  assert.equal(c2.text, `Kopf\n\n${heute}\n- Erster Punkt\n- Zweiter\n- Dritter\n\n01.01.2026\n- alt\n`);
+  dateien[0].inhalt = 'Nur Kopf';
+  ok(rufe('changelog_eintragen', { text: 'Neu' }, admin.token));
+  assert.equal(dateien[0].inhalt, `Nur Kopf\n\n${heute}\n- Neu\n`);
   console.log('Changelog OK');
 }

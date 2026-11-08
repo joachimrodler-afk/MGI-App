@@ -122,7 +122,8 @@ Was Piloten unter „Besondere Vorkommnisse“ eintragen, steht im Blatt „Flug
 ## Changelog
 - **Verwaltung → Changelog** zeigt, was sich an der App geändert hat (nur für Admins sichtbar).
 - Grundlage ist die Textdatei **MGI-App_Changelog.txt** in Drive (MGI → MGI-App). Sie wird beim ersten Öffnen automatisch angelegt.
-- Bearbeiten: über „In Google Drive bearbeiten“ oder direkt am PC unter `G:\Meine Ablage\MGI\MGI-App` mit einem Texteditor. Neue Einträge oben einfügen – eine Zeile mit Datum (z. B. `08.11.2026`), darunter Stichpunkte mit `- `.
+- **Neuer Eintrag in der App:** Text ins Feld „Neuer Eintrag“ schreiben → „Mit heutigem Datum eintragen“. Jede Zeile wird ein Stichpunkt; mehrere Einträge am selben Tag landen unter demselben Datum.
+- **Ältere Einträge korrigieren:** am PC die Datei unter `G:\Meine Ablage\MGI\MGI-App` mit einem Texteditor öffnen. Aufbau: eine Zeile mit Datum (z. B. `08.11.2026`), darunter Stichpunkte mit `- `, neueste oben.
 
 ## Wo liegen die Daten?
 

@@ -167,6 +167,7 @@ var AKTIONEN = {
   push_abo_loeschen: { recht: 'offen', fn: pushAboLoeschen_ },
   mitteilung_senden: { recht: 'admin', fn: mitteilungSenden_ },
   changelog: { recht: 'admin', fn: function () { return changelog_(); } },
+  changelog_eintragen: { recht: 'admin', fn: changelogEintragen_ },
   // Wettbewerbe
   wertungsarten: { recht: 'lesen', fn: wertungsartenListe_ },
   wertungsart_speichern: { recht: 'admin', fn: wertungsartSpeichern_ },
@@ -1517,6 +1518,34 @@ function changelog_() {
     url: datei.getUrl(),
     geaendert: datei.getLastUpdated().toISOString()
   };
+}
+
+/** Neuer Stichpunkt unter dem heutigen Datum (Datumszeile wird bei Bedarf oben angelegt). */
+function changelogEintragen_(d) {
+  var punkte = String(d.text || '').split(/\r?\n/)
+    .map(function (z) { return z.replace(/^\s*[-*•]\s*/, '').trim(); })
+    .filter(function (z) { return z; });
+  if (!punkte.length) throw fehler_('Bitte einen Text eingeben', 400);
+  if (punkte.join(' ').length > 500) throw fehler_('Bitte kürzer fassen (max. 500 Zeichen)', 400);
+  return mitSperre_(function () {
+    var datei = changelogDatei_();
+    var zeilen = String(datei.getBlob().getDataAsString('UTF-8') || '').replace(/\r/g, '').split('\n');
+    var heute = Utilities.formatDate(new Date(), TZ, 'dd.MM.yyyy');
+    var neu = punkte.map(function (p) { return '- ' + p; });
+    var erste = -1;
+    for (var i = 0; i < zeilen.length; i++) { if (/^\s*(\d{1,2}\.\d{1,2}\.\d{2,4}|\d{4}-\d{2}-\d{2})\s*$/.test(zeilen[i])) { erste = i; break; } }
+    if (erste >= 0 && zeilen[erste].trim() === heute) {
+      var ende = erste + 1;
+      while (ende < zeilen.length && /^\s*[-*•]\s+/.test(zeilen[ende])) ende++;
+      zeilen.splice.apply(zeilen, [ende, 0].concat(neu));
+    } else {
+      var pos = erste >= 0 ? erste : zeilen.length;
+      if (erste < 0 && pos > 0 && zeilen[pos - 1].trim()) { zeilen.push(''); pos++; }
+      zeilen.splice.apply(zeilen, [pos, 0].concat([heute], neu, ['']));
+    }
+    datei.setContent(zeilen.join('\n'));
+    return changelog_();
+  });
 }
 
 function technikSpeichern_(d, s) {
