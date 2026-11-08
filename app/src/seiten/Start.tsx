@@ -67,8 +67,21 @@ export default function Start() {
   const [wetter, setWetter] = useState<WetterJetzt | null>(() => erinnere<WetterJetzt>('wetter'));
 
   useEffect(() => {
-    api<StartDaten>('start').then((x) => { setD(x); merke('start', x); }).catch(() => undefined);
-    ladeWetter().then((w) => { setWetter(w); merke('wetter', w); }).catch(() => undefined);
+    let wetterZeit = 0;
+    const laden = () => {
+      api<StartDaten>('start').then((x) => { setD(x); merke('start', x); }).catch(() => undefined);
+      if (Date.now() - wetterZeit > 10 * 60000) { // Vorhersage höchstens alle 10 Minuten
+        wetterZeit = Date.now();
+        ladeWetter().then((w) => { setWetter(w); merke('wetter', w); }).catch(() => undefined);
+      }
+    };
+    laden();
+    // Die App bleibt auf dem Handy oft offen: beim Zurückkehren und jede Minute neu laden,
+    // damit „am Platz“, Flugleiter und Wetter aktuell sind.
+    const sichtbar = () => { if (document.visibilityState === 'visible') laden(); };
+    document.addEventListener('visibilitychange', sichtbar);
+    const takt = window.setInterval(() => { if (document.visibilityState === 'visible') laden(); }, 60000);
+    return () => { document.removeEventListener('visibilitychange', sichtbar); window.clearInterval(takt); };
   }, [s?.token]);
 
   const termine = (d?.termine ?? []).slice(0, 3);
