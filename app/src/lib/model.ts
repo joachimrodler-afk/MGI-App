@@ -20,6 +20,10 @@ export interface Mitglied {
   aktiv: boolean;
   /** Super-Admin: nur von sich selbst änderbar */
   superAdmin?: boolean;
+  /** nur in der Mitgliederliste für Admins */
+  angemeldet?: boolean;
+  /** ISO-Zeit der letzten Anmeldung ('' = unbekannt / seit neuem PIN noch nicht) */
+  letzteAnmeldung?: string;
 }
 
 export interface Termin {

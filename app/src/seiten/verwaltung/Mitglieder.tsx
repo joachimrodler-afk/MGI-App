@@ -162,6 +162,8 @@ function Inhalt() {
               <span className="flex-1">
                 <span className="block font-semibold">{m.vorname} {m.nachname}{m.id === s.mitgliedId && ' (du)'}</span>
                 <span className="block text-sm text-slate-500">{m.superAdmin ? 'Super-Admin' : m.rolle === 'admin' ? 'Admin' : 'Mitglied'}{m.sparte ? ` · ${m.sparte === 'flug' ? 'Flug' : 'Schiff'}` : ''}{!m.aktiv && ' · deaktiviert'}</span>
+                {m.aktiv && m.angemeldet === false && <span className="mt-0.5 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:bg-amber-900/50 dark:text-amber-100">Noch nicht angemeldet</span>}
+                {m.aktiv && m.angemeldet && <span className="block text-xs text-slate-500">{m.letzteAnmeldung ? `Zuletzt angemeldet: ${new Date(m.letzteAnmeldung).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}` : 'Angemeldet'}</span>}
               </span>
               <Icon name="rechts" className="h-5 w-5 text-slate-400 transition group-open:rotate-90" />
             </summary>

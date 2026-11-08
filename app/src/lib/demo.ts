@@ -245,7 +245,7 @@ export async function demoAufruf<T>(aktion: string, d: Record<string, unknown>, 
     }
     case 'mitglieder_liste':
       admin();
-      return fertig(db.mitglieder.map(({ pin: _p, ...m }) => m));
+      return fertig(db.mitglieder.map(({ pin: _p, ...m }) => ({ ...m, angemeldet: db.sitzungen.some((x) => x.mitgliedId === m.id), letzteAnmeldung: '' })));
     case 'mitglied_anlegen': {
       admin();
       const pin = String(Math.floor(100000 + Math.random() * 900000));

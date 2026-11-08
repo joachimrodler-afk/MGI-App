@@ -51,7 +51,7 @@ var HASH_RUNDEN = 300;
 var ARBEITSLISTE_STANDARD_ID = '1JmdUEeU4ioUFeHaxiUrYIoH8fhXx-LL8zA88nC-rPaA';
 
 var BLAETTER = {
-  Mitglieder: ['id', 'vorname', 'nachname', 'rolle', 'sparte', 'salt', 'hash', 'aktiv', 'erstellt'],
+  Mitglieder: ['id', 'vorname', 'nachname', 'rolle', 'sparte', 'salt', 'hash', 'aktiv', 'erstellt', 'letzteAnmeldung'],
   Sitzungen: ['token', 'mitgliedId', 'ablauf'],
   Einstellungen: ['schluessel', 'wert'],
   Wertungsarten: ['id', 'json'],
@@ -266,9 +266,16 @@ function login_(d) {
     throw fehler_('Name oder PIN falsch', 401);
   }
   cache.remove(key);
+  // erste Anmeldung (nach Einladung oder neuem PIN): noch kein Zeitstempel und keine Sitzung
+  var erstes = !zelle_(m.letzteAnmeldung) && !zeilen_('Sitzungen').some(function (r) { return r.mitgliedId === m.id; });
   var token = Utilities.getUuid() + Utilities.getUuid().replace(/-/g, '');
   var ablauf = SITZUNG_UNBEGRENZT;
   zeileAnhaengen_('Sitzungen', [token, m.id, ablauf]);
+  try {
+    var jetzt = new Date().toISOString();
+    aktualisiereZeile_('Mitglieder', 'id', m.id, function (r) { r.letzteAnmeldung = txt_(jetzt); return r; });
+    if (erstes) pushAnAdmins_('Angemeldet', m.vorname + ' ' + m.nachname + ' hat sich in der MGI-App angemeldet.', '#/verwaltung/mitglieder', m.id);
+  } catch (e) { console.error(e); }
   return sitzungObjekt_(token, m, ablauf);
 }
 
@@ -344,9 +351,15 @@ function mitgliedNachId_(id) {
   return zeilen_('Mitglieder').filter(function (m) { return m.id === id; })[0];
 }
 
-function mitgliedOeffentlich_(m) {
+function mitgliedOeffentlich_(m, mitSitzung) {
   var su = superAdmin_();
-  return { id: m.id, vorname: m.vorname, nachname: m.nachname, rolle: m.rolle, sparte: m.sparte || '', aktiv: String(m.aktiv) === 'true', superAdmin: !!su && m.id === su };
+  var o = { id: m.id, vorname: m.vorname, nachname: m.nachname, rolle: m.rolle, sparte: m.sparte || '', aktiv: String(m.aktiv) === 'true', superAdmin: !!su && m.id === su };
+  if (mitSitzung) {
+    o.letzteAnmeldung = zelle_(m.letzteAnmeldung);
+    // ältere Anmeldungen (vor dem Zeitstempel) erkennt man an einer bestehenden Sitzung
+    o.angemeldet = !!o.letzteAnmeldung || !!mitSitzung[m.id];
+  }
+  return o;
 }
 
 /** Super-Admin: Mitglieds-ID in der Script Property SUPER_ADMIN (nur im Apps-Script-Projekt änderbar) */
@@ -361,7 +374,9 @@ function superSchutz_(zielId, s) {
 }
 
 function mitgliederListe_() {
-  return zeilen_('Mitglieder').map(mitgliedOeffentlich_).sort(function (a, b) {
+  var sitzung = {};
+  zeilen_('Sitzungen').forEach(function (r) { sitzung[r.mitgliedId] = true; });
+  return zeilen_('Mitglieder').map(function (m) { return mitgliedOeffentlich_(m, sitzung); }).sort(function (a, b) {
     return (a.nachname + a.vorname).localeCompare(b.nachname + b.vorname, 'de');
   });
 }
@@ -442,6 +457,8 @@ function pinZuruecksetzen_(d, s) {
   var pin = neuerPin_();
   setzePin_(d.id, pin);
   sitzungenEntfernen_(d.id);
+  // wieder „noch nicht angemeldet“, damit man sieht, ob der neue PIN genutzt wurde
+  aktualisiereZeile_('Mitglieder', 'id', d.id, function (r) { r.letzteAnmeldung = ''; return r; });
   return { pin: pin };
 }
 
@@ -2133,8 +2150,8 @@ function mitteilungSenden_(d) {
  * ausser: Mitglied-ID, die nichts bekommt (z. B. Verfasser); nur: nur an dieses Mitglied.
  */
 /** Push nur an Admins (z. B. neue Zugangsanfrage) */
-function pushAnAdmins_(titel, text, pfad) {
-  var admins = zeilen_('Mitglieder').filter(function (m) { return m.rolle === 'admin' && String(m.aktiv) === 'true'; }).map(function (m) { return m.id; });
+function pushAnAdmins_(titel, text, pfad, ausser) {
+  var admins = zeilen_('Mitglieder').filter(function (m) { return m.rolle === 'admin' && String(m.aktiv) === 'true' && m.id !== ausser; }).map(function (m) { return m.id; });
   return pushSenden_('anfragen', titel, text, pfad, null, admins);
 }
 

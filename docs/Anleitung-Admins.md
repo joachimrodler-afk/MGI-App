@@ -6,6 +6,7 @@ Admins sind der Vorstand und die Wertungsrichter. Der Admin-Bereich steht unter 
 - **Zugangsanfragen** erscheinen oben unter *Mitglieder & PINs* (Admins bekommen eine Push-Nachricht). **Freigeben** legt das Mitglied an und zeigt den PIN – per WhatsApp/E-Mail-Button mit App-Link verschicken. **Ablehnen** verwirft die Anfrage.
 - **Mitglied anlegen:** Vor- und Nachname eingeben, Rolle und Sparte wählen. Die App erzeugt einen zufälligen 6-stelligen PIN und zeigt ihn **nur einmal** an. Gib ihn direkt per WhatsApp oder E-Mail weiter, die Buttons dafür sind dabei.
 - **Neuer PIN:** Der alte PIN wird sofort ungültig und das Mitglied auf allen Geräten abgemeldet.
+- **Hat sich das Mitglied angemeldet?** In der Liste steht bei jedem Mitglied **„Noch nicht angemeldet“** (gelb) oder **„Zuletzt angemeldet: …“**. Bei der ersten Anmeldung nach Einladung bekommen die Admins eine Push-Nachricht. Nach einem neuen PIN steht wieder „Noch nicht angemeldet“, bis der neue PIN benutzt wurde.
 - **Deaktivieren**, z. B. bei einem Austritt: Das Mitglied kann sich sofort nicht mehr anmelden. Seine Daten bleiben erhalten.
 - PINs werden nur verschlüsselt gespeichert (gesalzener Hash). Auch Admins können sie nicht nachschauen, nur neu vergeben.
 - Nach 5 falschen PIN-Eingaben ist der Zugang für 10 Minuten gesperrt.
@@ -79,7 +80,7 @@ Unter **Verwaltung → Einstellungen** pflegst du:
 ## Push-Nachrichten
 - Jedes Mitglied schaltet Push unter **Konto → Push-Nachrichten** selbst ein. Neben der Überschrift steht deutlich **an** oder **aus**; die Schalter für die Anlässe erscheinen erst, wenn Push an ist.
 - **Test-Nachricht senden** schickt sofort eine Nachricht an die eigenen Geräte – gut zum Prüfen, gerade auf dem iPhone.
-- Als Admin bekommst du bei jeder **Zugangsanfrage** eine Push-Nachricht (Schalter „Zugangsanfragen“, nur für Admins sichtbar).
+- Als Admin bekommst du bei jeder **Zugangsanfrage** und bei der **ersten Anmeldung** eines eingeladenen Mitglieds (auch nach neuem PIN) eine Push-Nachricht (Schalter „Zugangsanfragen“, nur für Admins sichtbar).
 - iPhone: Push nur in der App vom Home-Bildschirm (iOS 16.4+). Kurzanleitung für Mitglieder: [MGI-App_iPhone.pdf](MGI-App_iPhone.pdf).
 
 ## Regel-Assistent (KI)

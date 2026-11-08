@@ -548,3 +548,33 @@ console.log('Rabenschreck OK');
   assert.equal(dateien[0].inhalt, `Nur Kopf\n\n${heute}\n- Neu\n`);
   console.log('Changelog OK');
 }
+
+// Anmeldung sichtbar: Zeitstempel, Push an Admins bei erster Anmeldung, neuer PIN setzt zurück
+{
+  const pushes = [];
+  const orig = ctx.pushAnAdmins_;
+  ctx.pushAnAdmins_ = (titel, text, pfad, ausser) => { pushes.push({ text, ausser }); return 1; };
+  const neu = ok(rufe('mitglied_anlegen', { vorname: 'Eva', nachname: 'Neu', rolle: 'mitglied' }, admin.token));
+  let eva = ok(rufe('mitglieder_liste', {}, admin.token)).find((m) => m.vorname === 'Eva');
+  assert.equal(eva.angemeldet, false);
+  assert.equal(eva.letzteAnmeldung, '');
+  const s1 = ok(rufe('login', { name: 'Eva Neu', pin: neu.pin }));
+  assert.equal(pushes.length, 1);
+  assert.match(pushes[0].text, /Eva Neu hat sich/);
+  assert.equal(pushes[0].ausser, s1.mitgliedId);
+  eva = ok(rufe('mitglieder_liste', {}, admin.token)).find((m) => m.vorname === 'Eva');
+  assert.equal(eva.angemeldet, true);
+  assert.ok(eva.letzteAnmeldung.startsWith('20'));
+  ok(rufe('login', { name: 'Eva Neu', pin: neu.pin }));
+  assert.equal(pushes.length, 1, 'kein Push bei weiteren Anmeldungen');
+  // ältere Mitglieder mit Sitzung, aber ohne Zeitstempel gelten als angemeldet
+  const ada = ok(rufe('mitglieder_liste', {}, admin.token)).find((m) => m.vorname === 'Ada');
+  assert.equal(ada.angemeldet, true);
+  const p2 = ok(rufe('pin_zuruecksetzen', { id: eva.id }, admin.token));
+  eva = ok(rufe('mitglieder_liste', {}, admin.token)).find((m) => m.vorname === 'Eva');
+  assert.equal(eva.angemeldet, false, 'neuer PIN: wieder offen');
+  ok(rufe('login', { name: 'Eva Neu', pin: p2.pin }));
+  assert.equal(pushes.length, 2, 'Push nach neuem PIN');
+  ctx.pushAnAdmins_ = orig;
+  console.log('Anmeldung sichtbar OK');
+}
