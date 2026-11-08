@@ -84,8 +84,8 @@ function Rahmen({ x, y, w, h, titel, rechts }: { x: number; y: number; w: number
 export function BlockschaltbildStrom() {
   return (
     <figure className="my-2">
-      <svg viewBox="0 0 360 590" className="h-auto w-full" role="img" aria-labelledby="bss-titel">
-        <title id="bss-titel">Blockschaltbild der Stromversorgung: zwei Solarmodule über DC-Trennschalter an das Bluetti; 12 V für Wetterstation, WLAN-Router und DC-DC-Wandler zur Pufferbatterie an den Tischen mit Ladesteckdosen (je Tisch eine Sicherung 15 A); 230 V für Mähroboter, RTK-Antenne und Kühlschrank</title>
+      <svg viewBox="0 0 360 614" className="h-auto w-full" role="img" aria-labelledby="bss-titel">
+        <title id="bss-titel">Blockschaltbild der Stromversorgung: zwei Solarmodule über DC-Trennschalter an das Bluetti; 12 V für Wetterstation, WLAN-Router und DC-DC-Wandler zur Pufferbatterie an den Tischen; je Tisch 2 XT60-Ladeanschlüsse, jeder einzeln mit 15 A abgesichert; 230 V für Mähroboter, RTK-Antenne und Kühlschrank</title>
         <defs>
           <marker id="mgi-pfeil-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="fill-slate-500 dark:fill-slate-400" />
@@ -132,17 +132,27 @@ export function BlockschaltbildStrom() {
 
         {/* Tische */}
         <path d="M107,418 V458" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} markerEnd="url(#mgi-pfeil-s)" />
-        <Rahmen x={4} y={436} w={352} h={148} titel="Vorne bei den Tischen" rechts />
+        <Rahmen x={4} y={436} w={352} h={174} titel="Vorne bei den Tischen" rechts />
         <Box x={42} y={458} w={276} h={42} titel="Pufferbatterie" unter="LiFePO₄ · 12,8 V · 100 Ah (≈ 1.280 Wh)" />
-        {/* je Tisch eine eigene Sicherung 15 A */}
-        <path d="M180,500 V508 H95 V514 M180,508 H265 V514" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
-        <rect x={51} y={514} width={88} height={22} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
-        <text x={95} y={529} textAnchor="middle" fontSize={11} fontWeight={700} className="fill-mgi-rot">Sicherung 15 A</text>
-        <rect x={221} y={514} width={88} height={22} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
-        <text x={265} y={529} textAnchor="middle" fontSize={11} fontWeight={700} className="fill-mgi-rot">Sicherung 15 A</text>
-        <path d="M95,536 V548 M265,536 V548" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
-        <Box x={20} y={550} w={150} h={30} titel="Ladesteckdosen Tisch 1" />
-        <Box x={190} y={550} w={150} h={30} titel="Ladesteckdosen Tisch 2" />
+        {/* je Tisch 2 XT60-Ladeanschlüsse, jeder einzeln mit 15 A abgesichert */}
+        <path d="M180,500 V508 M55,508 H305" fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
+        {[
+          { x: 18, mitte: 95, titel: 'Tisch 1' },
+          { x: 188, mitte: 265, titel: 'Tisch 2' },
+        ].map((t) => (
+          <g key={t.titel}>
+            <rect x={t.x} y={512} width={154} height={92} rx={10} fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth={1} strokeDasharray="4 3" />
+            <text x={t.mitte} y={598} textAnchor="middle" fontSize={11.5} fontWeight={700} className="fill-slate-600 dark:fill-slate-300">{t.titel}</text>
+          </g>
+        ))}
+        {[55, 135, 225, 305].map((c) => (
+          <g key={c}>
+            <path d={`M${c},508 V518 M${c},538 V548`} fill="none" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth={2.2} />
+            <rect x={c - 32} y={518} width={64} height={20} rx={5} className="fill-white stroke-mgi-rot dark:fill-slate-900" strokeWidth={1.6} />
+            <text x={c} y={532} textAnchor="middle" fontSize={10.5} fontWeight={700} className="fill-mgi-rot">15 A</text>
+            <Box x={c - 32} y={548} w={64} h={30} titel="XT60" />
+          </g>
+        ))}
       </svg>
       <figcaption className="mt-1 text-center text-xs text-slate-500">Stromversorgung am Platz</figcaption>
     </figure>
