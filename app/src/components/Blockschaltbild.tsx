@@ -32,7 +32,7 @@ export function BlockschaltbildWetterstation() {
   return (
     <figure className="my-2">
       <svg viewBox="0 0 360 400" className="h-auto w-full" role="img" aria-labelledby="bsb-titel">
-        <title id="bsb-titel">Blockschaltbild der Wetterstation: Sensoren an ESP32, Ausgang Rabenschreck, WLAN zu Wettermonster und App</title>
+        <title id="bsb-titel">Blockschaltbild der Wetterstation: Anemometer (Windgeschwindigkeit, 4–20 mA über 120 Ω an GPIO 34), Windfahne (Windrichtung), BME280 und Akkuspannung an ESP32, Ausgang Rabenschreck, WLAN zu Wettermonster und App</title>
         <defs>
           <marker id="mgi-pfeil" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" className="fill-slate-500 dark:fill-slate-400" />
@@ -40,8 +40,8 @@ export function BlockschaltbildWetterstation() {
         </defs>
 
         {/* Sensoren links */}
-        <Box x={4} y={10} w={156} h={46} titel="Anemometer" unter="4–20 mA über 120 Ω" />
-        <Box x={4} y={66} w={156} h={46} titel="Windfahne" unter="Windrichtung, analog" />
+        <Box x={4} y={10} w={156} h={46} titel="Anemometer" unter="Windgeschw. · 4–20 mA" />
+        <Box x={4} y={66} w={156} h={46} titel="Windfahne" unter="Windrichtung · analog" />
         <Box x={4} y={122} w={156} h={46} titel="BME280" unter="Temp. · Feuchte · Druck" />
         <Box x={4} y={178} w={156} h={46} titel="Akku 12 V" unter="Spannungsteiler 1 : 5,4" />
         <Pfeil d="M160,33 H224" label="GPIO 34" lx={192} ly={28} anker="middle" />
