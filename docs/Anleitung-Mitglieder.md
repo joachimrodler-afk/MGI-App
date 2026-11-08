@@ -170,11 +170,11 @@ Der rote **Notfall**-Knopf oben ist auf jeder Seite erreichbar und funktioniert 
 
 Infos zur Ausstattung am Platz:
 
-- **Wetterstation** – mit Blockschaltbild
-- **Stromversorgung** – Bluetti mit Solar, Blockschaltbild
+- **Wetterstation** – mit Blockschaltbild (Windgeschwindigkeit, Windrichtung, Temperatur, Luftfeuchte, Luftdruck)
+- **Stromversorgung** – Bluetti mit Solar, Pufferbatterie an den Tischen, Blockschaltbild
 - **Walze** – Bedienung
 - **Dixi-Toilette** – Zahlenkombination (nur für angemeldete Mitglieder sichtbar)
-- **Ladesteckdosen** – je Tisch 2 XT60-Anschlüsse mit je 15 A, Blockschaltbild und Tabelle mit dem maximalen Ladestrom je Akku (3S bis 8S)
+- **Ladesteckdosen** – an jedem Tisch **2 XT60-Anschlüsse, jeder einzeln mit 15 A abgesichert** (rund 190 W je Anschluss), eigenes Blockschaltbild und Tabelle mit dem maximalen Ladestrom je Akku (3S bis 8S). Löst eine Sicherung aus: Ladegerät abstecken, Sicherung (Rückseite) wieder eindrücken, Gerät wieder anstecken.
 
 <p align="center"><img src="bilder/09-technik.jpg" width="240" alt="Technik am Platz"></p>
 

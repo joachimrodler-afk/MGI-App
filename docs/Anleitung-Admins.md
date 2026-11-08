@@ -95,10 +95,11 @@ Unter **Verwaltung → Mitteilung senden** geht eine Push-Nachricht an alle, die
 
 ## Arbeitsdienst-Liste
 
-- Die Liste ist die Google-Tabelle „Arbeitsliste 2027“ im Vereins-Drive. Das erste Blatt wird gelesen: Kalenderwoche | Zeitraum (z. B. `30.03.–05.04.2026`) | Einsatz | Person 1 | Person 2. Zeilen ohne Kalenderwoche gehören zur Woche darüber.
+- Die Liste ist die Google-Tabelle „Arbeitsliste 2027“ in MGI → MGI-App. Das erste Blatt wird gelesen: Kalenderwoche | Zeitraum (z. B. `30.03.–05.04.2026`) | Einsatz | Person 1 | Person 2. Zeilen ohne Kalenderwoche gehören zur Woche darüber.
 - Die Namen werden den Mitgliedern in der App zugeordnet (voller Name, „J. Rodler“ oder eindeutiger Nachname). Nicht zuordenbare Namen stehen im Ausführungsprotokoll des Scripts (`taeglich`).
 - Mitglieder tragen sich in der App ein (Seite Arbeitsdienst); die Tabelle muss dafür **nicht** für sie freigegeben werden. Austragen können nur Admins: in der App über das ✕ am Namen oder direkt in der Tabelle.
 - Neue Einsätze: einfach eine Zeile unter der Woche einfügen (Spalte A und B leer, Einsatz in Spalte C).
+- **Mitglied verlässt die App:** Der Eintrag bleibt als Name in der Tabelle. Deaktivierte Mitglieder bekommen keine Erinnerung mehr, der Platz bleibt belegt (austragen nur durch Admins). Wird jemand gelöscht und später mit gleichem Namen neu angelegt, ordnet die App den Dienst automatisch wieder zu (voller Name, „J. Rodler“ oder eindeutiger Nachname).
 - Neues Jahr: neue Tabelle anlegen, in den Script Properties `ARBEITSLISTE_ID` auf die neue ID setzen und `arbeitsdienstUrl` in `app/src/config.ts` anpassen.
 
 ## Besondere Vorkommnisse
@@ -107,12 +108,33 @@ Was Piloten unter „Besondere Vorkommnisse“ eintragen, steht im Blatt „Flug
 
 ## Technik am Platz
 
-- Abschnitt antippen → **Bearbeiten**: Titel, Symbol, Text (einfaches Markdown), Fotos (max. 6) und optional das Blockschaltbild der Wetterstation.
+- Abschnitt antippen → **Bearbeiten**: Titel, Symbol, Text (einfaches Markdown), Fotos (max. 6) und optional ein Blockschaltbild: **Wetterstation**, **Stromversorgung** oder **Ladeanschlüsse**.
 - **Nur für angemeldete Mitglieder** einschalten bei allem, was nicht öffentlich sein soll (z. B. Zahlenkombination Dixi-Schloss). Solche Abschnitte schickt das Backend ohne Anmeldung gar nicht erst aus.
 - Mit ↑ ↓ die Reihenfolge ändern, unten **Neuer Abschnitt** für weitere Geräte.
 - Ladesteckdosen: **je Tisch 2 XT60-Anschlüsse**, jeder einzeln mit 15 A abgesichert (Blockschaltbilder „Stromversorgung“ und „Ladeanschlüsse“, Texte entsprechend).
-- Die Texte stehen im Blatt „Technik“ der Tabelle MGI-Flugbuch, Fotos im Drive-Ordner „Technik (App)“ (wird beim ersten Foto automatisch neben der Tabelle angelegt).
+- Die Texte stehen im Blatt „Technik“ der Tabelle MGI-Flugbuch, Fotos im Drive-Ordner „Technik (App)“ in MGI → MGI-App (wird beim ersten Foto automatisch angelegt; diese Fotos erscheinen **nicht** in der Homepage-Galerie).
+- **Blockschaltbilder** sind kein Bild im Drive, sondern Teil des App-Codes (`app/src/components/Blockschaltbild.tsx`) und werden als Vektorgrafik gezeichnet – scharf auf jedem Bildschirm, passend zum Dunkelmodus, auch offline. In der Tabelle steht nur, welcher Abschnitt welches Bild zeigt. Inhaltliche Änderungen (neue Bauteile, Beschriftungen) gehen nur über den Code.
 
 ## Updates der App
 - Neue Versionen gehen automatisch live, sobald sie auf GitHub sind. Die App sucht beim Öffnen und jedes Mal beim Zurückkehren in die App nach einer neuen Version und lädt sich dann selbst neu.
 - Welche Version läuft, steht unten auf der Seite **Mehr** (z. B. „Version 1.1.0“). Hängt ein Gerät noch auf einer alten Version: App ganz schließen (iPhone: von unten wischen und die App nach oben wegschieben) und neu öffnen.
+
+## Wo liegen die Daten?
+
+Alles, was die App im Google Drive braucht, liegt in **MGI → MGI-App** (Konto joachim.rodler@googlemail.com):
+
+| Inhalt | Zweck |
+|---|---|
+| **MGI-Flugbuch** (Tabelle) | Datenbank: Mitglieder (PINs nur als Hash), Sitzungen, Flugbuch, Flugleiter, Einstellungen, Zugangsanfragen, Schwarzes Brett, Technik, Nachweise, Push-Abos, Wettbewerbe, Wertungen |
+| **Arbeitsliste 2027** (Tabelle) | Arbeitsdienste und Einträge |
+| **MGI-App Backend** (Apps Script) | Backend-Code, tägliche/stündliche Abläufe und die **Script Properties** (Schlüssel, Links, IDs, Super-Admin) |
+| **Fotos Homepage** | Fotos aus der App, zugleich Quelle der Homepage-Galerie |
+| **Schwarzes Brett** | Fotos zu Brett-Beiträgen |
+| **Technik (App)** | Fotos im Bereich Technik (entsteht beim ersten Foto) |
+| Verknüpfungen **Satzung** und **Flugbetriebsordnung** | Grundlage des Regel-Assistenten; die Originale liegen in MGI → Dokumente → Mitglieder |
+
+- **Verschieben ist unkritisch:** Dateien in Drive können verschoben werden, die IDs bleiben gleich und die App läuft weiter. **Nicht löschen, nicht durch Kopien ersetzen.**
+- **Code und Anleitungen:** GitHub-Repo `joachimrodler-afk/MGI-App` (öffentlich, keine Mitgliederdaten). Die App läuft über GitHub Pages.
+- **Externe Dienste:** Firebase (Push), kalender.digital (Termine), Google Gemini (Regel-Assistent, speichert nichts für die App), Wetterstation, Bluetti, ThingSpeak, Rabenschreck, IPCamLive.
+- **Auf den Handys:** nur Anmeldung, Push-Einstellung, Zwischenspeicher und noch nicht hochgeladene Fotos.
+- **Sicherung:** Die Tabellen haben den Versionsverlauf von Google (Datei → Versionsverlauf). Script Properties werden nicht automatisch gesichert – Werte bei Änderung selbst notieren.
