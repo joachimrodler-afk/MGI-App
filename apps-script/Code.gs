@@ -1630,7 +1630,7 @@ function rabenschreckParsen(html) {
 // ---------------------------------------------------------------------------
 
 /** Standard-Dokumente (Titel=Drive-Datei-ID); überschreibbar mit Script Property REGELN_DATEIEN */
-var REGELN_STANDARD = 'Vereinssatzung (Stand 23.09.2024)=1mnrUNnEndx5AENuWJqSn2-DHT9wnLMpP,Flugbetriebsordnung (Stand 07.11.2026)=1NDTf0DIHxRkExOSY1gTs106BxZiiF0qo';
+var REGELN_STANDARD = 'Vereinssatzung (Stand 23.09.2024)=1mnrUNnEndx5AENuWJqSn2-DHT9wnLMpP,Flugbetriebsordnung (Stand 08.11.2026)=1rEZ9ewxlkjjATO8oAqqIKClKDjp6FYWu';
 var REGELN_TAGESLIMIT = 30;
 
 function regelnDokumente_() {

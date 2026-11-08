@@ -67,7 +67,7 @@ Die Formel-Engine führt keinen fremden Code aus. Erlaubt sind nur Zahlen, Varia
 - **Verwaltung → Flugbuch-Übersicht:** Einträge nach Zeitraum, nach Tagen gruppiert, CSV-Export und Link zur Tabelle.
 - Admins können vergessene Einträge anderer unter „Flugbuch heute“ abmelden. Sonst beendet die App offene Einträge automatisch **um 23:59 Uhr** am Tag der Anmeldung – markiert mit „automatisch“. Optional lässt sich unter Einstellungen zusätzlich eine Stundengrenze setzen (0 = keine).
 - Der **CSV-Export** enthält zwei Blöcke: Piloten und Flugleiter (mit Fangnetz, Rasen, Wetter, Wind).
-- Das elektronische Flugbuch ist in der **Flugbetriebsordnung (Fassung 07.11.2026), Abschnitt 6.2** geregelt.
+- Das elektronische Flugbuch ist in der **Flugbetriebsordnung (Fassung 08.11.2026), Abschnitt 6.2** geregelt.
 
 ## Einstellungen
 Unter **Verwaltung → Einstellungen** pflegst du:
@@ -88,7 +88,7 @@ Unter **Verwaltung → Einstellungen** pflegst du:
 - Grenze: 30 Fragen pro Mitglied und Tag. Namen werden nicht an Google übermittelt.
 - Mitgeschickt wird die aktuelle Lage (Uhrzeit, Sonnenuntergang, Wind und Wind-Ampel, Anzahl Piloten, ob ein Flugleiter da ist) und der Status des Fragenden (Mitglied/Admin, im Flugbuch angemeldet ja/nein).
 - Einrichtung (Script Properties): `GEMINI_API_KEY` = Schlüssel aus [aistudio.google.com/apikey](https://aistudio.google.com/apikey). Optional `GEMINI_MODELL` (Standard `gemini-3.1-flash-lite`).
-- **Neue Fassung eines Dokuments:** PDF in den Drive legen und in den Script Properties `REGELN_DATEIEN` setzen, Format `Titel=Drive-Datei-ID,Titel=Drive-Datei-ID`, z. B. `Vereinssatzung (Stand 23.09.2024)=1mnr…,Flugbetriebsordnung (Stand 07.11.2026)=1NDT…`. Ohne diese Property nimmt das Backend Satzung 23.09.2024 und Flugbetriebsordnung 07.11.2026.
+- **Neue Fassung eines Dokuments:** PDF in den Drive legen und in den Script Properties `REGELN_DATEIEN` setzen, Format `Titel=Drive-Datei-ID,Titel=Drive-Datei-ID`, z. B. `Vereinssatzung (Stand 23.09.2024)=1mnr…,Flugbetriebsordnung (Stand 08.11.2026)=1rEZ…`. Ohne diese Property nimmt das Backend Satzung 23.09.2024 und Flugbetriebsordnung 08.11.2026.
 - Im kostenlosen Gemini-Tarif darf Google Eingaben zur Verbesserung nutzen; mit hinterlegter Abrechnung nicht.
 
 ## Mitteilung senden
