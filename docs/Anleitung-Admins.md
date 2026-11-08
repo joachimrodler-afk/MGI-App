@@ -139,7 +139,8 @@ Alles, was die App im Google Drive braucht, liegt in **MGI → MGI-App** (Konto 
 | **Schwarzes Brett** | Fotos zu Brett-Beiträgen |
 | **MGI-App_Changelog.txt** | Changelog für Admins (Verwaltung → Changelog) |
 | **Technik (App)** | Fotos im Bereich Technik (entsteht beim ersten Foto) |
-| Verknüpfungen **Satzung** und **Flugbetriebsordnung** | Grundlage des Regel-Assistenten; die Originale liegen in MGI → Dokumente → Mitglieder |
+| **Flugbetriebsordnung** (2026-11-08, .docx und .pdf) | Aktuelle Fassung; das PDF ist Grundlage des Regel-Assistenten |
+| Verknüpfung **Satzung** | Grundlage des Regel-Assistenten; das Original liegt in MGI → Dokumente → Mitglieder |
 
 - **Verschieben ist unkritisch:** Dateien in Drive können verschoben werden, die IDs bleiben gleich und die App läuft weiter. **Nicht löschen, nicht durch Kopien ersetzen.**
 - **Code und Anleitungen:** GitHub-Repo `joachimrodler-afk/MGI-App` (öffentlich, keine Mitgliederdaten). Die App läuft über GitHub Pages.
