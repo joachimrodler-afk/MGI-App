@@ -20,6 +20,13 @@ interface StartDaten {
   arbeitsdienst?: ArbeitsdienstWoche[];
 }
 
+/** „Du bist seit … Uhr angemeldet“ – robust gegen unerwartete Zeitformate (iPhone/Safari ist da streng) */
+function seitText(seit: string) {
+  const t = new Date(String(seit ?? '').replace(' ', 'T'));
+  return Number.isNaN(t.getTime()) ? 'Du bist angemeldet'
+    : `Du bist seit ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')} Uhr angemeldet`;
+}
+
 /** Hinweis auf eigenen Arbeitsdienst: ab 14 Tage vorher bis Ende der Woche */
 function ArbeitsdienstHinweis({ w }: { w: ArbeitsdienstWoche }) {
   const tag = (iso: string) => { const [j, m, t] = iso.split('-').map(Number); return new Date(j, m - 1, t); };
@@ -36,7 +43,7 @@ function ArbeitsdienstHinweis({ w }: { w: ArbeitsdienstWoche }) {
       <span className="min-w-0 flex-1">
         <span className="block text-xs font-bold uppercase tracking-wide text-amber-800 dark:text-amber-300">{wann} · {w.kw}</span>
         <span className="block font-bold">Du hast Arbeitsdienst</span>
-        <span className="block text-sm text-slate-700 dark:text-slate-300">{kurz(w.von)}–{kurz(w.bis)} · {w.einsaetze.join(', ') || 'Arbeitsdienst'}</span>
+        <span className="block text-sm text-slate-700 dark:text-slate-300">{kurz(w.von)}–{kurz(w.bis)} · {(w.einsaetze ?? []).join(', ') || 'Arbeitsdienst'}</span>
       </span>
     </>
   );
@@ -84,14 +91,14 @@ export default function Start() {
     return () => { document.removeEventListener('visibilitychange', sichtbar); window.clearInterval(takt); };
   }, [s?.token]);
 
-  const termine = (d?.termine ?? []).slice(0, 3);
+  const termine = (Array.isArray(d?.termine) ? d.termine : []).slice(0, 3);
   // Messwerte der eigenen Station am Platz haben Vorrang, Böen/Regen kommen aus der Vorhersage
   const station = d?.wetterstation?.erreichbar ? d.wetterstation.daten : undefined;
   const windJetzt = station?.wind ?? wetter?.wind;
   const boeen = Math.max(wetter?.boeen ?? 0, station?.wind ?? 0);
   const ampel = wetter || station ? windAmpel(boeen, einstellungen.windGelb, einstellungen.windRot, wetter?.niederschlag ?? 0, wetter?.code ?? 0) : null;
   const b = d?.bluetti?.daten;
-  const ichAmPlatz = s ? d?.anwesend.liste?.find((x) => x.mitgliedId === s.mitgliedId) : undefined;
+  const ichAmPlatz = s ? d?.anwesend?.liste?.find((x) => x.mitgliedId === s.mitgliedId) : undefined;
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-6 pt-4">
@@ -115,8 +122,8 @@ export default function Start() {
         <Link to="/flugbuch" className="karte flex items-center gap-3 p-3">
           <Icon name="personen" className="h-6 w-6 shrink-0 text-himmel-600" />
           <span className="text-sm leading-tight">
-            <b className="text-base">{d?.anwesend.anzahl ?? '–'}</b> am Platz
-            <span className="block text-slate-500">{d?.anwesend.flugleiter ? 'Flugleiter da' : 'kein Flugleiter'}</span>
+            <b className="text-base">{d?.anwesend?.anzahl ?? '–'}</b> am Platz
+            <span className="block text-slate-500">{d?.anwesend?.flugleiter ? 'Flugleiter da' : 'kein Flugleiter'}</span>
           </span>
         </Link>
       </div>
@@ -133,11 +140,11 @@ export default function Start() {
           <span className="block text-2xl font-extrabold tracking-tight">Flugbuch</span>
           <span className="block font-semibold opacity-95">
             {ichAmPlatz
-              ? `Du bist seit ${new Date(ichAmPlatz.seit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr angemeldet`
+              ? seitText(ichAmPlatz.seit)
               : 'Jetzt anmelden'}
           </span>
           <span className="block text-sm opacity-90">
-            {d ? `${d.anwesend.anzahl} am Platz · ${d.anwesend.flugleiter ? 'Flugleiter da' : 'kein Flugleiter'}` : 'An- und abmelden'}
+            {d?.anwesend ? `${d.anwesend.anzahl} am Platz · ${d.anwesend.flugleiter ? 'Flugleiter da' : 'kein Flugleiter'}` : 'An- und abmelden'}
           </span>
         </span>
         <span className="rounded-xl bg-white px-3 py-2 text-sm font-bold text-tinte shadow">{ichAmPlatz ? 'Abmelden' : 'Anmelden'}</span>
