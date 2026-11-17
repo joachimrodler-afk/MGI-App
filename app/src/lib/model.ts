@@ -255,7 +255,7 @@ export interface Anfrage {
 }
 
 // ---------------------------------------------------------------- Flugbuch
-export type Antrieb = 'segler' | 'elektro' | 'kolben' | 'turbine';
+export type Antrieb = 'segler' | 'elektro' | 'kolben' | 'turbine' | 'anderer';
 export type Masse = '<250 g' | '<2 kg' | '<12 kg' | '<25 kg';
 export type Wetter = 'klar' | 'leicht bedeckt' | 'bedeckt' | 'nebelig';
 export type Windrichtung = 'N' | 'NO' | 'O' | 'SO' | 'S' | 'SW' | 'W' | 'NW';
@@ -318,6 +318,8 @@ export interface PilotEingabe {
   schulungsnachweis: boolean;
   antrieb: Antrieb[];
   masse: Masse | '';
+  /** Fernsteuerkanal oder Frequenzverfahren (StRfF 8.1.7), z. B. „2,4 GHz“ */
+  kanal: string;
   regelnBestaetigt: boolean;
 }
 

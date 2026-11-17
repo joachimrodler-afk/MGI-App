@@ -15,7 +15,7 @@ Die App der **Modellbau-Gemeinschaft Ismaning e.V.** ist eine Web-App (PWA). Sie
 | **Strom** | Akkustand der Bluetti, Leistung von Solar, Netz, AC und DC, Stand jedes Packs, optional Verlauf (ThingSpeak) |
 | **Foto** | Foto aufnehmen oder aus der Galerie wählen. Es wird verkleinert und landet automatisch im Drive-Ordner der Homepage-Galerie. Ohne Netz kommt es in eine Warteschlange |
 | **Wettbewerbe** | Kunstflug, Segelflug, Limbo, Ballonstechen und eigene Arten mit **frei hinterlegbaren Formeln**. Live-Rangliste, Export als PDF und CSV |
-| **Flugbuch** | Elektronisches Flugbuch nach dem Papiervordruck: An-/Abmelden per Button (Uhrzeit wird automatisch ins Google Sheet geschrieben), Verein/Gast, Schulungsnachweis, Antriebsart, Gewichtsklasse, Bestätigung der Betriebsregeln; Modellflugleiter mit Flugbedingungen (Fangnetz, Rasen, Wetter, Wind). Daraus ergibt sich „Wer ist am Platz?“. Übersicht und CSV-Export für Admins |
+| **Flugbuch** | Elektronisches Flugbuch nach dem Papiervordruck: An-/Abmelden per Button (Uhrzeit wird automatisch ins Google Sheet geschrieben), Verein/Gast, Schulungsnachweis, Antriebsart, Gewichtsklasse, Fernsteuerkanal, Bestätigung der Geltung der StRfF (Ziff. 8.1.7); Modellflugleiter mit Flugbedingungen (Fangnetz, Rasen, Wetter, Wind). Daraus ergibt sich „Wer ist am Platz?“. Übersicht und CSV-Export für Admins |
 | **Zugangsanfrage** | Neue Mitglieder fragen in der App Zugang an, ein Admin gibt frei – der PIN wird mit App-Link per WhatsApp/E-Mail verschickt |
 | **Schwarzes Brett** | Biete, Suche und Info mit Fotos und Kontakt-Button. Beiträge laufen nach 60 Tagen ab |
 | **Notfall & Platzordnung** | Notruf 112, Koordinaten zum Vorlesen, Kontakte und Platzordnung, funktioniert auch **offline** |

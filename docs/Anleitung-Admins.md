@@ -66,7 +66,8 @@ Die Formel-Engine führt keinen fremden Code aus. Erlaubt sind nur Zahlen, Varia
 - Jede An- und Abmeldung landet mit Uhrzeit in der Google-Tabelle (Blätter **Flugbuch** und **Flugleiter**).
 - **Verwaltung → Flugbuch-Übersicht:** Einträge nach Zeitraum, nach Tagen gruppiert, CSV-Export und Link zur Tabelle.
 - Admins können vergessene Einträge anderer unter „Flugbuch heute“ abmelden. Sonst beendet die App offene Einträge automatisch **um 23:59 Uhr** am Tag der Anmeldung – markiert mit „automatisch“. Optional lässt sich unter Einstellungen zusätzlich eine Stundengrenze setzen (0 = keine).
-- Der **CSV-Export** enthält zwei Blöcke: Piloten und Flugleiter (mit Fangnetz, Rasen, Wetter, Wind).
+- Der **CSV-Export** ist nach StRfF 8.1.7 aufgebaut: Hinweis zur Geltung der StRfF, **Betriebstage** (Datum, Beginn/Ende des Flugbetriebs), **Piloten** (inkl. Fernsteuerkanal und Antriebsart), **Flugleiter** und **Besondere Ereignisse** als eigene Abteilung. Wer vergessen hat, sich abzumelden, steht mit „23:59 automatisch abgemeldet“ drin.
+- Aufbewahrung laut StRfF: mindestens 2 Jahre nach Ablauf des Kalenderjahres; auf Verlangen von MFSD oder Polizei vorlegen (CSV-Export).
 - Das elektronische Flugbuch ist in der **Flugbetriebsordnung (Fassung 08.11.2026), Abschnitt 6.2** geregelt.
 
 ## Einstellungen

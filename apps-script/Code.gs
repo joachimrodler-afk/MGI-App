@@ -59,7 +59,7 @@ var BLAETTER = {
   Wertungen: ['id', 'wettbewerbId', 'json'],
   Anfragen: ['id', 'vorname', 'nachname', 'nachricht', 'erstellt', 'status', 'bearbeitet'],
   Flugbuch: ['id', 'datum', 'name', 'vorname', 'verein_gast', 'kanal', 'schulungsnachweis', 'segler', 'elektro', 'kolben', 'turbine',
-    'max_masse', 'beginn', 'ende', 'regeln_bestaetigt', 'eingetragen_von', 'mitgliedId', 'beginn_ts', 'ende_ts', 'auto_beendet', 'vorkommnisse'],
+    'max_masse', 'beginn', 'ende', 'regeln_bestaetigt', 'eingetragen_von', 'mitgliedId', 'beginn_ts', 'ende_ts', 'auto_beendet', 'vorkommnisse', 'anderer'],
   Flugleiter: ['id', 'datum', 'name', 'vorname', 'fangnetz', 'rasen_gemaeht', 'wetter', 'windrichtung', 'windstaerke',
     'beginn', 'ende', 'mitgliedId', 'beginn_ts', 'ende_ts', 'auto_beendet'],
   Brett: ['id', 'ablauf', 'json'],
@@ -909,7 +909,7 @@ function dateiname_(s) {
 // „Flugleiter“. Beim Anmelden wird die Uhrzeit „beginn“, beim Abmelden „ende“
 // eingetragen. Wer eine offene Zeile (ohne Ende) hat, gilt als „am Platz“.
 
-var ANTRIEBE = ['segler', 'elektro', 'kolben', 'turbine'];
+var ANTRIEBE = ['segler', 'elektro', 'kolben', 'turbine', 'anderer'];
 var MASSEN = ['<250 g', '<2 kg', '<12 kg', '<25 kg'];
 var WETTER = ['klar', 'leicht bedeckt', 'bedeckt', 'nebelig'];
 var WINDRICHTUNGEN = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
@@ -998,7 +998,9 @@ function flugbuchStatus_(d, s) {
 
 function flugbuchAnmelden_(d, s) {
   var e = d.eintrag || {};
-  if (e.regelnBestaetigt !== true) throw fehler_('Bitte bestätigen, dass dir die Betriebsregeln bekannt sind', 400);
+  if (e.regelnBestaetigt !== true) throw fehler_('Bitte die Geltung der Regeln bestätigen', 400);
+  var kanal = String(e.kanal || '').trim().slice(0, 20);
+  if (!kanal) throw fehler_('Bitte den Fernsteuerkanal angeben (z. B. 2,4 GHz)', 400);
   var gast = e.art === 'gast';
   var name, vorname;
   if (gast) {
@@ -1021,10 +1023,11 @@ function flugbuchAnmelden_(d, s) {
       if (offen) throw fehler_('Du bist bereits im Flugbuch angemeldet', 400);
     }
     zeileAnhaengen_('Flugbuch', [
-      id, txt_(heute_()), name, vorname, gast ? 'Gast' : 'Verein', txt_(String(e.kanal || '').slice(0, 20)), jaNein_(e.schulungsnachweis),
+      id, txt_(heute_()), name, vorname, gast ? 'Gast' : 'Verein', txt_(kanal), jaNein_(e.schulungsnachweis),
       antrieb.indexOf('segler') >= 0 ? 'x' : '', antrieb.indexOf('elektro') >= 0 ? 'x' : '',
       antrieb.indexOf('kolben') >= 0 ? 'x' : '', antrieb.indexOf('turbine') >= 0 ? 'x' : '',
       txt_(e.masse), txt_(uhr_(jetzt)), '', 'ja', s.name, s.mitgliedId, txt_(jetzt.toISOString()), '', '', '',
+      antrieb.indexOf('anderer') >= 0 ? 'x' : '',
     ]);
   });
   if (d.flugleiter) flugleiterAnmelden_({ bedingungen: d.flugleiter }, s);

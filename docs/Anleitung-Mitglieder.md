@@ -87,9 +87,10 @@ Das Flugbuch ersetzt den Papiervordruck. **Jeder Pilot meldet sich beim Ankommen
 
 1. Auf der Startseite die rote Karte **Flugbuch** antippen.
 2. **Schulungsnachweis** einschalten, falls vorhanden.
-3. **Antriebsart** wählen (auch mehrere möglich).
+3. **Antriebsart** wählen (auch mehrere möglich, auch „anderer Antrieb“).
 4. **Gewichtsklasse** wählen.
-5. Die **Betriebsregeln bestätigen** (Häkchen).
+5. **Fernsteuerkanal**: „2,4 GHz“ ist vorgewählt – bei anderen Anlagen „anderer Kanal“ und den Kanal eintragen.
+6. Mit dem Häkchen die **Geltung der StRfF und der Flugbetriebsordnung bestätigen**.
 6. **„Im Flugbuch anmelden“** tippen – Datum und Uhrzeit trägt die App selbst ein.
 
 **Flugleitung übernehmen:** Schalter **„Ich übernehme die Flugleitung“** einschalten und Fangnetz, Rasen, Wetter und Wind angeben (der Wind wird aus dem aktuellen Wetter vorgeschlagen).

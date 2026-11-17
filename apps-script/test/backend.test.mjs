@@ -114,7 +114,7 @@ assert.equal(klaus.rolle, 'mitglied');
 
 // Flugbuch: Pflichtfelder
 assert.equal(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['elektro'], masse: '<12 kg' } }, klaus.token).ok, false, 'Regeln bestätigen');
-assert.equal(rufe('flugbuch_anmelden', { eintrag: { regelnBestaetigt: true, antrieb: [], masse: '<12 kg' } }, klaus.token).ok, false, 'Antrieb fehlt');
+assert.equal(rufe('flugbuch_anmelden', { eintrag: { regelnBestaetigt: true, kanal: '2,4 GHz', antrieb: [], masse: '<12 kg' } }, klaus.token).ok, false, 'Antrieb fehlt');
 
 // Anmelden wie auf dem Papier: Verein, Kanal 2,4 GHz, Schulungsnachweis, Elektro, <12 kg
 let st = ok(rufe('flugbuch_anmelden', {
@@ -133,10 +133,10 @@ assert.equal(st.flugleiter.length, 1);
 assert.equal(st.flugleiter[0].wetter, 'klar');
 assert.equal(st.anwesend.anzahl, 1);
 assert.equal(st.anwesend.flugleiter, true);
-assert.equal(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['segler'], masse: '<2 kg', regelnBestaetigt: true } }, klaus.token).ok, false, 'nicht doppelt');
+assert.equal(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['segler'], masse: '<2 kg', regelnBestaetigt: true, kanal: '2,4 GHz' } }, klaus.token).ok, false, 'nicht doppelt');
 
 // Gast eintragen
-st = ok(rufe('flugbuch_anmelden', { eintrag: { art: 'gast', gastVorname: 'Gerd', gastName: 'Gast', antrieb: ['segler'], masse: '<2 kg', regelnBestaetigt: true } }, klaus.token));
+st = ok(rufe('flugbuch_anmelden', { eintrag: { art: 'gast', gastVorname: 'Gerd', gastName: 'Gast', antrieb: ['segler'], masse: '<2 kg', regelnBestaetigt: true, kanal: '2,4 GHz' } }, klaus.token));
 assert.equal(st.anwesend.anzahl, 2);
 const gast = st.piloten.find((x) => x.vereinGast === 'Gast');
 assert.equal(gast.eingetragenVon, 'Klaus Butz');
@@ -172,7 +172,7 @@ assert.equal(fb[1][8], 'x', 'Elektro angekreuzt');
 assert.equal(fb[1][11], '<12 kg');
 
 // Automatisches Beenden vergessener Abmeldungen
-ok(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['kolben'], masse: '<25 kg', regelnBestaetigt: true } }, admin.token));
+ok(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['kolben'], masse: '<25 kg', regelnBestaetigt: true, kanal: '2,4 GHz' } }, admin.token));
 const zeile = fb[fb.length - 1];
 zeile[17] = new Date(Date.now() - 7 * 3600000).toISOString(); // vor 7 Stunden angemeldet
 // Standard: keine Stundengrenze – am selben Tag bleibt die Anmeldung offen
@@ -186,7 +186,7 @@ assert.ok(zeile[18], 'automatisch beendet');
 assert.equal(zeile[19], 'ja');
 ok(rufe('einstellungen_speichern', { ...einst, checkinStunden: 0 }, admin.token));
 // Anmeldung vom Vortag ohne Abmeldung: Ende 23:59 des Vortags
-ok(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['segler'], masse: '<2 kg', regelnBestaetigt: true } }, klaus.token));
+ok(rufe('flugbuch_anmelden', { eintrag: { antrieb: ['segler'], masse: '<2 kg', regelnBestaetigt: true, kanal: '2,4 GHz' } }, klaus.token));
 const vortag = fb[fb.length - 1];
 const gestern = new Date(Date.now() - 86400000);
 vortag[1] = ctx.Utilities.formatDate(gestern, 'Europe/Berlin', 'dd.MM.yyyy');
@@ -577,4 +577,14 @@ console.log('Rabenschreck OK');
   assert.equal(pushes.length, 2, 'Push nach neuem PIN');
   ctx.pushAnAdmins_ = orig;
   console.log('Anmeldung sichtbar OK');
+}
+
+// StRfF 8.1.7: Fernsteuerkanal Pflicht, Antrieb „anderer“
+{
+  const ohne = rufe('flugbuch_anmelden', { eintrag: { antrieb: ['anderer'], masse: '<2 kg', regelnBestaetigt: true } }, admin.token);
+  assert.equal(ohne.ok, false); assert.match(ohne.fehler, /Fernsteuerkanal/);
+  const st = ok(rufe('flugbuch_anmelden', { eintrag: { art: 'gast', gastVorname: 'Ole', gastName: 'Anders', antrieb: ['anderer'], masse: '<2 kg', regelnBestaetigt: true, kanal: '35 MHz K61' } }, admin.token));
+  const e = st.piloten.find((p) => p.vorname === 'Ole');
+  assert.deepEqual(e.antrieb, ['anderer']); assert.equal(e.kanal, '35 MHz K61');
+  console.log('StRfF-Pflichtangaben OK');
 }

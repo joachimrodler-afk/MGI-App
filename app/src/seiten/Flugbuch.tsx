@@ -17,8 +17,13 @@ import { himmelsrichtung, ladeWetter } from '../lib/wetter';
 
 const ANTRIEBE: { k: Antrieb; n: string }[] = [
   { k: 'segler', n: 'Segler' }, { k: 'elektro', n: 'Elektro' }, { k: 'kolben', n: 'Kolben' }, { k: 'turbine', n: 'Turbine' },
+  { k: 'anderer', n: 'anderer Antrieb' },
 ];
 const MASSEN: Masse[] = ['<250 g', '<2 kg', '<12 kg', '<25 kg'];
+const KANAL_STANDARD = '2,4 GHz';
+
+/** Pflichthinweis nach StRfF 8.1.7 (2) – muss an prominenter Stelle im Flugbuch stehen */
+export const GELTUNG_HINWEIS = 'Mit seiner Eintragung im Modellflugbuch bestätigt der Pilot die Geltung der Standardisierten Regeln für Flugmodelle (StRfF) des MFSD sowie der Flugbetriebsordnung der MGI.';
 const WETTER: Wetter[] = ['klar', 'leicht bedeckt', 'bedeckt', 'nebelig'];
 const RICHTUNGEN: Windrichtung[] = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
 const STAERKEN: Windstaerke[] = ['kein', 'leicht', 'mäßig', 'stark'];
@@ -105,7 +110,7 @@ function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneF
   const letzte = (() => { try { return JSON.parse(localStorage.getItem(LETZTE_KEY) || 'null'); } catch { return null; } })();
   const [e, setE] = useState<PilotEingabe>({
     art: nurGast ? 'gast' : 'verein', schulungsnachweis: letzte?.schulungsnachweis ?? false,
-    antrieb: letzte?.antrieb ?? [], masse: letzte?.masse ?? '', regelnBestaetigt: false,
+    antrieb: letzte?.antrieb ?? [], masse: letzte?.masse ?? '', kanal: letzte?.kanal ?? KANAL_STANDARD, regelnBestaetigt: false,
   });
   const [flugleiter, setFlugleiter] = useState(false);
   const [bed, setBed] = useBedingungenVorschlag();
@@ -120,11 +125,12 @@ function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneF
     setFehler('');
     if (!e.antrieb.length) return setFehler('Bitte die Antriebsart wählen.');
     if (!e.masse) return setFehler('Bitte die Gewichtsklasse wählen.');
-    if (!e.regelnBestaetigt) return setFehler('Bitte bestätigen, dass dir die Betriebsregeln bekannt sind.');
+    if (!e.kanal.trim()) return setFehler('Bitte den Fernsteuerkanal angeben.');
+    if (!e.regelnBestaetigt) return setFehler('Bitte die Geltung der Regeln bestätigen.');
     setLaedt(true);
     try {
       const s = await api<FlugbuchStatus>('flugbuch_anmelden', { eintrag: e, flugleiter: flugleiter && !gast ? bed : undefined });
-      if (!gast) localStorage.setItem(LETZTE_KEY, JSON.stringify({ schulungsnachweis: e.schulungsnachweis, antrieb: e.antrieb, masse: e.masse }));
+      if (!gast) localStorage.setItem(LETZTE_KEY, JSON.stringify({ schulungsnachweis: e.schulungsnachweis, antrieb: e.antrieb, masse: e.masse, kanal: e.kanal }));
       fertig(s);
     } catch (err) {
       setFehler((err as Error).message);
@@ -165,6 +171,16 @@ function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneF
         <span className="label">Gewichtsklasse (max. Masse)</span>
         <Chips werte={MASSEN} gewaehlt={e.masse ? [e.masse] : []} onChange={([v]) => setE({ ...e, masse: v })} />
       </div>
+      <div>
+        <span className="label">Fernsteuerkanal</span>
+        <Chips werte={[KANAL_STANDARD, 'anderer']} gewaehlt={[e.kanal === KANAL_STANDARD ? KANAL_STANDARD : 'anderer']}
+          onChange={([v]) => setE({ ...e, kanal: v === KANAL_STANDARD ? KANAL_STANDARD : '' })}
+          beschriftung={(k) => (k === KANAL_STANDARD ? '2,4 GHz (automatisch)' : 'anderer Kanal')} />
+        {e.kanal !== KANAL_STANDARD && (
+          <input className="eingabe mt-2" maxLength={20} placeholder="z. B. 35 MHz Kanal 61" aria-label="Fernsteuerkanal"
+            value={e.kanal} onChange={(x) => setE({ ...e, kanal: x.target.value })} />
+        )}
+      </div>
 
       {!gast && !ohneFlugleiter && (
         <div className="-mx-4 border-y border-himmel-100 dark:border-slate-700">
@@ -176,8 +192,8 @@ function Anmeldeformular({ ohneFlugleiter, fertig, nurGast, abbrechen }: { ohneF
       <label className="flex items-start gap-3 rounded-xl bg-sonne-hell p-3 text-sm dark:bg-amber-950/40">
         <input type="checkbox" className="mt-0.5 h-6 w-6 shrink-0 accent-mgi-rot" checked={e.regelnBestaetigt} onChange={(x) => setE({ ...e, regelnBestaetigt: x.target.checked })} />
         <span>
-          {gast ? 'Der Gast bestätigt' : 'Ich bestätige'}, dass {gast ? 'ihm' : 'mir'} die Betriebsregeln der StRfF (Standardisierte Regeln für Flugmodelle des MFSD), die für {gast ? 'sein' : 'mein'} Flugvorhaben relevant sind,
-          die Flugordnung und die Geländeausweisung ggf. samt vorhandener Kontrollerlaubnis der zuständigen Landesluftfahrtbehörde bekannt sind.
+          {gast ? 'Der Gast bestätigt' : 'Ich bestätige'} mit {gast ? 'seiner' : 'meiner'} Eintragung die Geltung der StRfF (Standardisierte Regeln für Flugmodelle des MFSD) und der Flugbetriebsordnung der MGI.
+          Die für {gast ? 'sein' : 'mein'} Flugvorhaben relevanten Betriebsregeln und die Geländeausweisung ggf. samt vorhandener Kontrollerlaubnis der zuständigen Landesluftfahrtbehörde sind {gast ? 'ihm' : 'mir'} bekannt.
         </span>
       </label>
 
@@ -202,7 +218,7 @@ function EintragZeile({ p, kannAbmelden, abmelden, arbeitet }: { p: FlugbuchEint
       <span className="min-w-0 flex-1">
         <span className="block font-semibold">{p.vorname} {p.name}{p.vereinGast === 'Gast' && <span className="font-normal text-slate-500"> · Gast</span>}</span>
         <span className="block text-sm text-slate-500">
-          {p.beginn}{p.ende ? `–${p.ende}` : ' – läuft'}{p.autoBeendet && ' (auto)'} · {antriebText(p.antrieb)} · {p.masse}
+          {p.beginn}{p.ende ? `–${p.ende}` : ' – läuft'}{p.autoBeendet && ' (automatisch abgemeldet)'} · {antriebText(p.antrieb)} · {p.masse}{p.kanal ? ` · ${p.kanal}` : ''}
         </span>
       </span>
       {kannAbmelden && !p.ende && <Knopf art="sekundaer" onClick={abmelden} laedt={arbeitet} className="!min-h-10 !px-3 text-sm">Abmelden</Knopf>}
@@ -244,6 +260,7 @@ function Inhalt() {
 
   return (
     <div className="space-y-4">
+      <p className="rounded-xl bg-himmel-100 p-3 text-sm font-semibold text-himmel-900 dark:bg-slate-800 dark:text-himmel-100">{GELTUNG_HINWEIS}</p>
       {fehler2 && <Fehler fehler={fehler2} />}
 
       {/* Mein Status */}
