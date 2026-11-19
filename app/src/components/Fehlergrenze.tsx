@@ -14,7 +14,7 @@ export function einmalNeuLaden(): boolean {
 }
 
 /** Fängt Fehler beim Anzeigen ab und zeigt statt eines weißen Bildschirms einen Neu-laden-Knopf. */
-/** Zwischengespeicherte Daten und Programmdateien löschen, dann neu laden (Anmeldung bleibt erhalten). */
+/** Zwischengespeicherte Daten und Programmdateien löschen, dann neu laden (Anmeldung und Push bleiben erhalten). */
 async function aufraeumenUndNeuLaden() {
   try {
     Object.keys(localStorage).filter((k) => k.startsWith('mgi.cache.')).forEach((k) => localStorage.removeItem(k));
@@ -22,8 +22,8 @@ async function aufraeumenUndNeuLaden() {
     /* ignorieren */
   }
   try {
-    const regs = (await navigator.serviceWorker?.getRegistrations?.()) ?? [];
-    await Promise.all(regs.map((r) => r.unregister()));
+    // Service Worker bewusst NICHT abmelden – sonst geht das Push-Abo verloren. Neue Dateien holt er sich selbst.
+    await (await navigator.serviceWorker?.getRegistration?.())?.update?.();
     const namen = (await caches?.keys?.()) ?? [];
     await Promise.all(namen.map((n) => caches.delete(n)));
   } catch {

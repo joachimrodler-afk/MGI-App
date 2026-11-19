@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { HashRouter, Link, NavLink, Route, Routes } from 'react-router-dom';
 import { Icon } from './components/Icon';
 import { Laden } from './components/ui';
@@ -6,6 +6,7 @@ import { Fehlergrenze } from './components/Fehlergrenze';
 import { config, istDemo } from './config';
 import { klassen } from './lib/helfer';
 import { useOnline, useSitzung } from './lib/sitzung';
+import { pushAuffrischen } from './lib/push';
 import Start from './seiten/Start';
 import Notfall from './seiten/Notfall';
 
@@ -39,6 +40,8 @@ const Changelog = lazy(() => import('./seiten/verwaltung/Changelog'));
 function Kopf() {
   const s = useSitzung();
   const online = useOnline();
+  // Push-Abo beim Start prüfen und ggf. im Backend erneuern (nur angemeldet)
+  useEffect(() => { if (s?.token) void pushAuffrischen().catch(() => undefined); }, [s?.token]);
   return (
     <header className="wolken sicher-oben nicht-drucken sticky top-0 z-30 text-white shadow-md">
       <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-2">

@@ -77,8 +77,17 @@ export async function pushAuffrischen(): Promise<void> {
     await api('push_abo', { fcmToken: token, einstellungen: s.einstellungen });
     await api('push_abo_loeschen', { fcmToken: s.token }).catch(() => undefined);
     localStorage.setItem(KEY, JSON.stringify({ token, einstellungen: s.einstellungen }));
+    localStorage.setItem(SYNC_KEY, String(Date.now()));
+    return;
+  }
+  // Gleiches Token: einmal am Tag im Backend bestätigen. Falls das Abo dort fehlt
+  // (z. B. von FCM als ungültig gemeldet und gelöscht), wird es so wieder angelegt.
+  if (token && Date.now() - Number(localStorage.getItem(SYNC_KEY) || 0) > 24 * 3600 * 1000) {
+    await api('push_abo', { fcmToken: token, einstellungen: s.einstellungen });
+    localStorage.setItem(SYNC_KEY, String(Date.now()));
   }
 }
+const SYNC_KEY = 'mgi.push.abgeglichen';
 
 /** Test-Nachricht an alle eigenen Geräte */
 export async function pushTesten(): Promise<number> {
