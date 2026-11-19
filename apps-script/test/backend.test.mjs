@@ -588,3 +588,14 @@ console.log('Rabenschreck OK');
   assert.deepEqual(e.antrieb, ['anderer']); assert.equal(e.kanal, '35 MHz K61');
   console.log('StRfF-Pflichtangaben OK');
 }
+
+// Admin-Liste: Anzahl Push-Geräte je Mitglied
+{
+  ok(rufe('push_abo', { fcmToken: 'tokA', einstellungen: {} }, klaus.token));
+  ok(rufe('push_abo', { fcmToken: 'tokB', einstellungen: {} }, klaus.token));
+  const liste = ok(rufe('mitglieder_liste', {}, admin.token));
+  const k = liste.find((m) => m.id === klaus.mitgliedId);
+  assert.equal(k.pushGeraete, 2);
+  assert.ok(liste.filter((m) => m.id !== klaus.mitgliedId).every((m) => typeof m.pushGeraete === 'number'));
+  console.log('Push-Anzeige OK');
+}

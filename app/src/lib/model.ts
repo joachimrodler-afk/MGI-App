@@ -24,6 +24,8 @@ export interface Mitglied {
   angemeldet?: boolean;
   /** ISO-Zeit der letzten Anmeldung ('' = unbekannt / seit neuem PIN noch nicht) */
   letzteAnmeldung?: string;
+  /** Anzahl Geräte mit Push-Abo (nur Admin-Liste) */
+  pushGeraete?: number;
 }
 
 export interface Termin {

@@ -351,7 +351,7 @@ function mitgliedNachId_(id) {
   return zeilen_('Mitglieder').filter(function (m) { return m.id === id; })[0];
 }
 
-function mitgliedOeffentlich_(m, mitSitzung) {
+function mitgliedOeffentlich_(m, mitSitzung, pushGeraete) {
   var su = superAdmin_();
   var o = { id: m.id, vorname: m.vorname, nachname: m.nachname, rolle: m.rolle, sparte: m.sparte || '', aktiv: String(m.aktiv) === 'true', superAdmin: !!su && m.id === su };
   if (mitSitzung) {
@@ -359,6 +359,7 @@ function mitgliedOeffentlich_(m, mitSitzung) {
     // ältere Anmeldungen (vor dem Zeitstempel) erkennt man an einer bestehenden Sitzung
     o.angemeldet = !!o.letzteAnmeldung || !!mitSitzung[m.id];
   }
+  if (pushGeraete) o.pushGeraete = pushGeraete[m.id] || 0; // nur in der Admin-Liste
   return o;
 }
 
@@ -376,7 +377,9 @@ function superSchutz_(zielId, s) {
 function mitgliederListe_() {
   var sitzung = {};
   zeilen_('Sitzungen').forEach(function (r) { sitzung[r.mitgliedId] = true; });
-  return zeilen_('Mitglieder').map(function (m) { return mitgliedOeffentlich_(m, sitzung); }).sort(function (a, b) {
+  var push = {};
+  zeilen_('PushAbos').forEach(function (r) { push[r.mitgliedId] = (push[r.mitgliedId] || 0) + 1; });
+  return zeilen_('Mitglieder').map(function (m) { return mitgliedOeffentlich_(m, sitzung, push); }).sort(function (a, b) {
     return (a.nachname + a.vorname).localeCompare(b.nachname + b.vorname, 'de');
   });
 }

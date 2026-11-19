@@ -152,6 +152,11 @@ function Inhalt() {
         </form>
       )}
       {fehler2 && <Fehler fehler={fehler2} />}
+      {daten && daten.some((m) => m.pushGeraete !== undefined) && (
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Push aktiviert: <b>{daten.filter((m) => m.aktiv && (m.pushGeraete ?? 0) > 0).length}</b> von {daten.filter((m) => m.aktiv).length} aktiven Mitgliedern
+        </p>
+      )}
       <input className="eingabe" placeholder="Suchen …" value={suche} onChange={(e) => setSuche(e.target.value)} aria-label="Mitglieder suchen" />
       {laedt && !daten && <Laden />}
       {fehler && <Fehler fehler={fehler} nochmal={neu} />}
@@ -164,6 +169,12 @@ function Inhalt() {
                 <span className="block text-sm text-slate-500">{m.superAdmin ? 'Super-Admin' : m.rolle === 'admin' ? 'Admin' : 'Mitglied'}{m.sparte ? ` · ${m.sparte === 'flug' ? 'Flug' : 'Schiff'}` : ''}{!m.aktiv && ' · deaktiviert'}</span>
                 {m.aktiv && m.angemeldet === false && <span className="mt-0.5 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:bg-amber-900/50 dark:text-amber-100">Noch nicht angemeldet</span>}
                 {m.aktiv && m.angemeldet && <span className="block text-xs text-slate-500">{m.letzteAnmeldung ? `Zuletzt angemeldet: ${new Date(m.letzteAnmeldung).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}` : 'Angemeldet'}</span>}
+                {m.aktiv && m.pushGeraete !== undefined && (
+                  <span className={klassen('mt-0.5 inline-block rounded-full px-2 py-0.5 text-xs font-semibold',
+                    m.pushGeraete ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300')}>
+                    {m.pushGeraete ? `Push an${m.pushGeraete > 1 ? ` (${m.pushGeraete} Geräte)` : ''}` : 'Push aus'}
+                  </span>
+                )}
               </span>
               <Icon name="rechts" className="h-5 w-5 text-slate-400 transition group-open:rotate-90" />
             </summary>

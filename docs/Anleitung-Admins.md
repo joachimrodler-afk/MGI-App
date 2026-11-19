@@ -7,6 +7,7 @@ Admins sind der Vorstand und die Wertungsrichter. Der Admin-Bereich steht unter 
 - **Mitglied anlegen:** Vor- und Nachname eingeben, Rolle und Sparte wählen. Die App erzeugt einen zufälligen 6-stelligen PIN und zeigt ihn **nur einmal** an. Gib ihn direkt per WhatsApp oder E-Mail weiter, die Buttons dafür sind dabei.
 - **Neuer PIN:** Der alte PIN wird sofort ungültig und das Mitglied auf allen Geräten abgemeldet.
 - **Hat sich das Mitglied angemeldet?** In der Liste steht bei jedem Mitglied **„Noch nicht angemeldet“** (gelb) oder **„Zuletzt angemeldet: …“**. Bei der ersten Anmeldung nach Einladung bekommen die Admins eine Push-Nachricht. Nach einem neuen PIN steht wieder „Noch nicht angemeldet“, bis der neue PIN benutzt wurde.
+- **Push aktiviert?** Bei jedem Mitglied steht **„Push an“** (grün, ggf. mit Anzahl der Geräte) oder **„Push aus“**. Über der Liste steht, wie viele aktive Mitglieder Push eingeschaltet haben.
 - **Deaktivieren**, z. B. bei einem Austritt: Das Mitglied kann sich sofort nicht mehr anmelden. Seine Daten bleiben erhalten.
 - PINs werden nur verschlüsselt gespeichert (gesalzener Hash). Auch Admins können sie nicht nachschauen, nur neu vergeben.
 - Nach 5 falschen PIN-Eingaben ist der Zugang für 10 Minuten gesperrt.
